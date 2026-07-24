@@ -1,0 +1,12 @@
+{
+  "cssTheme": "Velocity",
+  "monospaceFontFamily": "Comic Shanns Mono",
+  "textFontFamily": "仓耳今楷01",
+  "interfaceFontFamily": "",
+  "baseFontSize": 16,
+  "accentColor": "#497949",
+  "theme": "system",
+  "enabledCssSnippets": [
+    "my-styles"
+  ]
+}
