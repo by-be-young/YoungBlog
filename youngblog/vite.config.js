@@ -3,8 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig(({ command }) => {
-  // 开发环境用 '/'，生产环境（打包）用 '/byblog-vue/'
-  const base = command === 'serve' ? '/' : '/byblog-vue/'
+  // 开发环境用 '/'，生产环境（GitHub Pages）用仓库名
+  const base = command === 'serve' ? '/' : '/YoungBlog/'
 
   return {
     plugins: [vue()],
