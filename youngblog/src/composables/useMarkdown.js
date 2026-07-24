@@ -3,9 +3,10 @@
  * 依赖：useMermaid, useCodeBlock, useAnswer, useImageViewer
  * 负责：Front Matter剥离、Obsidian图片嵌入、自定义块（task/answer/options/question）、
  *       数学公式（KaTeX）、内部引用 [[#标题]]、资源URL重写、列表颜色、引用块样式
+ *
+ * 注：marked 和 highlight.js 在 renderMarkdown 中按需动态导入，
+ *     避免 ArticleContent 仅使用 annotateTaskLabels 时打包这两个大库。
  */
-import hljs from 'highlight.js'
-import { marked } from 'marked'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useMermaid } from './useMermaid'
@@ -229,7 +230,7 @@ export function useMarkdown() {
     }
 
     // ==================== 自定义块解析（完整） ====================
-    function processCustomBlocks(markdownText) {
+    function processCustomBlocks(markdownText, marked) {
         if (!markdownText) return markdownText
 
         // 辅助：提取数学公式（用于选项内部）
@@ -580,13 +581,17 @@ export function useMarkdown() {
     async function renderMarkdown(rawMarkdown, sourcePath = '') {
         if (!rawMarkdown) return ''
 
+        // 按需动态导入 marked 和 highlight.js（大库，仅执行渲染时加载）
+        const { marked } = await import('marked')
+        const hljs = (await import('@/utils/highlight')).default
+
         // 1. 预处理
         let md = stripFrontMatter(rawMarkdown)
         md = transformObsidianImageEmbeds(md)
         md = normalizeOrderedListIndentation(md)
 
         // 2. 处理自定义块（返回 HTML 片段）
-        let html = processCustomBlocks(md)
+        let html = processCustomBlocks(md, marked)
 
         // 3. 数学公式提取（保护显示/行内公式）
 
