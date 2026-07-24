@@ -99,7 +99,7 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   z-index: 1;
   pointer-events: none;
-  background: url('@/assets/images/welcome.png') center / contain no-repeat;
+  background: url('/assets/images/welcome.png') center / contain no-repeat;
   opacity: var(--home-welcome-bg-opacity, 0.9);
   will-change: transform;
   animation: home-welcome-cloud-sway 8.6s ease-in-out infinite;
