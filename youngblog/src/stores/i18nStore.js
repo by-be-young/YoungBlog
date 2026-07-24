@@ -120,7 +120,21 @@ const translations = {
         search_no_results: '未找到相关文章',
         // 其他
         image_copied: '已复制',
-        image_copy_failed: '复制失败'
+        image_copy_failed: '复制失败',
+        prev_post: '上一篇',
+        next_post: '下一篇',
+        similar_post: '相似文章',
+        code_copy: '复制',
+        code_collapse: '收起',
+        code_copied: '已复制',
+        code_expand: '展开',
+        submit_answer: '提交答案',
+        multi_choice_label: '多选题',
+        answer_label: '答案',
+        stats_correct_count: '答对数：',
+        stats_answered_count: '总答题数：',
+        stats_total_count: '总题数：',
+        stats_accuracy: '正确率：'
     },
     en: {
         brand: "Young's Escape Journey",
@@ -228,7 +242,21 @@ const translations = {
         search_body_loading: 'Loading...',
         search_no_results: 'No articles found',
         image_copied: 'Copied',
-        image_copy_failed: 'Copy failed'
+        image_copy_failed: 'Copy failed',
+        prev_post: 'Previous',
+        next_post: 'Next',
+        similar_post: 'Similar',
+        code_copy: 'Copy',
+        code_collapse: 'Collapse',
+        code_copied: 'Copied',
+        code_expand: 'Expand',
+        submit_answer: 'Submit',
+        multi_choice_label: 'Multiple Choice',
+        answer_label: 'Answer',
+        stats_correct_count: 'Correct: ',
+        stats_answered_count: 'Answered: ',
+        stats_total_count: 'Total: ',
+        stats_accuracy: 'Accuracy: '
     },
     ja: {
         brand: '白恙の逃避行',
@@ -336,7 +364,21 @@ const translations = {
         search_body_loading: '読み込み中...',
         search_no_results: '記事が見つかりません',
         image_copied: 'コピーしました',
-        image_copy_failed: 'コピーに失敗しました'
+        image_copy_failed: 'コピーに失敗しました',
+        prev_post: '前の記事',
+        next_post: '次の記事',
+        similar_post: '関連記事',
+        code_copy: 'コピー',
+        code_collapse: '折り畳む',
+        code_copied: 'コピーしました',
+        code_expand: '展開',
+        submit_answer: '回答を送信',
+        multi_choice_label: '選択問題',
+        answer_label: '回答',
+        stats_correct_count: '正解数：',
+        stats_answered_count: '回答数：',
+        stats_total_count: '総問題数：',
+        stats_accuracy: '正解率：'
     }
 }
 
@@ -349,8 +391,14 @@ export const useI18nStore = defineStore('i18n', () => {
     })
 
     // 兼容旧写法（返回 computed）
-    const t = (key) => {
-        return computed(() => translations[lang.value]?.[key] || key)
+    const t = (key, params = {}) => {
+        return computed(() => {
+            let text = translations[lang.value]?.[key] || key
+            Object.entries(params).forEach(([k, v]) => {
+                text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v)
+            })
+            return text
+        })
     }
 
     // 直接获取翻译值（非响应式，用于 setup 中）

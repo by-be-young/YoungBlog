@@ -11,6 +11,7 @@ import './css/style.css'
 import './css/butterfly.css'
 import './css/responsive.css'
 import './css/search.css'
+import 'highlight.js/styles/atom-one-dark.css'
 
 const app = createApp(App)
 app.use(createPinia())
