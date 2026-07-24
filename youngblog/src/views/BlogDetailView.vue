@@ -72,6 +72,8 @@ import FloatingControls from '@/components/blog-detail/FloatingControls.vue'
 import ExportModal from '@/components/blog-detail/ExportModal.vue'
 import DisplayModal from '@/components/blog-detail/DisplayModal.vue'
 
+const detailBgImg = `url(${resolveUrl('/assets/detail_bg.png')})`
+
 const route = useRoute()
 const router = useRouter()
 const blogStore = useBlogStore()
@@ -264,7 +266,7 @@ watch(() => route.params.id, loadBlog)
   width: 100%;
   height: 100vh;
   height: 100svh;
-  background-image: url('/assets/detail_bg.png');
+  background-image: v-bind(detailBgImg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

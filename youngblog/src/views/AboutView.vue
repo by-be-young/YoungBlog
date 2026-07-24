@@ -6,7 +6,7 @@
         <aside class="blog-toc" id="profile-card-aside">
           <div class="profile-card" id="about-profile-card">
             <div class="avatar">
-              <img src="/assets/avatar.png" alt="头像">
+              <img :src="resolveUrl('/assets/avatar.png')" alt="头像">
             </div>
             <h2 class="name">{{ i18n.t('profile_name') }}</h2>
 
@@ -91,6 +91,8 @@ import { resolveUrl } from '@/utils/url'
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
 const { renderMarkdown, stripFrontMatter } = useMarkdown()
+
+const detailBgImg = `url(${resolveUrl('/assets/detail_bg.png')})`
 
 const renderedHtml = ref('')
 const wordCount = ref('0.0w')
@@ -185,7 +187,7 @@ window.addEventListener('site:languageChanged', loadAbout)
   width: 100%;
   height: 100vh;
   height: 100svh;
-  background-image: url('/assets/detail_bg.png');
+  background-image: v-bind(detailBgImg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

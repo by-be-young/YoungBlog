@@ -21,7 +21,7 @@
           </div>
           <div class="recent-item-side">
             <div class="blog-image recent-thumb">
-              <img src="/assets/images/lantern_festival.png" :alt="blog.title">
+              <img :src="resolveUrl('/assets/images/lantern_festival.png')" :alt="blog.title">
               <div v-if="blog.type" class="blog-type-overlay">
                 <span class="blog-type">{{ blog.type }}</span>
               </div>
@@ -45,6 +45,7 @@
 import { useRouter } from 'vue-router'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
+import { resolveUrl } from '@/utils/url'
 
 const props = defineProps({
   blogs: {

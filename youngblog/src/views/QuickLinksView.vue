@@ -129,7 +129,7 @@ const STAGGER_BREAKPOINT = 760
 const CARD_STAGGER_MS = 85
 const MODAL_ANIMATION_MS = 320
 const WHEEL_SCALE = 0.35
-const defaultImage = '/assets/images/background/bg1.png'
+const defaultImage = resolveUrl('/assets/images/background/bg1.png')
 
 // ---------- 状态 ----------
 const categories = ref([])

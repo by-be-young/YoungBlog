@@ -28,6 +28,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18nStore } from '@/stores/i18nStore'
+import { resolveUrl } from '@/utils/url'
 
 const props = defineProps({
   blog: {
@@ -40,7 +41,7 @@ const router = useRouter()
 const i18n = useI18nStore()
 
 const blogImage = computed(() => {
-  return '/assets/images/lantern_festival.png'
+  return resolveUrl('/assets/images/lantern_festival.png')
 })
 
 const formatDate = (dateStr) => {

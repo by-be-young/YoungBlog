@@ -53,10 +53,13 @@
 import { computed, onMounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
+import { resolveUrl } from '@/utils/url'
 import ProfileCard from '@/components/home/ProfileCard.vue'
 import BlogCard from '@/components/home/BlogCard.vue'
 import RecentUpdatesCard from '@/components/home/RecentUpdatesCard.vue'
 import BlogPlaceholder from '@/components/home/BlogPlaceholder.vue'
+
+const welcomeBgImg = `url(${resolveUrl('/assets/images/welcome.png')})`
 
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
@@ -99,7 +102,10 @@ onMounted(() => {
   transform: translate(-50%, -50%);
   z-index: 1;
   pointer-events: none;
-  background: url('/assets/images/welcome.png') center / contain no-repeat;
+  background-image: v-bind(welcomeBgImg);
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
   opacity: var(--home-welcome-bg-opacity, 0.9);
   will-change: transform;
   animation: home-welcome-cloud-sway 8.6s ease-in-out infinite;

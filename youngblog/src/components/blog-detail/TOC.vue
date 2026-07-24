@@ -11,7 +11,7 @@
 
             <!-- H3 跟随小虫 -->
             <div class="toc-bug" :class="{ idle: activeH3 == null }" ref="tocBugRef">
-                <img src="/assets/images/task/correct.png" alt="" />
+                <img :src="resolveUrl('/assets/images/task/correct.png')" alt="" />
             </div>
 
             <template v-for="h1 in tree" :key="h1.index">
@@ -82,6 +82,7 @@
 
 import { ref, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
+import { resolveUrl } from '@/utils/url'
 
 const props = defineProps({
     /** 文章内容 HTML，用于监听变化并触发目录重建 */

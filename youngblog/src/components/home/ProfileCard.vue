@@ -5,7 +5,7 @@
     <!-- 头像与姓名 -->
     <div class="profile-header">
       <div class="avatar profile-avatar">
-        <img src="/assets/avatar.png" alt="头像">
+        <img :src="resolveUrl('/assets/avatar.png')" alt="头像">
       </div>
       <div class="profile-header-info">
         <h2 class="name">{{ i18n.currentTranslations.profile_name }}</h2>
@@ -132,6 +132,8 @@ import { resolveUrl } from '@/utils/url'
 
 const router = useRouter()
 const i18n = useI18nStore()
+const infoBgImg = `url(${resolveUrl('/assets/images/information.jpg')})`
+
 const blogStore = useBlogStore()
 const wordCount = ref('0.0w')
 
@@ -218,7 +220,7 @@ onMounted(() => {
 .profile-card {
   background:
     linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)),
-    url('/assets/images/information.jpg') center/cover no-repeat;
+    v-bind(infoBgImg) center/cover no-repeat;
   border-radius: 15px;
   padding: 30px;
   box-shadow: var(--shadow);
@@ -501,7 +503,7 @@ onMounted(() => {
   border: var(--card-border-w, 5px) solid transparent;
   background:
     linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)) padding-box,
-    url('/assets/images/information.jpg') center/cover no-repeat padding-box,
+    v-bind(infoBgImg) center/cover no-repeat padding-box,
     linear-gradient(135deg, var(--macaron-pink, #ffb6c9), var(--macaron-mint, #a7f3d0), var(--macaron-lavender, #c7b6ff)) border-box;
   box-shadow: 0 18px 42px rgba(18, 24, 38, 0.16);
   backdrop-filter: blur(10px);

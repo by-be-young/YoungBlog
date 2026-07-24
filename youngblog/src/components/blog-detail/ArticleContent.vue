@@ -5,6 +5,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
+import { resolveUrl } from '@/utils/url'
 import { useMarkdown } from '@/composables/useMarkdown'
 import { useAnswer } from '@/composables/useAnswer'
 import { useCodeBlock } from '@/composables/useCodeBlock'
@@ -17,6 +18,10 @@ const props = defineProps({
 })
 
 const contentEl = ref(null)
+
+const questionIcon = resolveUrl('/assets/images/task/question.png')
+const correctIcon = resolveUrl('/assets/images/task/correct.png')
+const wrongIcon = resolveUrl('/assets/images/task/wrong.png')
 
 const i18n = useI18nStore()
 const { enhance: enhanceCodeBlocks } = useCodeBlock()
@@ -616,7 +621,7 @@ watch(() => props.html, async (newHtml) => {
   height: var(--question-icon-size);
   grid-column: 1;
   grid-row: 1 / -1;
-  background: url('/assets/images/task/question.png') center / cover no-repeat;
+  background: v-bind(questionIcon) center / cover no-repeat;
   border-radius: 8px;
   transition: transform 220ms ease, filter 220ms ease;
 }
@@ -626,7 +631,7 @@ watch(() => props.html, async (newHtml) => {
   box-shadow: 0 8px 20px rgba(46, 204, 113, 0.12);
 }
 .article-content :deep(.md-question.is-question-correct::before) {
-  background-image: url('/assets/images/task/correct.png');
+  background-image: v-bind(correctIcon);
   animation: task-question-icon-pop 260ms ease;
 }
 .article-content :deep(.md-question.is-question-wrong) {
@@ -635,7 +640,7 @@ watch(() => props.html, async (newHtml) => {
   box-shadow: 0 8px 20px rgba(255, 99, 132, 0.14);
 }
 .article-content :deep(.md-question.is-question-wrong::before) {
-  background-image: url('/assets/images/task/wrong.png');
+  background-image: v-bind(wrongIcon);
   animation: task-question-icon-pop 260ms ease;
 }
 @keyframes task-question-icon-pop {
