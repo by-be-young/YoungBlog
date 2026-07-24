@@ -23,8 +23,15 @@ export default defineConfig(({ command }) => {
       assetsDir: 'assets',
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ['vue', 'vue-router', 'pinia']
+          // rolldown（Vite 8）要求 manualChunks 为函数，不支持对象格式
+          manualChunks(id) {
+            if (
+              id.includes('node_modules/vue/') ||
+              id.includes('node_modules/vue-router/') ||
+              id.includes('node_modules/pinia/')
+            ) {
+              return 'vendor'
+            }
           }
         }
       }
