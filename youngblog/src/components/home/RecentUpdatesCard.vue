@@ -5,9 +5,6 @@
     </div>
     <div class="recent-content">
       <template v-for="(blog, index) in blogs" :key="blog.id">
-        <div class="recent-section-label">
-          <span>{{ index === 0 ? i18n.t('home_category_learning') : i18n.t('home_category_entertainment') }}</span>
-        </div>
         <div
           class="recent-item"
           @click="$router.push(`/blog/${blog.id}`)"
@@ -162,29 +159,6 @@ const handleTagClick = (blog, index) => {
   display: flex;
   flex-direction: column;
   gap: 0;
-}
-
-/* ========== 分区标签 ========== */
-.recent-section-label {
-  display: flex;
-  align-items: center;
-  padding: 10px 20px 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #5f6b7a;
-  letter-spacing: 0.04em;
-}
-
-.recent-section-label:first-child {
-  padding-top: 14px;
-}
-
-.recent-section-label span {
-  background: linear-gradient(120deg, #ef75a8, #43c8a0);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 700;
 }
 
 /* ========== 最近更新列表项 ========== */
