@@ -37,6 +37,7 @@
 import { ref, watch } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
+import { resolveUrl } from '@/utils/url'
 
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
@@ -52,7 +53,7 @@ const calculateWordCount = async () => {
     }
     let total = 0
     for (const file of files) {
-      const res = await fetch(file)
+      const res = await fetch(resolveUrl(file))
       const text = await res.text()
       // 简单统计字数（去除 Markdown 标记）
       const clean = text.replace(/```[\s\S]*?```/g, ' ')

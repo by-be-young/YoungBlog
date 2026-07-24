@@ -86,6 +86,7 @@ import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
 import { useMarkdown } from '@/composables/useMarkdown'
 import ArticleContent from '@/components/blog-detail/ArticleContent.vue'
+import { resolveUrl } from '@/utils/url'
 
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
@@ -106,7 +107,7 @@ const loadAbout = async () => {
 
   for (const path of paths) {
     try {
-      const res = await fetch(path)
+      const res = await fetch(resolveUrl(path))
       if (res.ok) {
         const text = await res.text()
         const cleaned = stripFrontMatter(text)
@@ -127,7 +128,7 @@ const calculateWordCount = async () => {
     const files = blogStore.blogs.map(b => b.contentFile).filter(Boolean)
     let total = 0
     for (const file of files) {
-      const res = await fetch(file)
+      const res = await fetch(resolveUrl(file))
       const text = await res.text()
       const clean = text.replace(/```[\s\S]*?```/g, ' ')
         .replace(/[#>*~\-]/g, ' ')

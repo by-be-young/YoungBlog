@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { resolveUrl } from '@/utils/url'
 
 export const useBlogStore = defineStore('blog', () => {
     const blogs = ref([])
@@ -112,7 +113,7 @@ export const useBlogStore = defineStore('blog', () => {
 
         try {
             // 使用 /data/blogs.json 路径（public 目录下的 data 文件夹）
-            const response = await fetch('/data/blogs.json')
+            const response = await fetch(resolveUrl('/data/blogs.json'))
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`)

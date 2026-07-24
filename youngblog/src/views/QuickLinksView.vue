@@ -102,7 +102,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
-
+import { resolveUrl } from '@/utils/url'
 // ---------- i18n 简易实现 ----------
 const i18n = reactive({
   lang: 'zh',
@@ -529,7 +529,7 @@ function closeModal(immediate = false) {
 // ---------- 数据加载 ----------
 async function fetchData() {
   try {
-    const res = await fetch(DATA_URL, { cache: 'no-store' })
+    const res = await fetch(resolveUrl(DATA_URL), { cache: 'no-store' })
     const data = await res.json()
     if (data && Array.isArray(data.categories)) {
       categories.value = data.categories

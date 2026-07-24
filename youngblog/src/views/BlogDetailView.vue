@@ -61,6 +61,7 @@ import { useBlogStore } from '@/stores/blogStore'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useMarkdown } from '@/composables/useMarkdown'
+import { resolveUrl } from '@/utils/url'
 
 // 导入新组件
 import TOC from '@/components/blog-detail/TOC.vue'
@@ -126,7 +127,7 @@ async function loadBlog() {
 
   if (found.contentFile) {
     try {
-      const res = await fetch(found.contentFile)
+      const res = await fetch(resolveUrl(found.contentFile))
       const text = await res.text()
       rawMarkdown.value = text
       const cleaned = stripFrontMatter(text)

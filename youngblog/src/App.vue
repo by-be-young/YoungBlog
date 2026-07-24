@@ -48,6 +48,7 @@ import SettingsModal from '@/components/common/SettingsModal.vue'
 import AnnouncementModal from '@/components/common/AnnouncementModal.vue'
 import FloatingControls from '@/components/common/FloatingControls.vue'
 import { useBackgroundStore } from '@/stores/backgroundStore'
+import { resolveUrl } from '@/utils/url'
 
 const route = useRoute()
 const bgStore = useBackgroundStore()
@@ -64,14 +65,14 @@ const showFireflies = computed(() => {
 // 加载背景图
 const loadBackgrounds = async () => {
   try {
-    const res = await fetch('/data/background-images.json')
+    const res = await fetch(resolveUrl('/data/background-images.json'))
     const data = await res.json()
     backgroundImages.value = Array.isArray(data) ? data : data?.images || []
   } catch (e) {
     backgroundImages.value = [
-      '/assets/images/background/bg1.png',
-      '/assets/images/background/bg2.png',
-      '/assets/images/background/bg3.png'
+      resolveUrl('/assets/images/background/bg1.png'),
+      resolveUrl('/assets/images/background/bg2.png'),
+      resolveUrl('/assets/images/background/bg3.png')
     ]
   }
   bgStore.setImages(backgroundImages.value)

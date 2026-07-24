@@ -128,6 +128,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
+import { resolveUrl } from '@/utils/url'
 
 const router = useRouter()
 const i18n = useI18nStore()
@@ -139,7 +140,7 @@ const calculateWordCount = async () => {
     const files = blogStore.blogs.map(b => b.contentFile).filter(Boolean)
     let total = 0
     for (const file of files) {
-      const res = await fetch(file)
+      const res = await fetch(resolveUrl(file))
       const text = await res.text()
       const clean = text.replace(/```[\s\S]*?```/g, ' ')
         .replace(/[#>*~\-]/g, ' ')

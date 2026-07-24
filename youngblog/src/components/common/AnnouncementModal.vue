@@ -46,6 +46,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
+import { resolveUrl } from '@/utils/url'
 
 const i18n = useI18nStore()
 const isOpen = ref(false)
@@ -88,7 +89,7 @@ const parsedMessage = computed(() => {
 
 const fetchAnnouncements = async () => {
   try {
-    const res = await fetch('/data/announcements.json')
+    const res = await fetch(resolveUrl('/data/announcements.json'))
     const data = await res.json()
     const list = Array.isArray(data) ? data : []
     if (list.length === 0) {

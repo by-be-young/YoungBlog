@@ -51,6 +51,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
+import { resolveUrl } from '@/utils/url'
 
 const i18n = useI18nStore()
 
@@ -199,7 +200,7 @@ const handleLanguageChange = () => {}
 const fetchAnnouncements = async () => {
   isLoading.value = true
   try {
-    const res = await fetch('/data/announcements.json')
+    const res = await fetch(resolveUrl('/data/announcements.json'))
     const data = await res.json()
     announcements.value = Array.isArray(data) ? data : []
   } catch (e) {

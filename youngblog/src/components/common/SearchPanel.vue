@@ -74,6 +74,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
+import { resolveUrl } from '@/utils/url'
 
 const router = useRouter()
 const route = useRoute()
@@ -142,7 +143,7 @@ const onSearch = async () => {
       // 正文搜索
       if (includeBody.value && blog.contentFile) {
         try {
-          const res = await fetch(blog.contentFile)
+          const res = await fetch(resolveUrl(blog.contentFile))
           const text = await res.text()
           if (text.toLowerCase().includes(q)) score += 5
         } catch (e) {
