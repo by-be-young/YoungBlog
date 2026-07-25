@@ -55,7 +55,7 @@
                 <div class="music-controls">
                   <div class="music-track">
                     <label for="music-select">{{ i18n.currentTranslations.settings_track_label }}</label>
-                    <select id="music-select" v-model="currentTrack">
+                    <select id="music-select" :value="musicStore.currentTrack" @change="onTrackChange">
                       <option value="">{{ i18n.currentTranslations.settings_track_none }}</option>
                       <option value="抹不去的记忆.mp3">{{ i18n.currentTranslations.settings_track_memory }}</option>
                       <option value="澎湃.mp3">{{ i18n.currentTranslations.settings_track_passion }}</option>
@@ -63,24 +63,24 @@
                     </select>
                   </div>
                   <div class="music-playback">
-                    <button class="music-btn" @click="togglePlay">
-                      <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
-                      <span>{{ isPlaying ? i18n.currentTranslations.settings_pause : i18n.currentTranslations.settings_play }}</span>
+                    <button class="music-btn" @click="playSelectedTrack">
+                      <i :class="musicStore.isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+                      <span>{{ musicStore.isPlaying ? i18n.currentTranslations.settings_pause : i18n.currentTranslations.settings_play }}</span>
                     </button>
-                    <button class="music-btn" @click="stopMusic">
+                    <button class="music-btn" @click="musicStore.stop()">
                       <i class="fas fa-stop"></i>
                       <span>{{ i18n.currentTranslations.settings_stop }}</span>
                     </button>
                   </div>
                   <div class="music-progress">
                     <label for="progress-slider">{{ i18n.currentTranslations.settings_progress_label }}</label>
-                    <input type="range" id="progress-slider" min="0" max="100" step="0.1" v-model="progress" @input="seekMusic" />
-                    <span id="progress-value">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
+                    <input type="range" id="progress-slider" min="0" max="100" step="0.1" :value="musicStore.progress" @input="onSeek" />
+                    <span id="progress-value">{{ musicStore.formatTime(musicStore.currentTime) }} / {{ musicStore.formatTime(musicStore.duration) }}</span>
                   </div>
                   <div class="music-volume">
                     <label for="volume-slider">{{ i18n.currentTranslations.settings_volume_label }}</label>
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume" />
-                    <span id="volume-value">{{ Math.round(volume * 100) }}%</span>
+                    <input type="range" id="volume-slider" min="0" max="1" step="0.05" :value="musicStore.volume" @input="onVolumeChange" />
+                    <span id="volume-value">{{ Math.round(musicStore.volume * 100) }}%</span>
                   </div>
                 </div>
               </div>
@@ -95,19 +95,13 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
+import { useMusicStore } from '@/stores/musicStore'
 
 const i18n = useI18nStore()
+const musicStore = useMusicStore()
 
 const isOpen = ref(false)
 const activeTab = ref('language')
-
-const audio = ref(null)
-const currentTrack = ref('')
-const isPlaying = ref(false)
-const currentTime = ref(0)
-const duration = ref(0)
-const progress = ref(0)
-const volume = ref(0.2)
 
 const tabs = [
   { key: 'language', labelKey: 'settings_tab_language' },
@@ -120,12 +114,7 @@ const languages = [
   { value: 'ja', labelKey: 'settings_language_ja' }
 ]
 
-const formatTime = (seconds) => {
-  if (!seconds || isNaN(seconds)) return '00:00'
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
-}
+// ============ 弹窗控制 ============
 
 const openModal = () => {
   isOpen.value = true
@@ -141,77 +130,49 @@ const handleBackdropClick = (e) => {
   if (e.target === e.currentTarget) closeModal()
 }
 
-const initAudio = () => {
-  if (!audio.value) {
-    audio.value = new Audio()
-    audio.value.loop = true
-    audio.value.addEventListener('timeupdate', () => {
-      currentTime.value = audio.value.currentTime
-      duration.value = audio.value.duration || 0
-      progress.value = duration.value > 0 ? (currentTime.value / duration.value) * 100 : 0
-    })
-    audio.value.addEventListener('play', () => { isPlaying.value = true })
-    audio.value.addEventListener('pause', () => { isPlaying.value = false })
-    audio.value.addEventListener('ended', () => { isPlaying.value = false })
-  }
-}
-
-const togglePlay = () => {
-  initAudio()
-  if (!currentTrack.value) return
-  if (audio.value.src !== `/music/${currentTrack.value}`) {
-    audio.value.src = `/music/${currentTrack.value}`
-    audio.value.load()
-  }
-  if (isPlaying.value) {
-    audio.value.pause()
-  } else {
-    audio.value.play().catch(() => {})
-  }
-}
-
-const stopMusic = () => {
-  if (audio.value) {
-    audio.value.pause()
-    audio.value.currentTime = 0
-    currentTime.value = 0
-    progress.value = 0
-  }
-}
-
-const seekMusic = () => {
-  if (audio.value && duration.value > 0) {
-    audio.value.currentTime = (progress.value / 100) * duration.value
-  }
-}
-
-const updateVolume = () => {
-  if (audio.value) {
-    audio.value.volume = volume.value
-  }
-}
-
 const handleKeydown = (e) => {
   if (e.key === 'Escape' && isOpen.value) closeModal()
 }
 
+// ============ 音乐控制 ============
+
+/** 切换曲目选择 */
+const onTrackChange = (e) => {
+  musicStore.setTrack(e.target.value)
+}
+
+/** 播放/暂停当前选中曲目（SettingsModal 的播放按钮） */
+const playSelectedTrack = () => {
+  musicStore.togglePlay(musicStore.currentTrack)
+}
+
+/** 进度拖动 */
+const onSeek = (e) => {
+  musicStore.seek(parseFloat(e.target.value))
+}
+
+/** 音量调整 */
+const onVolumeChange = (e) => {
+  musicStore.setVolume(parseFloat(e.target.value))
+}
+
+/** 首次用户手势初始化音频（满足浏览器自动播放策略） */
 const enableMusic = () => {
-  if (!audio.value) initAudio()
+  musicStore.initAudio()
 }
 
 // Transition 钩子 - 确保背景过渡正常工作
 const onEnter = (el) => {
-  // 强制触发重排，确保过渡生效
   el.offsetHeight
 }
 
 const onLeave = (el) => {
-  // 强制触发重排，确保过渡生效
   el.offsetHeight
 }
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  // 首次用户交互时初始化音频（一次性）
   window.addEventListener('click', enableMusic, { once: true })
   window.addEventListener('keydown', enableMusic, { once: true })
   window.addEventListener('toggle-settings', openModal)

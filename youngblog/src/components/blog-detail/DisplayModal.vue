@@ -1,161 +1,216 @@
 <template>
-  <div id="displayModal" class="settings-modal display-modal" :class="{ 'is-open': isOpen }" @click.self="close">
-    <div class="settings-modal-card display-modal-card" role="dialog" aria-modal="true">
-      <button class="settings-modal-close" @click="close"><i class="fas fa-times"></i></button>
-      <div class="settings-modal-content">
-        <h3>{{ i18n.t('display_modal_title') }}</h3>
-        <div class="display-option-group">
-          <p>{{ i18n.t('display_exercise_label') }}</p>
-          <label><input type="radio" name="display-exercise" value="hide"> {{ i18n.t('display_exercise_hide') }}</label>
-          <label><input type="radio" name="display-exercise" value="collapse" checked> {{ i18n.t('display_exercise_collapse') }}</label>
-          <label><input type="radio" name="display-exercise" value="practice"> {{ i18n.t('display_exercise_practice') }}</label>
-          <label><input type="radio" name="display-exercise" value="expand"> {{ i18n.t('display_exercise_expand') }}</label>
+  <div v-if="isOpen" id="displayModal" class="settings-modal display-modal" @click.self="close">
+      <div class="settings-modal-card display-modal-card" role="dialog" aria-modal="true" aria-labelledby="display-modal-title">
+        <button class="settings-modal-close" @click="close" :aria-label="i18n.t('display_modal_close')"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <div class="settings-modal-content display-modal-content">
+          <section class="settings-section active display-section">
+            <h3 id="display-modal-title">{{ i18n.t('display_modal_title') }}</h3>
+            <div class="display-option-group">
+              <p class="display-option-label">{{ i18n.t('display_exercise_label') }}</p>
+              <div class="display-option-list" role="radiogroup" :aria-label="i18n.t('display_exercise_radiogroup')">
+                <label class="display-option-item"><input type="radio" name="display-exercise" value="hide" v-model="exerciseMode"> {{ i18n.t('display_exercise_hide') }}</label>
+                <label class="display-option-item"><input type="radio" name="display-exercise" value="collapse" v-model="exerciseMode"> {{ i18n.t('display_exercise_collapse') }}</label>
+                <label class="display-option-item"><input type="radio" name="display-exercise" value="practice" v-model="exerciseMode"> {{ i18n.t('display_exercise_practice') }}</label>
+                <label class="display-option-item"><input type="radio" name="display-exercise" value="expand" v-model="exerciseMode"> {{ i18n.t('display_exercise_expand') }}</label>
+              </div>
+            </div>
+            <div class="display-option-group">
+              <p class="display-option-label">{{ i18n.t('display_code_label') }}</p>
+              <div class="display-option-list" role="radiogroup" :aria-label="i18n.t('display_code_radiogroup')">
+                <label class="display-option-item"><input type="radio" name="display-code" value="collapse" v-model="codeMode"> {{ i18n.t('display_code_collapse') }}</label>
+                <label class="display-option-item"><input type="radio" name="display-code" value="expand" v-model="codeMode"> {{ i18n.t('display_code_expand') }}</label>
+              </div>
+            </div>
+            <div class="display-actions">
+              <button class="music-btn display-confirm-btn" @click="apply">
+                <i :class="displayIconClass"></i> {{ displayButtonText }}
+              </button>
+            </div>
+          </section>
         </div>
-        <div class="display-option-group">
-          <p>{{ i18n.t('display_code_label') }}</p>
-          <label><input type="radio" name="display-code" value="collapse"> {{ i18n.t('display_code_collapse') }}</label>
-          <label><input type="radio" name="display-code" value="expand" checked> {{ i18n.t('display_code_expand') }}</label>
-        </div>
-        <button class="music-btn display-confirm-btn" @click="apply">
-          <i class="fas fa-check"></i> {{ i18n.t('display_apply') }}
-        </button>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 
 const i18n = useI18nStore()
 const settings = useSettingsStore()
 const isOpen = ref(false)
+const exerciseMode = ref(settings.exerciseMode)
+const codeMode = ref(settings.codeMode)
+const displayButtonText = ref(i18n.get('display_apply'))
+const displayIconClass = ref('fas fa-check')
 
-function open() { isOpen.value = true }
-function close() { isOpen.value = false }
+function open() {
+  isOpen.value = true
+  // 同步当前设置值
+  exerciseMode.value = settings.exerciseMode
+  codeMode.value = settings.codeMode
+  // 重置按钮文本与图标
+  displayButtonText.value = i18n.get('display_apply')
+  displayIconClass.value = 'fas fa-check'
+  document.body.classList.add('display-modal-open')
+}
+
+function close() {
+  isOpen.value = false
+  document.body.classList.remove('display-modal-open')
+}
 
 function apply() {
-  const exercise = document.querySelector('input[name="display-exercise"]:checked')
-  const code = document.querySelector('input[name="display-code"]:checked')
-  if (exercise) settings.setExerciseMode(exercise.value)
-  if (code) settings.setCodeMode(code.value)
-  // 触发重新应用设置（通过事件或直接调用 useSettings().apply）
-  document.dispatchEvent(new CustomEvent('settings:applied'))
-  close()
+  settings.setExerciseMode(exerciseMode.value)
+  settings.setCodeMode(codeMode.value)
+
+  // 显示"已应用"反馈
+  displayButtonText.value = i18n.get('display_applied')
+  displayIconClass.value = 'fas fa-check-circle'
+
+  setTimeout(close, 800)
 }
+
+function onKeyDown(e) {
+  if (e.key === 'Escape' && isOpen.value) {
+    close()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', onKeyDown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeyDown)
+})
 
 defineExpose({ open, close })
 </script>
 
-<style scoped>
-/* 复用 export-modal 的样式，增加自己的微调 */
-.settings-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.26s ease, visibility 0.26s ease;
+<style>
+/* ==================================================
+   SECTION: 显示弹窗 (Display Modal) 专用样式
+   ================================================== */
+
+.settings-modal.display-modal {
+  z-index: 1210;
+  animation: display-modal-appear 0.28s ease;
 }
-.settings-modal.is-open {
+@keyframes display-modal-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.display-modal-card {
+  width: min(620px, calc(100vw - 28px));
+  max-height: min(82vh, 700px);
+}
+
+.display-modal-content {
+  min-height: 0;
+  display: block;
+}
+
+.display-section {
+  position: relative;
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
-.settings-modal-card {
-  background: #fff;
-  border-radius: 16px;
-  max-width: 520px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 28px 32px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
-  position: relative;
-  transform: scale(0.96);
-  transition: transform 0.26s ease;
+
+.display-section h3 {
+  margin: 0 0 14px;
+  color: #b57b00;
 }
-.settings-modal.is-open .settings-modal-card {
-  transform: scale(1);
-}
-.settings-modal-close {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #888;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-.settings-modal-close:hover {
-  background: rgba(0, 0, 0, 0.06);
-}
-.settings-modal-content h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 1.4rem;
-  color: #2b3440;
-}
+
 .display-option-group {
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
-.display-option-group p {
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #4a5568;
+
+.display-option-label {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: #6f5300;
 }
-.display-option-group label {
+
+.display-option-list {
+  display: grid;
+  gap: 8px;
+}
+
+.display-option-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  cursor: pointer;
-  font-size: 0.96rem;
-  color: #2d3748;
-}
-.display-option-group input[type="radio"] {
-  width: 16px;
-  height: 16px;
-  accent-color: #55c8ff;
-  flex-shrink: 0;
-}
-.display-confirm-btn {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #00acff, #48dbbb);
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(181, 123, 0, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.34);
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
 }
-.display-confirm-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 172, 255, 0.3);
+
+.display-option-item:hover {
+  border-color: rgba(181, 123, 0, 0.4);
+  background: rgba(255, 255, 255, 0.5);
 }
-.display-confirm-btn:active {
-  transform: scale(0.98);
+
+.display-option-item input[type="radio"] {
+  accent-color: #b57b00;
 }
-@media (max-width: 480px) {
-  .settings-modal-card {
-    padding: 20px 16px;
+
+.display-actions {
+  margin-top: 4px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.display-confirm-btn {
+  min-width: 136px;
+}
+
+body.display-modal-open {
+  overflow: hidden;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .display-modal-card {
+    width: min(620px, 100%);
+    height: auto;
+    max-height: min(86vh, 720px);
+  }
+
+  .display-modal-content {
+    padding: 14px;
+  }
+
+  .display-option-item {
+    align-items: flex-start;
+  }
+
+  .display-actions {
+    justify-content: stretch;
+  }
+
+  .display-confirm-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 460px) {
+  .display-option-item {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .display-option-item {
+    transition: none;
   }
 }
 </style>

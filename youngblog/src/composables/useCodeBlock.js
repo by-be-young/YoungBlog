@@ -57,7 +57,7 @@ export function useCodeBlock() {
         })
         const onEnd = (e) => {
             if (e.propertyName !== 'height') return
-            bodyEl.hidden = true; bodyEl.style.height = ''
+            bodyEl.hidden = true; bodyEl.style.height = ''; bodyEl.style.overflow = ''
             bodyEl.removeEventListener('transitionend', onEnd)
             bodyEl.__collapseEndHandler = null
         }
@@ -86,7 +86,7 @@ export function useCodeBlock() {
         })
         const onEnd = (e) => {
             if (e.propertyName !== 'height') return
-            bodyEl.style.height = ''
+            bodyEl.style.height = ''; bodyEl.style.overflow = ''
             bodyEl.removeEventListener('transitionend', onEnd)
             bodyEl.__expandEndHandler = null
         }
@@ -182,7 +182,7 @@ export function useCodeBlock() {
             body.appendChild(pre)
             container.append(header, body)
 
-            body.style.cssText = 'overflow:hidden;opacity:1'
+            body.style.cssText = 'opacity:1'
 
             // ---- 添加行号 ----
             const raw = (code.textContent || '').replace(/\n$/, '')

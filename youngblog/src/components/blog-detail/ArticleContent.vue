@@ -5,6 +5,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
+import { useSettingsStore } from '@/stores/settingsStore'
 import { resolveUrl } from '@/utils/url'
 import { useMarkdown } from '@/composables/useMarkdown'
 import { useAnswer } from '@/composables/useAnswer'
@@ -19,9 +20,9 @@ const props = defineProps({
 
 const contentEl = ref(null)
 
-const questionIcon = resolveUrl('/assets/images/task/question.png')
-const correctIcon = resolveUrl('/assets/images/task/correct.png')
-const wrongIcon = resolveUrl('/assets/images/task/wrong.png')
+const questionIcon = `url("${resolveUrl('/assets/images/task/question.png')}")`
+const correctIcon = `url("${resolveUrl('/assets/images/task/correct.png')}")`
+const wrongIcon = `url("${resolveUrl('/assets/images/task/wrong.png')}")`
 
 const i18n = useI18nStore()
 const { enhance: enhanceCodeBlocks } = useCodeBlock()
@@ -29,9 +30,24 @@ const { render: renderMermaid } = useMermaid()
 const { init: initImageViewer } = useImageViewer()
 const { bindAll: bindAnswers } = useAnswer()
 const { apply: applySettings } = useSettings()
+
+// 监听语言变化，立即重新翻译文章内的 data-i18n 元素
+watch(() => i18n.lang, () => {
+  if (contentEl.value) {
+    try { applyI18n(contentEl.value) } catch (e) { console.warn('[ArticleContent] applyI18n:', e) }
+  }
+})
+
+// 监听设置变化，自动重新应用到文章内容
+const settingsStore = useSettingsStore()
+watch(() => [settingsStore.exerciseMode, settingsStore.codeMode], () => {
+  if (contentEl.value) {
+    try { applySettings(contentEl.value) } catch (e) { console.warn('[ArticleContent] applySettings:', e) }
+  }
+})
 const { annotateTaskLabels } = useMarkdown()
 
-// 翻译 data-i18n 元素
+// 翻译 data-i18n 元素 + 刷新 task 标签文字
 function applyI18n(root) {
   root.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n')
@@ -39,6 +55,9 @@ function applyI18n(root) {
       const t = i18n.get(key)
       if (t && t !== key) el.textContent = t
     }
+  })
+  root.querySelectorAll('.md-task').forEach(task => {
+    task.dataset.taskLabelText = i18n.get('task_label')
   })
 }
 
@@ -122,7 +141,6 @@ watch(() => props.html, async (newHtml) => {
   border-left: 4px solid var(--h3-heading-color);
   padding: 8px 12px;
   background: linear-gradient(90deg, rgba(255, 251, 230, 0.9) 0%, rgba(255, 251, 230, 0.6) 60%);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: block;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
@@ -293,7 +311,7 @@ watch(() => props.html, async (newHtml) => {
   word-break: break-word;
   color: #222;
   font-size: 1.02rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', 'Times New Roman', 'KaiTi', '楷体', STKaiti, serif;
 }
 
 .article-content :deep(thead th) {
@@ -374,7 +392,7 @@ watch(() => props.html, async (newHtml) => {
 .article-content :deep(.codeblock) {
   border: 1px solid rgba(24, 49, 58, 0.10);
   border-radius: 10px;
-  overflow: hidden;
+  max-width: 100%;
   margin: 18px 0;
   box-shadow:
     inset 0 2px 8px rgba(24, 49, 58, 0.14),
@@ -459,13 +477,17 @@ watch(() => props.html, async (newHtml) => {
 
 .article-content :deep(.codeblock__body) {
   padding: 0;
-  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
   transition: height 280ms ease, opacity 220ms ease;
 }
 
 .article-content :deep(.codeblock__content) {
   display: flex;
   align-items: stretch;
+  max-width: 100%;
   background: rgba(167, 243, 208, 0.22);
   border-radius: 0 0 10px 10px;
   padding: 12px 12px 14px 12px;
@@ -485,6 +507,12 @@ watch(() => props.html, async (newHtml) => {
   border-right: 1px solid rgba(24, 49, 58, 0.06);
   font-size: 1.02rem;
   line-height: 1.7;
+  overflow: visible;
+}
+
+.article-content :deep(.codeblock__pre) {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .article-content :deep(.codeblock__body pre) {
@@ -495,11 +523,6 @@ watch(() => props.html, async (newHtml) => {
   background: transparent;
   line-height: 1.7;
   font-family: 'Comic Mono', 'Comic Sans MS', 'Comic Neue', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-.article-content :deep(.codeblock__pre) {
-  flex: 1 1 auto;
-  min-width: 0;
 }
 
 .article-content :deep(:not(pre) > code) {
@@ -758,6 +781,7 @@ watch(() => props.html, async (newHtml) => {
 .article-content :deep(.md-task .md-task-stats-rate) {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
 }
 .article-content :deep(.md-task .md-task-stats-rate) {
   margin-left: 12px;
@@ -1169,5 +1193,10 @@ watch(() => props.html, async (newHtml) => {
 }
 .blog-detail-page.immersive-reading-active .article-content :deep(h3) {
   font-size: 1.8rem;
+}
+
+/* ===== 练习模式：仅显示标题和习题 ===== */
+.article-content.practice-mode :deep(> :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.md-task)) {
+  display: none !important;
 }
 </style>

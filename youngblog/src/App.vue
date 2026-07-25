@@ -48,6 +48,7 @@ import SettingsModal from '@/components/common/SettingsModal.vue'
 import AnnouncementModal from '@/components/common/AnnouncementModal.vue'
 import FloatingControls from '@/components/common/FloatingControls.vue'
 import { useBackgroundStore } from '@/stores/backgroundStore'
+import { useMusicStore } from '@/stores/musicStore'
 import { resolveUrl } from '@/utils/url'
 
 const route = useRoute()
@@ -83,12 +84,20 @@ let bgInterval = null
 
 onMounted(() => {
   loadBackgrounds()
-  
+
   bgInterval = setInterval(() => {
     if (backgroundImages.value.length > 1) {
       currentBgIndex.value = (currentBgIndex.value + 1) % backgroundImages.value.length
     }
   }, 5000)
+
+  // 首次用户交互时初始化音频（满足浏览器自动播放策略）
+  const musicStore = useMusicStore()
+  const initMusicOnInteraction = () => {
+    musicStore.initAudio()
+  }
+  window.addEventListener('click', initMusicOnInteraction, { once: true })
+  window.addEventListener('keydown', initMusicOnInteraction, { once: true })
 })
 
 onUnmounted(() => {

@@ -11,19 +11,20 @@
       <i class="fas fa-cog"></i>
     </button>
 
-    <!-- 音乐悬浮球 -->
-    <button class="fab-btn fab-music" :class="{ 'is-visible': showMusicFab, 'is-paused': isMusicPaused }" @click="toggleMusic" aria-label="音乐控制">
-      <i :class="isMusicPaused ? 'fas fa-play' : 'fas fa-pause'"></i>
+    <!-- 音乐悬浮球 — 从 store 读取播放状态 -->
+    <button class="fab-btn fab-music" :class="{ 'is-visible': showMusicFab, 'is-paused': !musicStore.isPlaying }" @click="toggleMusic" aria-label="音乐控制">
+      <i :class="musicStore.isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
     </button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useMusicStore } from '@/stores/musicStore'
 
+const musicStore = useMusicStore()
 const hasUnread = ref(false)
 const showMusicFab = ref(false)
-const isMusicPaused = ref(false)
 
 let hideTimer = null
 
@@ -35,41 +36,47 @@ const openAnnouncement = () => {
   window.dispatchEvent(new CustomEvent('toggle-announcement'))
 }
 
+/** 点击音乐悬浮球 → 切换播放/暂停 */
 const toggleMusic = () => {
-  window.dispatchEvent(new CustomEvent('toggle-music'))
-}
-
-const showMusicFabHandler = (event) => {
+  musicStore.togglePlay()
+  // 用户主动点击，立即展示并取消自动隐藏
   showMusicFab.value = true
-  isMusicPaused.value = event?.detail?.paused || false
-  
-  if (hideTimer) clearTimeout(hideTimer)
-  if (isMusicPaused.value) {
-    hideTimer = setTimeout(() => {
-      showMusicFab.value = false
-    }, 3000)
-  }
-}
-
-const hideMusicFabHandler = () => {
-  showMusicFab.value = false
   if (hideTimer) {
     clearTimeout(hideTimer)
     hideTimer = null
   }
 }
 
+/** 音乐初始化后展示悬浮球 */
+watch(() => musicStore.isInitialized, (val) => {
+  if (val) showMusicFab.value = true
+})
+
+/** 播放/暂停状态变化 → 控制自动隐藏
+ *  - 播放中：始终展示
+ *  - 暂停后：3 秒后隐藏
+ */
+watch(() => musicStore.isPlaying, (playing) => {
+  if (hideTimer) {
+    clearTimeout(hideTimer)
+    hideTimer = null
+  }
+  if (playing) {
+    showMusicFab.value = true
+  } else if (musicStore.isInitialized) {
+    // 暂停后 3s 自动隐藏悬浮球
+    hideTimer = setTimeout(() => {
+      showMusicFab.value = false
+    }, 3000)
+  }
+})
+
 onMounted(() => {
   const key = 'homeAnnouncementModalShown_v1'
   hasUnread.value = !localStorage.getItem(key)
-  
-  window.addEventListener('music:show', showMusicFabHandler)
-  window.addEventListener('music:hide', hideMusicFabHandler)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('music:show', showMusicFabHandler)
-  window.removeEventListener('music:hide', hideMusicFabHandler)
   if (hideTimer) {
     clearTimeout(hideTimer)
     hideTimer = null
