@@ -331,7 +331,7 @@
         "id": 1704890032,
         "title": "二上总复习",
         "coverImage": "assets/images/background/bg2.png",
-        "count": 7,
+        "count": 5,
         "posts": [
             {
                 "id": 1786809215,
@@ -366,28 +366,12 @@
                 "contentFile": "blogs/二上/离散二/总复习/离散数学题型总复习.md"
             },
             {
-                "id": 4247914801,
-                "title": "算法选择题速查",
-                "date": "2025-12-27",
-                "order": null,
-                "chapter": null,
-                "contentFile": "blogs/二上/算法/模板/算法选择题速查.md"
-            },
-            {
                 "id": 909662699,
                 "title": "概率统计必背公式",
                 "date": "2025-12-26",
                 "order": null,
                 "chapter": null,
                 "contentFile": "blogs/二上/概率统计/总复习/概率统计必背公式.md"
-            },
-            {
-                "id": 3262314282,
-                "title": "算法板子",
-                "date": "2025-12-17",
-                "order": null,
-                "chapter": null,
-                "contentFile": "blogs/二上/算法/模板/算法板子.md"
             }
         ]
     },
