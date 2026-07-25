@@ -434,8 +434,7 @@
         "order": 0,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/概述/操作系统概述.md",
-        "recommended": false,
-        "lastEditedDate": "2026-07-25"
+        "recommended": false
     },
     {
         "id": 2460752249,
@@ -568,8 +567,7 @@
         "order": 4,
         "chapter": "3-实验",
         "contentFile": "blogs/二下/操作系统/系统调用/系统调用-MOS实验.md",
-        "recommended": true,
-        "lastEditedDate": "2026-07-25"
+        "recommended": true
     },
     {
         "id": 650786542,
