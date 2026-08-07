@@ -174,6 +174,8 @@ const wordCount = ref(0)
 const pv = ref(0)
 /** 独立访客数 (Unique Visitor) */
 const uv = ref(0)
+/** 组件是否仍然活跃（防止异步回调在卸载后继续执行） */
+let isActive = true
 
 // ==================== 导航文章响应式数据 ====================
 /** 上一篇博客对象，无则为 null */
@@ -272,12 +274,14 @@ function formatDate(dateStr) {
  */
 async function loadBlog() {
   const id = route.params.id
+  if (!id) return  // 导航离开后不再加载
 
   // 步骤 1-2: 查找博客元数据
   let found = blogStore.getBlogById(id)
   if (!found) {
     // 缓存未命中，异步拉取博客列表
     await blogStore.fetchBlogs()
+    if (!isActive) return
     found = blogStore.getBlogById(id)
     if (!found) {
       // 拉取后仍未找到，重定向至首页
@@ -292,6 +296,7 @@ async function loadBlog() {
     try {
       // 发起 HTTP 请求获取 Markdown 文件
       const res = await fetch(resolveUrl(found.contentFile))
+      if (!isActive) return
       const text = await res.text()
       rawMarkdown.value = text
 
@@ -312,6 +317,7 @@ async function loadBlog() {
 
       // 将 Markdown 渲染为 HTML
       const html = await renderMarkdown(cleaned, found.contentFile)
+      if (!isActive) return
       renderedHtml.value = html
 
       // 注意：TOC 组件会监听 content-html prop 的变化自动生成目录
@@ -555,11 +561,24 @@ onMounted(() => {
 /**
  * 组件卸载时清理：
  * 1. 移除键盘事件监听
- * 2. 清除沉浸提示定时器，防止内存泄漏
+ * 2. 清除沉浸提示定时器
+ * 3. 清理所有可能残留的全局状态（body class、navbar 样式等）
  */
 onUnmounted(() => {
+  isActive = false
   document.removeEventListener('keydown', onKeyDown)
   clearTimeout(hintTimer)
+  // 清理 body 上可能残留的 class
+  document.body.classList.remove(
+    'immersive-reading-active', 'wide-mode-active',
+    'image-viewer-open', 'mermaid-viewer-open',
+    'export-modal-open', 'display-modal-open'
+  )
+  // 恢复导航栏内联样式（如果被沉浸模式修改过）
+  const navbar = document.querySelector('.navbar')
+  if (navbar) {
+    navbar.style.cssText = ''
+  }
 })
 
 // ==================== 路由监听 ====================
@@ -569,7 +588,9 @@ onUnmounted(() => {
  * - 当用户在详情页之间导航时（如点击上一篇/下一篇），
  *   组件不会重新挂载，需通过 watch 手动触发重新加载
  */
-watch(() => route.params.id, loadBlog)
+watch(() => route.params.id, (newId) => {
+  if (newId) loadBlog()
+})
 </script>
 
 

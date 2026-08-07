@@ -23,16 +23,12 @@
           <div class="main-content">
             <div class="blog-grid" id="blogGrid">
               <RecentUpdatesCard v-if="recentBlogs.length" :blogs="recentBlogs" />
-              
+
               <div class="recommended-blogs-card" style="grid-column: 1 / -1;">
                 <span class="recommended-title">{{ i18n.currentTranslations.home_recommended_blogs }}</span>
               </div>
 
-              <BlogCard 
-                v-for="blog in recommendedBlogs" 
-                :key="blog.id"
-                :blog="blog"
-              />
+              <BlogCard v-for="blog in recommendedBlogs" :key="blog.id" :blog="blog" />
 
               <BlogPlaceholder v-if="recommendedBlogs.length % 2 !== 0" />
             </div>
@@ -55,9 +51,9 @@ import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
 import { resolveUrl } from '@/utils/url'
 import ProfileCard from '@/components/home/ProfileCard.vue'
-import BlogCard from '@/components/home/BlogCard.vue'
+import BlogCard from '@/components/home/ArticleCard.vue'
 import RecentUpdatesCard from '@/components/home/RecentUpdatesCard.vue'
-import BlogPlaceholder from '@/components/home/BlogPlaceholder.vue'
+import BlogPlaceholder from '@/components/home/ArticlePlaceholder.vue'
 
 const welcomeBgImg = `url(${resolveUrl('/assets/images/welcome.png')})`
 
@@ -112,11 +108,25 @@ onMounted(() => {
 }
 
 @keyframes home-welcome-cloud-sway {
-  0% { transform: translate(-50%, -50%) rotate(-0.4deg); }
-  25% { transform: translate(calc(-50% - 10px), calc(-50% - 4px)) rotate(-0.15deg); }
-  50% { transform: translate(calc(-50% + 8px), calc(-50% + 3px)) rotate(0.25deg); }
-  75% { transform: translate(calc(-50% - 6px), calc(-50% + 2px)) rotate(0.1deg); }
-  100% { transform: translate(-50%, -50%) rotate(-0.4deg); }
+  0% {
+    transform: translate(-50%, -50%) rotate(-0.4deg);
+  }
+
+  25% {
+    transform: translate(calc(-50% - 10px), calc(-50% - 4px)) rotate(-0.15deg);
+  }
+
+  50% {
+    transform: translate(calc(-50% + 8px), calc(-50% + 3px)) rotate(0.25deg);
+  }
+
+  75% {
+    transform: translate(calc(-50% - 6px), calc(-50% + 2px)) rotate(0.1deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(-0.4deg);
+  }
 }
 
 @media (max-width: 720px) {
@@ -201,9 +211,22 @@ onMounted(() => {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-20px); }
-  60% { transform: translateY(-10px); }
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-20px);
+  }
+
+  60% {
+    transform: translateY(-10px);
+  }
 }
 
 .music-tip {
@@ -219,9 +242,9 @@ onMounted(() => {
 .content-section {
   position: relative;
   background: linear-gradient(135deg,
-    rgba(255, 182, 201, 0.22) 0%,
-    rgba(167, 243, 208, 0.22) 45%,
-    rgba(199, 182, 255, 0.22) 100%);
+      rgba(255, 182, 201, 0.22) 0%,
+      rgba(167, 243, 208, 0.22) 45%,
+      rgba(199, 182, 255, 0.22) 100%);
   backdrop-filter: blur(8px) saturate(1.06);
   -webkit-backdrop-filter: blur(8px) saturate(1.06);
   min-height: 100vh;
@@ -316,9 +339,17 @@ onMounted(() => {
 }
 
 @keyframes recommended-title-macaron-flow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* 查看更多 */
@@ -357,11 +388,11 @@ onMounted(() => {
   inset: 0;
   z-index: -1;
   background: linear-gradient(110deg,
-    rgba(194, 233, 255, 0.92) 0%,
-    rgba(180, 229, 255, 0.91) 22%,
-    rgba(188, 247, 226, 0.91) 50%,
-    rgba(175, 240, 215, 0.91) 76%,
-    rgba(200, 236, 255, 0.92) 100%);
+      rgba(194, 233, 255, 0.92) 0%,
+      rgba(180, 229, 255, 0.91) 22%,
+      rgba(188, 247, 226, 0.91) 50%,
+      rgba(175, 240, 215, 0.91) 76%,
+      rgba(200, 236, 255, 0.92) 100%);
   background-size: 240% 240%;
   background-position: 0% 50%;
   transition: filter 0.2s ease, opacity 0.2s ease;
@@ -378,14 +409,20 @@ onMounted(() => {
 }
 
 @keyframes view-more-flow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .view-more-btn:hover {
     transform: none;
   }
+
   .view-more-btn:hover::before {
     animation: none;
   }
@@ -397,13 +434,14 @@ onMounted(() => {
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.32);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.42);
   }
+
   .view-more-btn::before {
     background: linear-gradient(110deg,
-      rgba(90, 66, 104, 0.98) 0%,
-      rgba(71, 86, 115, 0.98) 24%,
-      rgba(50, 111, 106, 0.98) 49%,
-      rgba(69, 90, 129, 0.98) 74%,
-      rgba(87, 72, 122, 0.98) 100%);
+        rgba(90, 66, 104, 0.98) 0%,
+        rgba(71, 86, 115, 0.98) 24%,
+        rgba(50, 111, 106, 0.98) 49%,
+        rgba(69, 90, 129, 0.98) 74%,
+        rgba(87, 72, 122, 0.98) 100%);
   }
 }
 </style>
