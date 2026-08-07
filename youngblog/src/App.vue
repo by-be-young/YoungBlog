@@ -63,18 +63,22 @@ const showFireflies = computed(() => {
   return pages.includes(route.name?.toLowerCase())
 })
 
+// 默认背景图（JSON 缺失或列表为空时使用）
+const defaultBackgrounds = () => [
+  resolveUrl('/assets/images/background/bg1.png'),
+  resolveUrl('/assets/images/background/bg2.png'),
+  resolveUrl('/assets/images/background/bg3.png')
+]
+
 // 加载背景图
 const loadBackgrounds = async () => {
   try {
     const res = await fetch(resolveUrl('/data/background-images.json'))
     const data = await res.json()
-    backgroundImages.value = Array.isArray(data) ? data : data?.images || []
+    const images = Array.isArray(data) ? data : data?.images || []
+    backgroundImages.value = images.length > 0 ? images : defaultBackgrounds()
   } catch (e) {
-    backgroundImages.value = [
-      resolveUrl('/assets/images/background/bg1.png'),
-      resolveUrl('/assets/images/background/bg2.png'),
-      resolveUrl('/assets/images/background/bg3.png')
-    ]
+    backgroundImages.value = defaultBackgrounds()
   }
   bgStore.setImages(backgroundImages.value)
 }
