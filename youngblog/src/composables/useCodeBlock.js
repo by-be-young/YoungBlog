@@ -94,6 +94,143 @@ export function useCodeBlock() {
         bodyEl.addEventListener('transitionend', onEnd)
     }
 
+    /**
+     * 创建 Mermaid 图表块（含代码块头部按钮 + 图表/源码切换）
+     * @param {HTMLElement} pre - <pre> 元素
+     * @param {HTMLElement} code - <code> 元素
+     * @param {string} langLabel - 语言标签（如 'MERMAID'）
+     */
+    function createMermaidBlock(pre, code, langLabel) {
+        const sourceText = code.textContent || ''
+        const preParent = pre.parentNode
+        if (!preParent) return
+
+        // 容器
+        const container = document.createElement('div')
+        container.className = 'codeblock mermaid-block'
+
+        // ---- Header ----
+        const header = document.createElement('div')
+        header.className = 'codeblock__header'
+
+        const langEl = document.createElement('div')
+        langEl.className = 'codeblock__lang'
+        langEl.textContent = langLabel || 'MERMAID'
+
+        const actions = document.createElement('div')
+        actions.className = 'codeblock__actions'
+
+        // 复制按钮
+        const btnCopy = document.createElement('button')
+        btnCopy.type = 'button'
+        btnCopy.className = 'codeblock__btn'
+        btnCopy.innerHTML = `<i class="far fa-copy"></i><span class="code-copy-label">${i18n.get('code_copy')}</span>`
+
+        // 折叠/展开按钮
+        const btnCollapse = document.createElement('button')
+        btnCollapse.type = 'button'
+        btnCollapse.className = 'codeblock__btn'
+        btnCollapse.dataset.mermaidCollapse = '1'
+        btnCollapse.innerHTML = `<i class="fas fa-chevron-up"></i><span class="code-toggle-label">${i18n.get('code_collapse')}</span>`
+
+        // 图表/源码切换按钮
+        const btnToggle = document.createElement('button')
+        btnToggle.type = 'button'
+        btnToggle.className = 'codeblock__btn'
+        btnToggle.dataset.mermaidToggle = '1'
+        btnToggle.innerHTML = '<i class="fas fa-code"></i><span class="mermaid-toggle-label">源码</span>'
+
+        actions.append(btnCopy, btnCollapse, btnToggle)
+        header.append(langEl, actions)
+
+        // ---- Body ----
+        const body = document.createElement('div')
+        body.className = 'mermaid-block__body'
+
+        // 图表区域（默认显示）
+        const diagramWrap = document.createElement('div')
+        diagramWrap.className = 'mermaid-block__diagram-wrap'
+        diagramWrap.dataset.mermaidPanel = 'diagram'
+        const diagram = document.createElement('div')
+        diagram.className = 'mermaid-block__diagram'
+        diagram.textContent = sourceText
+        diagramWrap.appendChild(diagram)
+
+        // 源码区域（默认隐藏，先不移动 pre）
+        const sourceWrap = document.createElement('div')
+        sourceWrap.className = 'mermaid-block__source'
+        sourceWrap.dataset.mermaidPanel = 'source'
+        sourceWrap.hidden = true
+
+        body.append(diagramWrap, sourceWrap)
+        container.append(header, body)
+
+        // 先将容器插入 DOM 的 pre 位置，再移动 pre 到 sourceWrap 内
+        preParent.insertBefore(container, pre)
+        sourceWrap.appendChild(pre)
+
+        // ---- 复制按钮事件 ----
+        let lastCopyAt = 0
+        btnCopy.addEventListener('click', async () => {
+            const now = Date.now()
+            if (now - lastCopyAt < 400) return
+            lastCopyAt = now
+            const ok = await copyTextToClipboard(sourceText)
+            if (!ok) return
+            btnCopy.classList.add('is-copied')
+            const span = btnCopy.querySelector('.code-copy-label')
+            if (span) span.textContent = i18n.get('code_copied')
+            setTimeout(() => {
+                btnCopy.classList.remove('is-copied')
+                const s = btnCopy.querySelector('.code-copy-label')
+                if (s) s.textContent = i18n.get('code_copy')
+            }, 900)
+        })
+
+        // ---- 折叠/展开按钮 ----
+        let lastCollapseAt = 0
+        btnCollapse.addEventListener('click', () => {
+            const now = Date.now()
+            if (now - lastCollapseAt < 200) return
+            lastCollapseAt = now
+
+            const wasCollapsed = container.classList.contains('is-collapsed')
+            if (wasCollapsed) {
+                expandBody(container, body)
+            } else {
+                collapseBody(container, body)
+            }
+
+            const icon = btnCollapse.querySelector('i')
+            const label = btnCollapse.querySelector('.code-toggle-label')
+            const nowCollapsed = !wasCollapsed
+            if (nowCollapsed) {
+                if (icon) icon.className = 'fas fa-chevron-down'
+                if (label) label.textContent = i18n.get('code_expand')
+            } else {
+                if (icon) icon.className = 'fas fa-chevron-up'
+                if (label) label.textContent = i18n.get('code_collapse')
+            }
+        })
+
+        // ---- 图表/源码切换按钮 ----
+        let showingDiagram = true
+        btnToggle.addEventListener('click', () => {
+            showingDiagram = !showingDiagram
+            diagramWrap.hidden = !showingDiagram
+            sourceWrap.hidden = showingDiagram
+            const icon = btnToggle.querySelector('i')
+            const label = btnToggle.querySelector('.mermaid-toggle-label')
+            if (showingDiagram) {
+                icon.className = 'fas fa-code'
+                if (label) label.textContent = '源码'
+            } else {
+                icon.className = 'fas fa-image'
+                if (label) label.textContent = '图表'
+            }
+        })
+    }
+
     function enhance(rootEl) {
         if (!rootEl) return
 
@@ -144,6 +281,12 @@ export function useCodeBlock() {
 
             const langRaw = detectLanguageFromCodeEl(code)
             const langLabel = normalizeLangLabel(langRaw)
+
+            // ---- Mermaid 块特殊处理 ----
+            if (langRaw.toLowerCase() === 'mermaid') {
+                createMermaidBlock(pre, code, langLabel)
+                return
+            }
 
             // 创建包装结构
             const container = document.createElement('div')
@@ -281,6 +424,86 @@ export function useCodeBlock() {
 
     // 重新绑定已有代码块的事件（结构由 useMarkdown 预渲染，但事件在 v-html 中丢失）
     function rebindEvents(container) {
+        // ---- Mermaid 块：复制、折叠、图表/源码切换 ----
+        if (container.classList.contains('mermaid-block')) {
+            const sourceText = container.querySelector('code')?.textContent || ''
+
+            // 复制按钮
+            const btnCopy = container.querySelector('.codeblock__btn:first-child')
+            if (btnCopy && !btnCopy.dataset.bound) {
+                btnCopy.dataset.bound = '1'
+                let lastCopyAt = 0
+                btnCopy.addEventListener('click', async () => {
+                    const now = Date.now()
+                    if (now - lastCopyAt < 400) return
+                    lastCopyAt = now
+                    const ok = await copyTextToClipboard(sourceText)
+                    if (!ok) return
+                    btnCopy.classList.add('is-copied')
+                    const span = btnCopy.querySelector('.code-copy-label')
+                    if (span) span.textContent = i18n.get('code_copied')
+                    setTimeout(() => {
+                        btnCopy.classList.remove('is-copied')
+                        const s = btnCopy.querySelector('.code-copy-label')
+                        if (s) s.textContent = i18n.get('code_copy')
+                    }, 900)
+                })
+            }
+
+            // 折叠/展开按钮
+            const btnCollapse = container.querySelector('[data-mermaid-collapse]')
+            const body = container.querySelector('.mermaid-block__body')
+            if (btnCollapse && !btnCollapse.dataset.bound && body) {
+                btnCollapse.dataset.bound = '1'
+                let lastCollapseAt = 0
+                btnCollapse.addEventListener('click', () => {
+                    const now = Date.now()
+                    if (now - lastCollapseAt < 200) return
+                    lastCollapseAt = now
+                    const wasCollapsed = container.classList.contains('is-collapsed')
+                    if (wasCollapsed) {
+                        expandBody(container, body)
+                    } else {
+                        collapseBody(container, body)
+                    }
+                    const icon = btnCollapse.querySelector('i')
+                    const label = btnCollapse.querySelector('.code-toggle-label')
+                    const nowCollapsed = !wasCollapsed
+                    if (nowCollapsed) {
+                        if (icon) icon.className = 'fas fa-chevron-down'
+                        if (label) label.textContent = i18n.get('code_expand')
+                    } else {
+                        if (icon) icon.className = 'fas fa-chevron-up'
+                        if (label) label.textContent = i18n.get('code_collapse')
+                    }
+                })
+            }
+
+            // 图表/源码切换按钮
+            const btnToggle = container.querySelector('[data-mermaid-toggle]')
+            if (btnToggle && !btnToggle.dataset.bound) {
+                btnToggle.dataset.bound = '1'
+                let showingDiagram = !container.querySelector('.mermaid-block__diagram-wrap')?.hidden
+                btnToggle.addEventListener('click', () => {
+                    showingDiagram = !showingDiagram
+                    const diagramWrap = container.querySelector('.mermaid-block__diagram-wrap')
+                    const sourceWrap = container.querySelector('.mermaid-block__source')
+                    if (diagramWrap) diagramWrap.hidden = !showingDiagram
+                    if (sourceWrap) sourceWrap.hidden = showingDiagram
+                    const icon = btnToggle.querySelector('i')
+                    const label = btnToggle.querySelector('.mermaid-toggle-label')
+                    if (showingDiagram) {
+                        if (icon) icon.className = 'fas fa-code'
+                        if (label) label.textContent = '源码'
+                    } else {
+                        if (icon) icon.className = 'fas fa-image'
+                        if (label) label.textContent = '图表'
+                    }
+                })
+            }
+            return
+        }
+
         const btns = container.querySelectorAll('.codeblock__btn')
         const btnCopy = btns[0]
         const btnToggle = btns[1]

@@ -1184,22 +1184,6 @@ const setChapterBodyRef = (el) => {
   --series-text: #2b3440;
 }
 
-:deep(.slideshow)::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    linear-gradient(135deg,
-      rgba(255, 255, 255, 0.2) 0%,
-      rgba(255, 182, 201, 0.12) 32%,
-      rgba(154, 215, 255, 0.14) 64%,
-      rgba(167, 243, 208, 0.12) 100%);
-  backdrop-filter: blur(14px) saturate(1.08);
-  -webkit-backdrop-filter: blur(14px) saturate(1.08);
-}
-
 .series-card {
   border: 3px solid transparent;
   background:

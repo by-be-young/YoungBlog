@@ -39,6 +39,20 @@ body {
     background-color: #f8f9fa;
 }
 
+/* ========== 2.1 粘性页脚布局 ==========
+   页面内容不足一屏时，页脚仍固定在视口底部，
+   保证各页面页脚高度一致 */
+#app {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-main {
+    flex: 1 0 auto;
+}
+
 ::selection {
     background: var(--selection-bg-color);
     color: var(--selection-text-color);
@@ -432,27 +446,22 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 /* ==================================================
-   归档/分类/链接/系列页：毛玻璃效果
+   归档/分类/链接页：毛玻璃效果
+   （由 App.vue 根据路由给 .slideshow 绑定 .is-frosted）
    ================================================== */
-.archive-page .slideshow,
-.categories-page .slideshow,
-.quick-links-page .slideshow {
+.slideshow.is-frosted {
     overflow: hidden;
     isolation: isolate;
 }
 
-.archive-page .slide,
-.categories-page .slide,
-.quick-links-page .slide {
+.slideshow.is-frosted .slide {
     filter: blur(12px) saturate(1.08) brightness(0.9);
     transform: scale(1.08);
     transform-origin: center;
     z-index: 1;
 }
 
-.archive-page .slideshow::after,
-.categories-page .slideshow::after,
-.quick-links-page .slideshow::after {
+.slideshow.is-frosted::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -464,6 +473,26 @@ body::-webkit-scrollbar-thumb:hover {
         linear-gradient(120deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.16));
     backdrop-filter: blur(3px) saturate(1.05);
     -webkit-backdrop-filter: blur(3px) saturate(1.05);
+}
+
+/* ==================================================
+   系列页：强毛玻璃蒙版
+   （由 App.vue 根据路由给 .slideshow 绑定 .is-series）
+   ================================================== */
+.slideshow.is-series::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 182, 201, 0.12) 32%,
+            rgba(154, 215, 255, 0.14) 64%,
+            rgba(167, 243, 208, 0.12) 100%);
+    backdrop-filter: blur(14px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
 }
 
 /* ==================================================
@@ -540,4 +569,257 @@ body::-webkit-scrollbar-thumb:hover {
     .series-page .slideshow .fireflies-overlay {
         display: none;
     }
+}
+
+/* ==================================================
+   图片查看器（image-viewer-overlay）
+   ================================================== */
+.image-viewer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.86);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+}
+
+.image-viewer-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.image-viewer-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 40px 60px;
+}
+
+.image-viewer-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.2s ease;
+}
+
+.image-viewer-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.image-viewer-nav:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.image-viewer-nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+    transform: translateY(-50%) scale(1);
+}
+
+.image-viewer-prev {
+    left: 16px;
+}
+
+.image-viewer-next {
+    right: 16px;
+}
+
+.image-viewer-toolbar {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.image-viewer-counter {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.92rem;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+}
+
+.image-viewer-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.18s ease;
+}
+
+.image-viewer-tool:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.image-viewer-tool-label {
+    font-size: 0.85rem;
+}
+
+.image-viewer-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.image-viewer-close:hover {
+    background: rgba(255, 80, 80, 0.5);
+    transform: scale(1.1);
+}
+
+body.image-viewer-open {
+    overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .image-viewer-stage {
+        padding: 16px;
+    }
+    .image-viewer-toolbar {
+        top: 12px;
+        padding: 6px 10px;
+        gap: 6px;
+    }
+    .image-viewer-tool .image-viewer-tool-label {
+        display: none;
+    }
+    .image-viewer-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+    }
+    .image-viewer-prev {
+        left: 8px;
+    }
+    .image-viewer-next {
+        right: 8px;
+    }
+}
+
+/* ==================================================
+   Mermaid 全屏查看器
+   ================================================== */
+.mermaid-viewer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+}
+
+.mermaid-viewer-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mermaid-viewer-stage {
+    position: relative;
+    width: 90%;
+    height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+}
+
+.mermaid-viewer-toolbar {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+}
+
+.mermaid-viewer-close {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease;
+}
+
+.mermaid-viewer-close:hover {
+    background: rgba(255, 80, 80, 0.5);
+}
+
+.mermaid-viewer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.mermaid-viewer-content svg {
+    display: block;
+}
+
+body.mermaid-viewer-open {
+    overflow: hidden;
 }
