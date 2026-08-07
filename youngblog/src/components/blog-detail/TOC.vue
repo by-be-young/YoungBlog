@@ -836,6 +836,12 @@ onUnmounted(() => {
     display: none;
 }
 
+/* H3 子列表由 v-if（activeH2 匹配）控制渲染，渲染即显示；
+   H1 子列表由 animateSubList() 通过内联样式控制显示 */
+.toc-h3-sub-list {
+    display: block;
+}
+
 /* ==================== 展开/折叠按钮 ==================== */
 .toc-toggle {
     cursor: pointer;
