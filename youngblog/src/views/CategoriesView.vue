@@ -560,9 +560,11 @@ const handleBackdropClick = (event) => {
   }
 }
 
-const recalculateWheels = () => {
+const recalculateWheels = (opts = {}) => {
   const wheels = document.querySelectorAll('.categories-wheel')
   wheels.forEach((wheel) => {
+    // 滚轮正处于程序化吸附滚动中时跳过，避免打断平滑动画（用于响应式视觉同步）
+    if (opts.skipAnimating && Date.now() < (programmaticUntil.value.get(wheel) || 0)) return
     adjustWheelPadding(wheel)
     const items = Array.from(wheel.querySelectorAll('.wheel-item'))
     if (!items.length) return
@@ -681,11 +683,8 @@ onMounted(() => {
   nextTick(() => {
     // 需要等 DOM 渲染完成
     setTimeout(() => {
-      const wheels = document.querySelectorAll('.categories-wheel')
-      wheels.forEach((wheel) => {
-        adjustWheelPadding(wheel)
-        applyWheelVisuals(wheel)
-      })
+      // 让滚轮对齐当前选中项（从 URL 带 tags 进入时居中显示所选标签，而非停留在“全部”）
+      recalculateWheels()
       updateFilterBackground()
       updateSidebarSticky()
       adjustTagsVisibility()
@@ -725,6 +724,18 @@ watch(filteredBlogs, () => {
     adjustTagsVisibility()
   })
 }, { deep: true })
+
+// ==================== 滚轮视觉与选中项同步 ====================
+
+// 标签选择变化（URL 进入、列表标签点击、滚轮吸附）后，滚轮滚动到选中项居中显示
+watch(selectedTags, () => {
+  nextTick(() => recalculateWheels({ skipAnimating: true }))
+})
+
+// 标签树变化（博客数据异步加载完成、类型筛选切换）后重新对齐滚轮
+watch(tagTree, () => {
+  nextTick(() => recalculateWheels({ skipAnimating: true }))
+})
 
 // 监听语言变化
 watch(() => t('label_domain'), () => {

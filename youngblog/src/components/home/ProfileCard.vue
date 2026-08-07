@@ -124,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
@@ -196,11 +196,11 @@ const showToast = (msg) => {
   }, 1800)
 }
 
-onMounted(() => {
-  if (blogStore.blogs.length) {
-    calculateWordCount()
-  }
-})
+// 博客数据加载完成后计算总字数
+// （卡片挂载时博客列表可能尚未从异步 fetchBlogs 加载完成，需监听到达后再计算）
+watch(() => blogStore.blogs.length, (len) => {
+  if (len > 0) calculateWordCount()
+}, { immediate: true })
 </script>
 
 <style scoped>

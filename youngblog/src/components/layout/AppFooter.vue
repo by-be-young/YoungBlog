@@ -23,18 +23,18 @@
     <div class="footer-stats footer-stats-right" aria-hidden="true">
       <span class="footer-stat-item" id="busuanzi_container_site_uv">
         <span>{{ i18n.currentTranslations.footer_site_visitors }}</span>
-        <span class="footer-stat-number" id="busuanzi_site_uv">0</span>
+        <span class="footer-stat-number" id="busuanzi_value_site_uv">0</span>
       </span>
       <span class="footer-stat-item" id="busuanzi_container_site_pv">
         <span>{{ i18n.currentTranslations.footer_site_views }}</span>
-        <span class="footer-stat-number" id="busuanzi_site_pv">0</span>
+        <span class="footer-stat-number" id="busuanzi_value_site_pv">0</span>
       </span>
     </div>
   </footer>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
 import { resolveUrl } from '@/utils/url'
@@ -74,8 +74,8 @@ watch(() => blogStore.blogs.length, (len) => {
 
 // 等待不蒜子加载完成后输出数据到控制台
 const logBusuanzi = () => {
-  const uvEl = document.getElementById('busuanzi_site_uv')
-  const pvEl = document.getElementById('busuanzi_site_pv')
+  const uvEl = document.getElementById('busuanzi_value_site_uv')
+  const pvEl = document.getElementById('busuanzi_value_site_pv')
   if (uvEl && pvEl && uvEl.textContent !== '0' && pvEl.textContent !== '0') {
     console.log('[不蒜子] 访客数 (UV):', uvEl.textContent)
     console.log('[不蒜子] 访问量 (PV):', pvEl.textContent)
@@ -84,6 +84,21 @@ const logBusuanzi = () => {
   }
 }
 setTimeout(logBusuanzi, 2000)
+
+// SPA 时序兜底：不蒜子脚本在页面加载早期扫描 DOM，
+// 此时页脚可能尚未渲染导致统计写入失败；若挂载后仍为 0，则重新执行一次脚本。
+// 仅当尚未写入数据时重试，避免重复请求影响计数。
+const ensureBusuanzi = () => {
+  const uvEl = document.getElementById('busuanzi_value_site_uv')
+  const pvEl = document.getElementById('busuanzi_value_site_pv')
+  if (!uvEl || !pvEl) return
+  if (uvEl.textContent !== '0' && pvEl.textContent !== '0') return
+  const s = document.createElement('script')
+  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'
+  s.async = true
+  document.body.appendChild(s)
+}
+onMounted(() => setTimeout(ensureBusuanzi, 3000))
 </script>
 
 <style scoped>
