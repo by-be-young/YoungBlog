@@ -51,9 +51,9 @@ import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
 import { resolveUrl } from '@/utils/url'
 import ProfileCard from '@/components/home/ProfileCard.vue'
-import BlogCard from '@/components/home/ArticleCard.vue'
+import BlogCard from '@/components/home/BlogCard.vue'
 import RecentUpdatesCard from '@/components/home/RecentUpdatesCard.vue'
-import BlogPlaceholder from '@/components/home/ArticlePlaceholder.vue'
+import BlogPlaceholder from '@/components/home/BlogPlaceholder.vue'
 
 const welcomeBgImg = `url(${resolveUrl('/assets/images/welcome.png')})`
 

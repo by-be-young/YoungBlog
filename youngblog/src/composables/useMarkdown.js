@@ -5,7 +5,7 @@
  *       数学公式（KaTeX）、内部引用 [[#标题]]、资源URL重写、列表颜色、引用块样式
  *
  * 注：marked 和 highlight.js 在 renderMarkdown 中按需动态导入，
- *     避免 ArticleContent 仅使用 annotateTaskLabels 时打包这两个大库。
+ *     避免 BlogContent 仅使用 annotateTaskLabels 时打包这两个大库。
  */
 import { useI18nStore } from '@/stores/i18nStore'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -611,7 +611,7 @@ export function useMarkdown() {
             .forEach(block => hljs.highlightElement(block))
 
         // 8. 所有后处理（代码块增强、Mermaid、图片查看器、答案交互、任务标签等）
-        //    由 ArticleContent 在真实 DOM 上统一处理，避免事件监听在序列化中丢失
+        //    由 BlogContent 在真实 DOM 上统一处理，避免事件监听在序列化中丢失
 
         // 9. 列表标记颜色
         applyRandomMacaronListMarkerColors(container)

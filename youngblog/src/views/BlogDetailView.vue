@@ -75,7 +75,7 @@
           - 接收已通过 Markdown 渲染为 HTML 的字符串
           - 组件内部负责安全渲染（如 v-html）及代码高亮等
         -->
-        <ArticleContent :html="renderedHtml" />
+        <BlogContent :html="renderedHtml" />
 
         <!--
           版权声明组件
@@ -140,7 +140,7 @@ import { resolveUrl } from '@/utils/url'
 
 // ==================== 组件导入 ====================
 import TOC from '@/components/blog-detail/TOC.vue'
-import ArticleContent from '@/components/blog-detail/ArticleContent.vue'
+import BlogContent from '@/components/blog-detail/BlogContent.vue'
 import LicenseNotice from '@/components/common/LicenseNotice.vue'
 import PostNav from '@/components/blog-detail/PostNav.vue'
 import FloatingControls from '@/components/blog-detail/FloatingControls.vue'

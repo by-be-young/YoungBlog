@@ -73,7 +73,7 @@
           <header class="article-header">
             <h1 class="article-title">About</h1>
           </header>
-          <ArticleContent :html="renderedHtml" />
+          <BlogContent :html="renderedHtml" />
         </article>
       </div>
     </div>
@@ -85,7 +85,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
 import { useMarkdown } from '@/composables/useMarkdown'
-import ArticleContent from '@/components/blog-detail/ArticleContent.vue'
+import BlogContent from '@/components/blog-detail/BlogContent.vue'
 import { resolveUrl } from '@/utils/url'
 
 const i18n = useI18nStore()
@@ -457,7 +457,7 @@ window.addEventListener('site:languageChanged', loadAbout)
   filter: drop-shadow(0 6px 12px rgba(0, 172, 255, 0.12));
 }
 
-/* -- 文章内容排版由 ArticleContent 组件提供 -- */
+/* -- 文章内容排版由 BlogContent 组件提供 -- */
 
 /* ============================================================
    响应式适配

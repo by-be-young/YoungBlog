@@ -34,7 +34,7 @@ const { apply: applySettings } = useSettings()
 // 监听语言变化，立即重新翻译文章内的 data-i18n 元素
 watch(() => i18n.lang, () => {
   if (contentEl.value) {
-    try { applyI18n(contentEl.value) } catch (e) { console.warn('[ArticleContent] applyI18n:', e) }
+    try { applyI18n(contentEl.value) } catch (e) { console.warn('[BlogContent] applyI18n:', e) }
   }
 })
 
@@ -42,7 +42,7 @@ watch(() => i18n.lang, () => {
 const settingsStore = useSettingsStore()
 watch(() => [settingsStore.exerciseMode, settingsStore.codeMode], () => {
   if (contentEl.value) {
-    try { applySettings(contentEl.value) } catch (e) { console.warn('[ArticleContent] applySettings:', e) }
+    try { applySettings(contentEl.value) } catch (e) { console.warn('[BlogContent] applySettings:', e) }
   }
 })
 const { annotateTaskLabels } = useMarkdown()
@@ -67,13 +67,13 @@ watch(() => props.html, async (newHtml) => {
   const el = contentEl.value
 
   // 后处理（各自 try-catch 防止一个失败阻塞后续）
-  try { applyI18n(el) } catch (e) { console.warn('[ArticleContent] applyI18n:', e) }
-  try { enhanceCodeBlocks(el) } catch (e) { console.warn('[ArticleContent] enhanceCodeBlocks:', e) }
-  try { renderMermaid(el) } catch (e) { console.warn('[ArticleContent] renderMermaid:', e) }
-  try { initImageViewer(el) } catch (e) { console.warn('[ArticleContent] initImageViewer:', e) }
-  try { bindAnswers(el) } catch (e) { console.warn('[ArticleContent] bindAnswers:', e) }
-  try { annotateTaskLabels(el) } catch (e) { console.warn('[ArticleContent] annotateTaskLabels:', e) }
-  try { applySettings(el) } catch (e) { console.warn('[ArticleContent] applySettings:', e) }
+  try { applyI18n(el) } catch (e) { console.warn('[BlogContent] applyI18n:', e) }
+  try { enhanceCodeBlocks(el) } catch (e) { console.warn('[BlogContent] enhanceCodeBlocks:', e) }
+  try { await renderMermaid(el) } catch (e) { console.warn('[BlogContent] renderMermaid:', e) }
+  try { initImageViewer(el) } catch (e) { console.warn('[BlogContent] initImageViewer:', e) }
+  try { bindAnswers(el) } catch (e) { console.warn('[BlogContent] bindAnswers:', e) }
+  try { annotateTaskLabels(el) } catch (e) { console.warn('[BlogContent] annotateTaskLabels:', e) }
+  try { applySettings(el) } catch (e) { console.warn('[BlogContent] applySettings:', e) }
 }, { immediate: true, flush: 'post' })
 </script>
 
@@ -601,6 +601,7 @@ watch(() => props.html, async (newHtml) => {
   max-width: 100%;
   height: auto;
   margin: 0 auto;
+  cursor: zoom-in;
 }
 @media (max-width: 720px) {
   .article-content :deep(.mermaid-block__diagram-wrap),
