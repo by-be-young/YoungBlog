@@ -39,7 +39,7 @@ jobs:
         run: npm ci
 
       - name: 构建项目
-        run: npm run build
+        run: npm run build:github
 
       - name: 上传构建产物
         uses: actions/upload-pages-artifact@v3

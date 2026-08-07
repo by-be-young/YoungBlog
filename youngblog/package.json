@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate.js && vite build && node scripts/postbuild.js",
+    "build:github": "node scripts/generate.js && vite build --mode github && node scripts/postbuild.js",
     "preview": "vite preview",
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
