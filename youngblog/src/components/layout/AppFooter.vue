@@ -21,13 +21,9 @@
 
     <!-- 右侧统计 -->
     <div class="footer-stats footer-stats-right" aria-hidden="true">
-      <span class="footer-stat-item" id="busuanzi_container_site_uv">
-        <span>{{ i18n.currentTranslations.footer_site_visitors }}</span>
-        <span class="footer-stat-number" id="busuanzi_value_site_uv">0</span>
-      </span>
-      <span class="footer-stat-item" id="busuanzi_container_site_pv">
+      <span class="footer-stat-item" v-if="pv">
         <span>{{ i18n.currentTranslations.footer_site_views }}</span>
-        <span class="footer-stat-number" id="busuanzi_value_site_pv">0</span>
+        <span class="footer-stat-number">{{ pv }}</span>
       </span>
     </div>
   </footer>
@@ -72,33 +68,21 @@ watch(() => blogStore.blogs.length, (len) => {
   if (len > 0) calculateWordCount()
 })
 
-// 等待不蒜子加载完成后输出数据到控制台
-const logBusuanzi = () => {
-  const uvEl = document.getElementById('busuanzi_value_site_uv')
-  const pvEl = document.getElementById('busuanzi_value_site_pv')
-  if (uvEl && pvEl && uvEl.textContent !== '0' && pvEl.textContent !== '0') {
-    console.log('[不蒜子] 访客数 (UV):', uvEl.textContent)
-    console.log('[不蒜子] 访问量 (PV):', pvEl.textContent)
-  } else {
-    setTimeout(logBusuanzi, 1000)
+// 访问量统计：读取服务器 nginx 日志生成的 stats.json（服务器每 5 分钟自动更新）。
+// 没有该文件（如 GitHub Pages 部署）时静默隐藏，不影响其他功能。
+const pv = ref('')
+onMounted(async () => {
+  try {
+    const res = await fetch(resolveUrl('stats.json'), { cache: 'no-store' })
+    if (!res.ok) return
+    const data = await res.json()
+    if (data && typeof data.site_pv === 'number') {
+      pv.value = data.site_pv.toLocaleString('zh-CN')
+    }
+  } catch {
+    // 静默失败
   }
-}
-setTimeout(logBusuanzi, 2000)
-
-// SPA 时序兜底：不蒜子脚本在页面加载早期扫描 DOM，
-// 此时页脚可能尚未渲染导致统计写入失败；若挂载后仍为 0，则重新执行一次脚本。
-// 仅当尚未写入数据时重试，避免重复请求影响计数。
-const ensureBusuanzi = () => {
-  const uvEl = document.getElementById('busuanzi_value_site_uv')
-  const pvEl = document.getElementById('busuanzi_value_site_pv')
-  if (!uvEl || !pvEl) return
-  if (uvEl.textContent !== '0' && pvEl.textContent !== '0') return
-  const s = document.createElement('script')
-  s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'
-  s.async = true
-  document.body.appendChild(s)
-}
-onMounted(() => setTimeout(ensureBusuanzi, 3000))
+})
 </script>
 
 <style scoped>
