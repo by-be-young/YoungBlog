@@ -192,6 +192,190 @@
         ]
     },
     {
+        "id": 3574538254,
+        "title": "编译原理",
+        "coverImage": "assets/images/background/bg2.png",
+        "count": 22,
+        "posts": [
+            {
+                "id": 2180658354,
+                "title": "编译概论",
+                "date": "2026-09-08",
+                "order": 1,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/概论/编译概论.md"
+            },
+            {
+                "id": 4134605594,
+                "title": "文法和语言",
+                "date": "2026-09-08",
+                "order": 2,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/文法/文法和语言.md"
+            },
+            {
+                "id": 1236463434,
+                "title": "第04讲 词法分析",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/词法分析/第04讲-词法分析.md"
+            },
+            {
+                "id": 3017849947,
+                "title": "第05讲 词法分析",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/词法分析/第05讲-词法分析.md"
+            },
+            {
+                "id": 2725175255,
+                "title": "第15讲 代码优化",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/代码生成与优化/第15讲-代码优化.md"
+            },
+            {
+                "id": 2731968104,
+                "title": "第16讲 代码优化",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/代码生成与优化/第16讲-代码优化.md"
+            },
+            {
+                "id": 4256443841,
+                "title": "第17讲 代码优化",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/代码生成与优化/第17讲-代码优化.md"
+            },
+            {
+                "id": 296550023,
+                "title": "第18讲 目标代码优化",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/代码生成与优化/第18讲-目标代码优化.md"
+            },
+            {
+                "id": 3247705201,
+                "title": "第19讲 目标代码生成",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/代码生成与优化/第19讲-目标代码生成.md"
+            },
+            {
+                "id": 2620711677,
+                "title": "参考资料 SysY语言定义简介",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/工具与总结/参考资料-SysY语言定义简介.md"
+            },
+            {
+                "id": 3638018901,
+                "title": "第14讲 习题课",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/工具与总结/第14讲-习题课.md"
+            },
+            {
+                "id": 1955353859,
+                "title": "第23讲 编译生成方法与工具",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/工具与总结/第23讲-编译生成方法与工具.md"
+            },
+            {
+                "id": 2536514388,
+                "title": "第06讲 语法分析",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语法分析/第06讲-语法分析.md"
+            },
+            {
+                "id": 1040867593,
+                "title": "第20讲 算符优先分析",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语法分析/第20讲-算符优先分析.md"
+            },
+            {
+                "id": 1168164597,
+                "title": "第21讲 LR0分析",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语法分析/第21讲-LR0分析.md"
+            },
+            {
+                "id": 2465951072,
+                "title": "第22讲 LR1和SLR分析",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语法分析/第22讲-LR1和SLR分析.md"
+            },
+            {
+                "id": 1676033913,
+                "title": "第08讲 语义分析",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语义分析与中间代码/第08讲-语义分析.md"
+            },
+            {
+                "id": 2545759087,
+                "title": "第10讲 源程序中间表示",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语义分析与中间代码/第10讲-源程序中间表示.md"
+            },
+            {
+                "id": 1875333451,
+                "title": "第11讲 语法制导翻译",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语义分析与中间代码/第11讲-语法制导翻译.md"
+            },
+            {
+                "id": 679290538,
+                "title": "第12讲 中间代码生成",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语义分析与中间代码/第12讲-中间代码生成.md"
+            },
+            {
+                "id": 3335727270,
+                "title": "第13讲 语义分析与代码生成",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/语义分析与中间代码/第13讲-语义分析与代码生成.md"
+            },
+            {
+                "id": 518191886,
+                "title": "第09讲 运行时存储组织及管理",
+                "date": "2026-09-08",
+                "order": null,
+                "chapter": null,
+                "contentFile": "blogs/三上/编译/运行时存储管理/第09讲-运行时存储组织及管理.md"
+            }
+        ]
+    },
+    {
         "id": 759974573,
         "title": "数据库",
         "coverImage": "assets/images/background/bg2.png",
