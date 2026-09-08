@@ -1,5 +1,442 @@
 [
     {
+        "id": 1002208663,
+        "title": "第04讲 词法分析",
+        "excerpt": "词法分析将字符流切分为单词流并输出类别与值二元组，单词规则用正则文法描述，自动机是其核心实现模型。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "词法分析"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/词法分析/第04讲-词法分析.md",
+        "recommended": false
+    },
+    {
+        "id": 2668855270,
+        "title": "第05讲 词法分析",
+        "excerpt": "DFA与NFA功能等价，通过ε-闭包子集法可将NFA确定化为DFA，正则表达式正则文法与有穷自动机三者描述能力等价。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "词法分析"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/词法分析/第05讲-词法分析.md",
+        "recommended": false
+    },
+    {
+        "id": 3961351156,
+        "title": "第15讲 代码优化",
+        "excerpt": "代码优化是编译程序为生成高质量目标程序而做的各种加工处理，以不改变程序语义为前提，按与机器关系和作用范围分类。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "代码生成与优化"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/代码生成与优化/第15讲-代码优化.md",
+        "recommended": false
+    },
+    {
+        "id": 3204480355,
+        "title": "第16讲 代码优化",
+        "excerpt": "局部优化在基本块内进行，核心是数据流分析，可用表达式分析支撑公共子表达式删除，活跃变量分析支撑死代码删除。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "代码生成与优化"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/代码生成与优化/第16讲-代码优化.md",
+        "recommended": false
+    },
+    {
+        "id": 4003767938,
+        "title": "第17讲 代码优化",
+        "excerpt": "全局优化在函数内跨越基本块进行，依赖全局数据流分析，寄存器分配可归结为冲突图的图着色问题。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "代码生成与优化"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/代码生成与优化/第17讲-代码优化.md",
+        "recommended": false
+    },
+    {
+        "id": 547895944,
+        "title": "第18讲 目标代码优化",
+        "excerpt": "目标代码生成面向特定体系结构，需充分利用指令集、存储器层次和寄存器资源，代码生成器承担地址分配、指令选择和架构优化三大任务。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "代码生成与优化"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/代码生成与优化/第18讲-目标代码优化.md",
+        "recommended": false
+    },
+    {
+        "id": 3417204746,
+        "title": "第19讲 目标代码生成",
+        "excerpt": "目标代码生成的核心是运行时栈的管理，包括栈帧布局、参数传递、寄存器保存与恢复以及返回地址管理。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "代码生成与优化"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/代码生成与优化/第19讲-目标代码生成.md",
+        "recommended": false
+    },
+    {
+        "id": 2427184452,
+        "title": "第01讲 概论",
+        "excerpt": "编译器将高级语言源程序等价翻译为目标程序，历经词法语法语义优化和代码生成五个阶段。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "概论与文法"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/概论与文法/第01讲-概论.md",
+        "recommended": false
+    },
+    {
+        "id": 2140399688,
+        "title": "第02讲 文法和语言",
+        "excerpt": "文法以四元组形式化定义语言结构，推导从开始符号出发不断用产生式右部替换左部直至得到全终结符句子。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "概论与文法"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/概论与文法/第02讲-文法和语言.md",
+        "recommended": false
+    },
+    {
+        "id": 1669580571,
+        "title": "第03讲 文法和语言",
+        "excerpt": "句柄是句型的最左简单短语，规范归约每次归约句柄，文法二义性表现为句柄不唯一且不可判定，可通过分层定义优先级消除。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "概论与文法"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/概论与文法/第03讲-文法和语言.md",
+        "recommended": false
+    },
+    {
+        "id": 3046597686,
+        "title": "参考资料 SysY语言定义简介",
+        "excerpt": "SysY是C语言的教学用子集，2022版新增float类型，核心类型为int和float，支持多维数组和隐式类型转换。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "工具与总结"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/工具与总结/参考资料-SysY语言定义简介.md",
+        "recommended": false
+    },
+    {
+        "id": 1308686160,
+        "title": "第14讲 习题课",
+        "excerpt": "错误处理是编译器的必备功能，分为语法错误和语义错误两类，错误局部化是主流的恢复策略。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "工具与总结"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/工具与总结/第14讲-习题课.md",
+        "recommended": false
+    },
+    {
+        "id": 1975649058,
+        "title": "第23讲 编译生成方法与工具",
+        "excerpt": "编译器的构建方法包括自编译、自展、交叉编译和移植，LEX与YACC可自动生成词法和语法分析器。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "工具与总结"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/工具与总结/第23讲-编译生成方法与工具.md",
+        "recommended": false
+    },
+    {
+        "id": 2415282313,
+        "title": "第06讲 语法分析",
+        "excerpt": "语法分析基于上下文无关文法识别单词串的语法结构，分为自顶向下推导和自底向上归约两大类，左递归与二义性是主要障碍。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语法分析"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语法分析/第06讲-语法分析.md",
+        "recommended": false
+    },
+    {
+        "id": 3590275564,
+        "title": "第20讲 算符优先分析",
+        "excerpt": "算符优先分析通过比较相邻终结符的优先关系定位最左素短语并归约，利用FIRSTVT和LASTVT构造优先矩阵，是简单高效的自底向上方法。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语法分析"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语法分析/第20讲-算符优先分析.md",
+        "recommended": false
+    },
+    {
+        "id": 756203898,
+        "title": "第21讲 LR0分析",
+        "excerpt": "LR(0)用项目集状态记录分析历史，通过闭包和GO函数构造项目集规范族，再生成ACTION和GOTO表驱动移进归约，是无需向前看符号的规范归约方法。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语法分析"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语法分析/第21讲-LR0分析.md",
+        "recommended": false
+    },
+    {
+        "id": 986124515,
+        "title": "第22讲 LR1和SLR分析",
+        "excerpt": "LR(0)因不看右侧上下文易生冲突，SLR(1)用FOLLOW集限定归约时机且不增状态，LR(1)为每个项目附加精确向前看符号，能力最强但状态最多。",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语法分析"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语法分析/第22讲-LR1和SLR分析.md",
+        "recommended": false
+    },
+    {
+        "id": 2649931998,
+        "title": "第08讲 语义分析",
+        "excerpt": "语义分析负责作用域管理与类型检查，符号表是实现这两者的核心数据结构",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语义分析与中间代码"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语义分析与中间代码/第08讲-语义分析.md",
+        "recommended": false
+    },
+    {
+        "id": 1990592958,
+        "title": "第10讲 源程序中间表示",
+        "excerpt": "中间表示是编译器前后端的桥梁，从波兰表示到四元式再到AST逐步降低抽象层次",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语义分析与中间代码"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语义分析与中间代码/第10讲-源程序中间表示.md",
+        "recommended": false
+    },
+    {
+        "id": 489182200,
+        "title": "第11讲 语法制导翻译",
+        "excerpt": "语法制导翻译通过在文法中嵌入动作符号和属性，驱动语义分析与中间代码生成",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语义分析与中间代码"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语义分析与中间代码/第11讲-语法制导翻译.md",
+        "recommended": false
+    },
+    {
+        "id": 786797201,
+        "title": "第12讲 中间代码生成",
+        "excerpt": "声明处理围绕符号表填表与存储分配，覆盖变量、数组模板和过程形参登记",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语义分析与中间代码"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语义分析与中间代码/第12讲-中间代码生成.md",
+        "recommended": false
+    },
+    {
+        "id": 1574882063,
+        "title": "第13讲 语义分析与代码生成",
+        "excerpt": "语句级代码生成为表达式、控制流和过程调用设计语义动作，完成类型检查与指令输出",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "语义分析与中间代码"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/语义分析与中间代码/第13讲-语义分析与代码生成.md",
+        "recommended": false
+    },
+    {
+        "id": 345917753,
+        "title": "第09讲 运行时存储组织及管理",
+        "excerpt": "运行时存储以栈式动态分配为核心，通过活动记录和display表管理嵌套作用域寻址",
+        "date": "2026-09-08",
+        "image": "assets/images/blog_bg.png",
+        "tags": [
+            "大三",
+            "编译",
+            "运行时存储管理"
+        ],
+        "category": "学习",
+        "type": "概念笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/大三/编译/运行时存储管理/第09讲-运行时存储组织及管理.md",
+        "recommended": false
+    },
+    {
         "id": 3296026673,
         "title": "二上考试情况总结",
         "excerpt": "大二下学期各门较为重要的课程的考试情况，包括范围、注意事项以及本届的难度等",

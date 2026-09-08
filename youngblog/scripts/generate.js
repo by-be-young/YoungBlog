@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises';
+﻿import fs from 'node:fs/promises';
 import path from 'node:path';
 import matter from 'gray-matter';
 
@@ -12,7 +12,7 @@ const ANNOUNCEMENTS_JSON = path.join(ROOT, 'public', 'data', 'announcements.json
 const BACKGROUND_JSON = path.join(ROOT, 'public', 'data', 'background-images.json');
 
 // 学习分类的标签前缀集合，用于判断文章是否属于"学习"类别
-const LEARNING_FIRST_TAGS = new Set(['二上', '二下', '三上', '三下', '四上', '四下']);
+const LEARNING_FIRST_TAGS = new Set(['二上', '二下', '三上', '三下', '四上', '四下', '大三']);
 
 // 首页分类常量：学习与娱乐
 const HOME_CATEGORY = {
