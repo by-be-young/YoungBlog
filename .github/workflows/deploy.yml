@@ -38,8 +38,12 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
+      # 注意：这里必须用 npm run build（base 为 /），不能用 build:github（base 为 /YoungBlog/）。
+      # 站点挂了自定义域名后，GitHub Pages 会把项目站发布在【根路径】，
+      # /YoungBlog/ 这个前缀根本不存在 —— 用它构建出来的 index.html 会指向
+      # /YoungBlog/assets/*.js，结果整站资源全 404（白屏）。
       - name: 构建项目
-        run: npm run build:github
+        run: npm run build
 
       - name: 上传构建产物
         uses: actions/upload-pages-artifact@v3
