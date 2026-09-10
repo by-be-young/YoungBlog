@@ -195,7 +195,7 @@
         "id": 3574538254,
         "title": "编译原理",
         "coverImage": "assets/images/background/bg2.png",
-        "count": 22,
+        "count": 21,
         "posts": [
             {
                 "id": 2180658354,
@@ -206,28 +206,20 @@
                 "contentFile": "blogs/三上/编译/概论/编译概论.md"
             },
             {
-                "id": 4134605594,
+                "id": 1581920128,
                 "title": "文法和语言",
                 "date": "2026-09-08",
                 "order": 2,
                 "chapter": null,
-                "contentFile": "blogs/三上/编译/文法/文法和语言.md"
+                "contentFile": "blogs/三上/编译/文法与词法/文法和语言.md"
             },
             {
-                "id": 1236463434,
-                "title": "第04讲 词法分析",
-                "date": "2026-09-08",
-                "order": null,
+                "id": 953349015,
+                "title": "词法分析",
+                "date": "2026-09-09",
+                "order": 3,
                 "chapter": null,
-                "contentFile": "blogs/三上/编译/词法分析/第04讲-词法分析.md"
-            },
-            {
-                "id": 3017849947,
-                "title": "第05讲 词法分析",
-                "date": "2026-09-08",
-                "order": null,
-                "chapter": null,
-                "contentFile": "blogs/三上/编译/词法分析/第05讲-词法分析.md"
+                "contentFile": "blogs/三上/编译/文法与词法/词法分析.md"
             },
             {
                 "id": 2725175255,
@@ -604,6 +596,22 @@
                 "order": null,
                 "chapter": null,
                 "contentFile": "blogs/二上/计组/存储系统/Cache.md"
+            }
+        ]
+    },
+    {
+        "id": 2354014474,
+        "title": "形式语言与自动机理论",
+        "coverImage": "assets/images/background/bg2.png",
+        "count": 1,
+        "posts": [
+            {
+                "id": 4196763013,
+                "title": "形式语言与自动机概论",
+                "date": "2026-09-10",
+                "order": 1,
+                "chapter": null,
+                "contentFile": "blogs/三上/形式语言与自动机/形式语言与自动机概论.md"
             }
         ]
     }
