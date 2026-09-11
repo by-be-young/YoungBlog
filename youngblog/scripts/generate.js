@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import matter from 'gray-matter';
 
@@ -471,7 +471,7 @@ async function main() {
             title,
             excerpt,
             date,
-            image: 'assets/images/blog_bg.png',
+            image: 'assets/images/blog_bg.webp',
             tags,
             category,
             type,
@@ -517,7 +517,7 @@ async function main() {
             return {
                 id: stableIdFromString(`series:${name}`),
                 title: name,
-                coverImage: 'assets/images/background/bg2.png',
+                coverImage: 'assets/images/background/bg2.webp',
                 count: sortedPosts.length,
                 posts: sortedPosts.map(post => ({
                     id: post.id,

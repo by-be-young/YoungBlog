@@ -151,7 +151,7 @@ import DisplayModal from '@/components/blog-detail/DisplayModal.vue'
  * 详情页背景图片 URL
  * - 使用 resolveUrl 处理资源路径，确保在不同部署环境下正确加载
  */
-const detailBgImg = `url(${resolveUrl('/assets/detail_bg.png')})`
+const detailBgImg = `url(${resolveUrl('/assets/detail_bg.webp')})`
 
 // ==================== 路由与状态管理 ====================
 const route = useRoute()           // 当前路由对象，用于获取文章 ID

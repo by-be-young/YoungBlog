@@ -181,7 +181,7 @@ export function useSeries() {
             if (!map.has(seriesName)) {
                 map.set(seriesName, {
                     title: seriesName,
-                    coverImage: 'assets/images/series.png',
+                    coverImage: 'assets/images/series.webp',
                     posts: [],
                 })
             }

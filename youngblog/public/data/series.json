@@ -2,7 +2,7 @@
     {
         "id": 2569373497,
         "title": "操作系统",
-        "coverImage": "assets/images/background/bg2.png",
+        "coverImage": "assets/images/background/bg2.webp",
         "count": 23,
         "posts": [
             {
@@ -194,7 +194,7 @@
     {
         "id": 3574538254,
         "title": "编译原理",
-        "coverImage": "assets/images/background/bg2.png",
+        "coverImage": "assets/images/background/bg2.webp",
         "count": 21,
         "posts": [
             {
@@ -370,7 +370,7 @@
     {
         "id": 759974573,
         "title": "数据库",
-        "coverImage": "assets/images/background/bg2.png",
+        "coverImage": "assets/images/background/bg2.webp",
         "count": 16,
         "posts": [
             {
@@ -506,7 +506,7 @@
     {
         "id": 1704890032,
         "title": "二上总复习",
-        "coverImage": "assets/images/background/bg2.png",
+        "coverImage": "assets/images/background/bg2.webp",
         "count": 5,
         "posts": [
             {
@@ -554,7 +554,7 @@
     {
         "id": 303458327,
         "title": "计组理论",
-        "coverImage": "assets/images/background/bg2.png",
+        "coverImage": "assets/images/background/bg2.webp",
         "count": 5,
         "posts": [
             {
@@ -602,7 +602,7 @@
     {
         "id": 2354014474,
         "title": "形式语言与自动机理论",
-        "coverImage": "assets/images/background/bg2.png",
+        "coverImage": "assets/images/background/bg2.webp",
         "count": 1,
         "posts": [
             {

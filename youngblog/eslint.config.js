@@ -21,6 +21,17 @@ export default defineConfig([
     },
   },
 
+  // 构建/工具脚本运行在 Node 环境（generate、postbuild、图片优化等）
+  {
+    name: 'scripts/node-globals',
+    files: ['scripts/**/*.{js,mjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
 

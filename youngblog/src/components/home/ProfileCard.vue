@@ -5,7 +5,7 @@
     <!-- 头像与姓名 -->
     <div class="profile-header">
       <div class="avatar profile-avatar">
-        <img :src="resolveUrl('/assets/avatar.png')" alt="头像">
+        <img :src="resolveUrl('/assets/avatar.webp')" alt="头像">
       </div>
       <div class="profile-header-info">
         <h2 class="name">{{ i18n.currentTranslations.profile_name }}</h2>
@@ -132,7 +132,7 @@ import { resolveUrl } from '@/utils/url'
 
 const router = useRouter()
 const i18n = useI18nStore()
-const infoBgImg = `url(${resolveUrl('/assets/images/information.jpg')})`
+const infoBgImg = `url(${resolveUrl('/assets/images/information.webp')})`
 
 const blogStore = useBlogStore()
 const wordCount = ref('0.0w')

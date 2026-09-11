@@ -60,7 +60,7 @@ import BlogCard from '@/components/home/BlogCard.vue'
 import RecentUpdatesCard from '@/components/home/RecentUpdatesCard.vue'
 import BlogPlaceholder from '@/components/home/BlogPlaceholder.vue'
 
-const welcomeBgImg = `url(${resolveUrl('/assets/images/welcome.png')})`
+const welcomeBgImg = `url(${resolveUrl('/assets/images/welcome.webp')})`
 
 const i18n = useI18nStore()
 const blogStore = useBlogStore()

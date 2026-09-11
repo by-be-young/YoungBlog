@@ -129,8 +129,8 @@ export function prefersReducedMotion() {
  */
 export const DEFAULT_BACKGROUND_IMAGES = [
   resolveUrl('/assets/images/background/bg1.png'),
-  resolveUrl('/assets/images/background/bg2.png'),
-  resolveUrl('/assets/images/background/bg3.png'),
+  resolveUrl('/assets/images/background/bg2.webp'),
+  resolveUrl('/assets/images/background/bg3.webp'),
 ]
 
 /** 将 background-images.json 的内容解析为图片列表（为空时回退默认图） */
@@ -145,10 +145,10 @@ export function resolveBackgroundImages(data) {
  * 否则大图会出现「只画了最上面一小部分」的渐进式渲染。
  */
 const HOME_IMAGE_PATHS = [
-  '/assets/images/welcome.png', // Hero 云朵主视觉（4096×2048 大图）
-  '/assets/images/lantern_festival.png', // 博客卡片缩略图（体积最大）
-  '/assets/avatar.png', // 导航栏 / 资料卡头像
-  '/assets/images/information.jpg', // 资料卡信息背景
+  '/assets/images/welcome.webp', // Hero 云朵主视觉（4096×2048 大图）
+  '/assets/images/lantern_festival.webp', // 博客卡片缩略图（体积最大）
+  '/assets/avatar.webp', // 导航栏 / 资料卡头像
+  '/assets/images/information.webp', // 资料卡信息背景
 ]
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))

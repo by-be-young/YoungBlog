@@ -41,7 +41,7 @@ const router = useRouter()
 const i18n = useI18nStore()
 
 const blogImage = computed(() => {
-  return resolveUrl('/assets/images/lantern_festival.png')
+  return resolveUrl('/assets/images/lantern_festival.webp')
 })
 
 const formatDate = (dateStr) => {

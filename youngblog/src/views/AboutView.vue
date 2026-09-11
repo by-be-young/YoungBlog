@@ -6,7 +6,7 @@
         <aside class="blog-toc" id="profile-card-aside">
           <div class="profile-card" id="about-profile-card">
             <div class="avatar">
-              <img :src="resolveUrl('/assets/avatar.png')" alt="头像">
+              <img :src="resolveUrl('/assets/avatar.webp')" alt="头像">
             </div>
             <h2 class="name">{{ i18n.t('profile_name') }}</h2>
 
@@ -92,7 +92,7 @@ const i18n = useI18nStore()
 const blogStore = useBlogStore()
 const { renderMarkdown, stripFrontMatter } = useMarkdown()
 
-const detailBgImg = `url(${resolveUrl('/assets/detail_bg.png')})`
+const detailBgImg = `url(${resolveUrl('/assets/detail_bg.webp')})`
 
 const renderedHtml = ref('')
 const wordCount = ref('0.0w')

@@ -4,7 +4,7 @@
       <!-- 品牌区 -->
       <div class="nav-brand">
         <router-link class="nav-avatar" to="/about">
-          <img :src="resolveUrl('/assets/avatar.png')" alt="头像" />
+          <img :src="resolveUrl('/assets/avatar.webp')" alt="头像" />
         </router-link>
         <router-link class="nav-brand-link" to="/">
           <span>{{ i18n.currentTranslations.brand }}</span>

@@ -212,7 +212,7 @@ const selectedIndex = computed(() => {
 const selectedSeries = computed(() => seriesList.value[selectedIndex.value] || null)
 
 const coverUrl = computed(() =>
-  resolveUrl(selectedSeries.value?.coverImage || 'assets/images/series.png'),
+  resolveUrl(selectedSeries.value?.coverImage || 'assets/images/series.webp'),
 )
 
 // ==================== 章节 ====================

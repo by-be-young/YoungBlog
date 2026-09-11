@@ -4,7 +4,7 @@
         "title": "二上考试情况总结",
         "excerpt": "大二下学期各门较为重要的课程的考试情况，包括范围、注意事项以及本届的难度等",
         "date": "2026-07-07",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "二下总结",
@@ -23,7 +23,7 @@
         "title": "挑战性任务-文件管理-实验报告",
         "excerpt": "2421操作系统挑战性任务-文件系统实验报告",
         "date": "2026-06-29",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -42,7 +42,7 @@
         "title": "军事理论重点",
         "excerpt": "2026年军事理论重点内容",
         "date": "2026-06-25",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "军事理论",
@@ -61,7 +61,7 @@
         "title": "人工智能总复习",
         "excerpt": "人工智能知识点期末总复习，内容（包括例题）由AI参考课件和串讲PPT生成",
         "date": "2026-06-20",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "人工智能",
@@ -80,7 +80,7 @@
         "title": "数据库选择、简答题速成",
         "excerpt": "数据库知识点摘要与总结，便于解决考试中选择与简答题。适合总复习时使用。",
         "date": "2026-06-20",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -99,7 +99,7 @@
         "title": "并发控制",
         "excerpt": "数据库并发控制相关知识点，包括事务管理、调度、封锁等内容",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -118,7 +118,7 @@
         "title": "数据库安全性",
         "excerpt": "数据库安全性相关知识点，包括存取控制、权限控制、角色等",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -137,7 +137,7 @@
         "title": "数据库编程",
         "excerpt": "数据库编程相关知识点，包括存储过程、游标ORM等",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -156,7 +156,7 @@
         "title": "数据库概述",
         "excerpt": "数据库概述，包括四大基本概念和数据库结构等。",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -175,7 +175,7 @@
         "title": "数据库恢复技术",
         "excerpt": "数据库恢复技术相关知识点，包括故障、恢复等内容",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -194,7 +194,7 @@
         "title": "数据库设计",
         "excerpt": "数据库设计相关知识点，包括数据库设计方法、过程以及需求分析等",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -213,7 +213,7 @@
         "title": "索引",
         "excerpt": "数据库索引相关知识点，包括B+树索引、散列索引、聚簇索引、联合索引等内容",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -232,7 +232,7 @@
         "title": "完整性约束",
         "excerpt": "数据库完整性约束相关知识点，包括三大完整性约束、违约反应、触发器等内容",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -251,7 +251,7 @@
         "title": "规范化理论",
         "excerpt": "数据库规范化理论相关知识点，包括函数依赖、范式、模式分解等内容。",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -270,7 +270,7 @@
         "title": "规范化理论题型",
         "excerpt": "数据库规范化理论常见题型及其解题方法",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -289,7 +289,7 @@
         "title": "概念模型",
         "excerpt": "数据库概念模型相关知识点，包括ER图的绘制方法等",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -308,7 +308,7 @@
         "title": "关系代数",
         "excerpt": "数据库关系代数相关知识点",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -327,7 +327,7 @@
         "title": "逻辑模型",
         "excerpt": "数据库逻辑模型相关知识点，包括ER模型想关系模型转化的规则等",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -346,7 +346,7 @@
         "title": "关系运算转SQL",
         "excerpt": "数据库关系运算转SQL语言的方法专题",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -365,7 +365,7 @@
         "title": "SQL语言",
         "excerpt": "数据库SQL语言语法速成",
         "date": "2026-06-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "数据库",
@@ -384,7 +384,7 @@
         "title": "磁盘管理",
         "excerpt": "操作系统磁盘管理理论知识点",
         "date": "2026-06-13",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -403,7 +403,7 @@
         "title": "IO管理",
         "excerpt": "操作系统I/O管理相关理论知识点",
         "date": "2026-06-13",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -422,7 +422,7 @@
         "title": "操作系统概述",
         "excerpt": "操作系统概述，包括特征、发展历程、中断与异常、系统调用等",
         "date": "2026-06-12",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -441,7 +441,7 @@
         "title": "OS-Lab6-实验报告",
         "excerpt": "2421操作系统Lab6课下实验实验报告",
         "date": "2026-06-12",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -460,7 +460,7 @@
         "title": "OS-Lab5-实验报告",
         "excerpt": "2421操作系统Lab5课下实验实验报告",
         "date": "2026-05-28",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -479,7 +479,7 @@
         "title": "文件管理-MOS实验",
         "excerpt": "操作系统文件管理MOS具体实现方法，暨2421 Lab5梳理总结",
         "date": "2026-05-26",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -498,7 +498,7 @@
         "title": "Lab5 梳理总结",
         "excerpt": "int sys_write_dev(u_int va, u_int pa, u_int len) {",
         "date": "2026-05-26",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -517,7 +517,7 @@
         "title": "内存管理-MOS实验",
         "excerpt": "操作系统内存管理MOS具体实现方法，暨2421 Lab2梳理总结",
         "date": "2026-05-21",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -536,7 +536,7 @@
         "title": "文件管理",
         "excerpt": "操作系统文件管理理论知识点",
         "date": "2026-05-21",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -555,7 +555,7 @@
         "title": "系统调用-MOS实验",
         "excerpt": "操作系统系统调用MOS具体实现方法，暨2421 Lab4梳理总结",
         "date": "2026-05-19",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -574,7 +574,7 @@
         "title": "OS-Lab4-实验报告",
         "excerpt": "2421操作系统Lab4课下实验实验报告",
         "date": "2026-05-11",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -593,7 +593,7 @@
         "title": "活用形",
         "excerpt": "日语活用形基本内容介绍",
         "date": "2026-05-03",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "语言",
             "日语",
@@ -612,7 +612,7 @@
         "title": "OS-Lab3-实验报告",
         "excerpt": "2421操作系统Lab2课下实验实验报告",
         "date": "2026-04-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -631,7 +631,7 @@
         "title": "接续词",
         "excerpt": "日语常见接续词整理",
         "date": "2026-04-22",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "语言",
             "日语",
@@ -650,7 +650,7 @@
         "title": "进程管理",
         "excerpt": "进程管理理论知识点",
         "date": "2026-04-21",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -669,7 +669,7 @@
         "title": "Lab3 梳理总结",
         "excerpt": "2421操作系统Lab3课下实验Exercise习题总结及个人答案",
         "date": "2026-04-21",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -688,7 +688,7 @@
         "title": "如梦令·国家植物园",
         "excerpt": "2026春植物园踏青有感",
         "date": "2026-04-15",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "文学",
             "诗词",
@@ -707,7 +707,7 @@
         "title": "内存管理",
         "excerpt": "操作系统内存管理理论知识点，以及Lab2相关内容",
         "date": "2026-04-14",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -726,7 +726,7 @@
         "title": "Lab2 梳理总结",
         "excerpt": "2421操作系统Lab2课下实验Exercise习题总结及个人答案",
         "date": "2026-04-09",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -745,7 +745,7 @@
         "title": "OS-Lab2-实验报告",
         "excerpt": "2421操作系统Lab2课下实验实验报告",
         "date": "2026-04-09",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -764,7 +764,7 @@
         "title": "OS-Lab1-实验报告",
         "excerpt": "2421操作系统Lab1课下实验实验报告",
         "date": "2026-04-09",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -783,7 +783,7 @@
         "title": "OS-Lab0-实验报告",
         "excerpt": "操作系统Lab0课下实验实验报告",
         "date": "2026-04-09",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -802,7 +802,7 @@
         "title": "ELF文件结构",
         "excerpt": "ELF文件结构概述、Linker Script的作用及内容、Lab1实验相关",
         "date": "2026-04-01",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -821,7 +821,7 @@
         "title": "计算机的启动过程",
         "excerpt": "计算机的启动过程，以及lab1相关解释。",
         "date": "2026-03-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -840,7 +840,7 @@
         "title": "Lab1 复习",
         "excerpt": "lab1复习（AI整理），后续会整理进其他博客，然后删除。",
         "date": "2026-03-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -859,7 +859,7 @@
         "title": "阿戈尔盟约底层逻辑及运营思路",
         "excerpt": "卫戍协议阿戈尔阵营攻略",
         "date": "2026-03-24",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "明日方舟",
             "卫戍协议",
@@ -878,7 +878,7 @@
         "title": "江城子·樱",
         "excerpt": "观樱花有感",
         "date": "2026-03-22",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "文学",
             "诗词",
@@ -897,7 +897,7 @@
         "title": "Makefile基础速成",
         "excerpt": "Makefile语法格式基础",
         "date": "2026-03-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -916,7 +916,7 @@
         "title": "Lab0 Pre-Exam复习",
         "excerpt": "Lab0 Pre-Exam的习题与解答",
         "date": "2026-03-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -935,7 +935,7 @@
         "title": "gcc语法速成",
         "excerpt": "GCC 的语法详解",
         "date": "2026-03-17",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -954,7 +954,7 @@
         "title": "Linux 命令指南",
         "excerpt": "Linux基本命令的语法、格式及用法举例。",
         "date": "2026-03-17",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -973,7 +973,7 @@
         "title": "意大利语自然拼读攻略",
         "excerpt": "意大利语，所见即所读！",
         "date": "2026-03-13",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "语言",
             "意大利语",
@@ -992,7 +992,7 @@
         "title": "C语言无痛转型Shell脚本",
         "excerpt": "OS中Shell语法的C语言类比，方便初学者快速掌握基础语法~",
         "date": "2026-03-11",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二下",
             "操作系统",
@@ -1011,7 +1011,7 @@
         "title": "基质刷取指南",
         "excerpt": "终末地武器基质怎么选词条最赚？这个指南帮你快速查找并确定应该选择的词条。",
         "date": "2026-03-10",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "终末地",
             "游戏工具",
@@ -1030,7 +1030,7 @@
         "title": "终末地数值计算方法",
         "excerpt": "详细分析终末地角色面板、伤害等计算公式及注意事项",
         "date": "2026-03-08",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "终末地",
             "游戏机制",
@@ -1049,7 +1049,7 @@
         "title": "千鳥",
         "excerpt": "yorushika新歌「千鳥」歌词、翻译及赏析",
         "date": "2026-03-04",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "音乐",
             "J-POP",
@@ -1068,7 +1068,7 @@
         "title": "装备精锻较好适配速查",
         "excerpt": "终末地武器精锻怎么才能最为划算？一图流找到较好适配的武器！",
         "date": "2026-03-04",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "终末地",
             "游戏工具",
@@ -1087,7 +1087,7 @@
         "title": "望",
         "excerpt": "望伤害计算、使用测评",
         "date": "2026-02-28",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "明日方舟",
             "干员杂谈",
@@ -1106,7 +1106,7 @@
         "title": "链接与运行",
         "excerpt": "链接、符号、重定位等",
         "date": "2026-02-27",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "计组",
@@ -1125,7 +1125,7 @@
         "title": "计组总复习",
         "excerpt": "计组总复习，强调重点与例题",
         "date": "2026-02-27",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "计组",
@@ -1144,7 +1144,7 @@
         "title": "二上考试情况总结",
         "excerpt": "大二上学期各门较为重要的课程的考试情况，包括范围、注意事项以及本届的难度等",
         "date": "2026-02-26",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "二上总结",
@@ -1163,7 +1163,7 @@
         "title": "元素体系——朝阳or败笔？",
         "excerpt": "详解明日方舟中三种我方元素损伤及其对应干员体系，评价设计思想与实战强度",
         "date": "2026-02-13",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "明日方舟",
             "干员杂谈",
@@ -1182,7 +1182,7 @@
         "title": "指令系统与MIPS汇编语言",
         "excerpt": "MIPS寻址方式、结构、常用指令",
         "date": "2026-01-09",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "计组",
@@ -1201,7 +1201,7 @@
         "title": "基物实验",
         "excerpt": "基物实验绪论部分",
         "date": "2026-01-08",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "基物实验",
@@ -1220,7 +1220,7 @@
         "title": "虚拟存储器",
         "excerpt": "分页、快表等",
         "date": "2026-01-06",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "计组",
@@ -1239,7 +1239,7 @@
         "title": "主储存器",
         "excerpt": "存储系统、存储器芯片结构、存储器扩展、DRAM刷新",
         "date": "2026-01-06",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "计组",
@@ -1258,7 +1258,7 @@
         "title": "Java总复习",
         "excerpt": "Java题型总复习",
         "date": "2026-01-04",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "Java",
@@ -1277,7 +1277,7 @@
         "title": "离散数学题型总复习",
         "excerpt": "离散总复习",
         "date": "2026-01-03",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "离散二",
@@ -1296,7 +1296,7 @@
         "title": "穿程问题",
         "excerpt": "欧拉图、哈密顿图",
         "date": "2025-12-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "离散二",
@@ -1315,7 +1315,7 @@
         "title": "二分图的匹配问题",
         "excerpt": "二分图的最大匹配",
         "date": "2025-12-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "离散二",
@@ -1334,7 +1334,7 @@
         "title": "树",
         "excerpt": "树、二元树、生成树、割集",
         "date": "2025-12-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "离散二",
@@ -1353,7 +1353,7 @@
         "title": "通路问题",
         "excerpt": "最短通路、关键通路",
         "date": "2025-12-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "离散二",
@@ -1372,7 +1372,7 @@
         "title": "图的矩阵表示",
         "excerpt": "邻接矩阵、可达性矩阵、关联矩阵",
         "date": "2025-12-30",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "离散二",
@@ -1391,7 +1391,7 @@
         "title": "图论基本概念",
         "excerpt": "图、图的同构、子图、连通性、强分图",
         "date": "2025-12-29",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "离散二",
@@ -1410,7 +1410,7 @@
         "title": "Java串讲",
         "excerpt": "Java串讲ppt大纲",
         "date": "2025-12-28",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "Java",
@@ -1429,7 +1429,7 @@
         "title": "概率统计必背公式",
         "excerpt": "概率统计核心公式一览，其中部分明确不考或总结下来考察频率较低的会特别标注。",
         "date": "2025-12-26",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "概率统计",
@@ -1448,7 +1448,7 @@
         "title": "并查集",
         "excerpt": "并查集的详细讲解、优化思路、应用场景及实战运用",
         "date": "2025-12-25",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "算法",
@@ -1467,7 +1467,7 @@
         "title": "卜算子·元旦晚会",
         "excerpt": "记25-26年元旦晚会全天经历",
         "date": "2025-12-21",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "文学",
             "诗词",
@@ -1486,7 +1486,7 @@
         "title": "Cache",
         "excerpt": "Cache的基本概念、工作原理及映射机制",
         "date": "2025-12-18",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "二上",
             "计组",
@@ -1505,7 +1505,7 @@
         "title": "行香子·初雪",
         "excerpt": "2025北京初雪有感",
         "date": "2025-12-12",
-        "image": "assets/images/blog_bg.png",
+        "image": "assets/images/blog_bg.webp",
         "tags": [
             "文学",
             "诗词",

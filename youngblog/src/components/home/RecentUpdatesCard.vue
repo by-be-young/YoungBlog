@@ -21,7 +21,7 @@
           </div>
           <div class="recent-item-side">
             <div class="blog-image recent-thumb">
-              <img :src="resolveUrl('/assets/images/lantern_festival.png')" :alt="blog.title">
+              <img :src="resolveUrl('/assets/images/lantern_festival.webp')" :alt="blog.title">
               <div v-if="blog.type" class="blog-type-overlay">
                 <span class="blog-type">{{ blog.type }}</span>
               </div>
