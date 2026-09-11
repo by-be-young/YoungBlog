@@ -84,7 +84,8 @@
           :key="`${char}-${index}`"
           class="es-char"
           :style="{ '--i': index }"
-        >{{ char === ' ' ? '\u00A0' : char }}</span>
+          >{{ char === ' ' ? '\u00A0' : char }}</span
+        >
       </h1>
       <p class="es-subtitle">{{ subtitle }}</p>
 
@@ -96,7 +97,7 @@
           class="es-chip"
           :class="{
             'is-active': index === stageIndex && !isAllDone,
-            'is-done': index < stageIndex || isAllDone
+            'is-done': index < stageIndex || isAllDone,
           }"
         >
           <span class="es-chip-dot"></span>
@@ -175,14 +176,24 @@ const emit = defineEmits(['reveal', 'finished'])
 
 const i18n = useI18nStore()
 
-const { percent, percentInt, stageIndex, stages, stageLabel, tip, isSettled, skipped, start, requestSkip, dispose } =
-  useEntryLoader({
-    lang: () => i18n.getLang(),
-    minDuration: 1950,
-    // 图片资源较多（背景轮播 + 首页大图），给足加载时间，
-    // 保证「进度满」时首页图片已真正就绪
-    maxDuration: 15000
-  })
+const {
+  percent,
+  percentInt,
+  stageIndex,
+  stages,
+  stageLabel,
+  tip,
+  isSettled,
+  skipped,
+  start,
+  requestSkip,
+  dispose,
+} = useEntryLoader({
+  lang: () => i18n.getLang(),
+  // maxDuration 使用默认值（60s，仅作为防卡死安全绳）：
+  // 首页图片未完整下载并解码前不应该揭幕
+  minDuration: 1950,
+})
 
 /* ---------- 环形进度几何 ---------- */
 const RING_RADIUS = 84
@@ -201,20 +212,20 @@ const ENTRY_TEXT = {
     enter: '点击进入',
     ready: '全部资源已就绪',
     action: '点击屏幕任意处进入首页',
-    skip: '点击任意处跳过'
+    skip: '点击任意处跳过',
   },
   en: {
     enter: 'Click to enter',
     ready: 'All assets ready',
     action: 'Click anywhere to enter',
-    skip: 'Click anywhere to skip'
+    skip: 'Click anywhere to skip',
   },
   ja: {
     enter: 'クリックして開始',
     ready: 'すべての準備が完了',
     action: '画面のどこかをクリックで開始',
-    skip: 'クリックでスキップ'
-  }
+    skip: 'クリックでスキップ',
+  },
 }
 
 const entryText = computed(() => ENTRY_TEXT[langCode.value] || ENTRY_TEXT.zh)
@@ -352,8 +363,8 @@ const particles = Array.from({ length: particleCount }, (_, index) => {
       '--fly': `${(8 + seededRandom(seed, 4) * 10).toFixed(2)}s`,
       '--twinkle': `${(2.4 + seededRandom(seed, 9) * 3.4).toFixed(2)}s`,
       '--delay': `${(-seededRandom(seed, 5) * 12).toFixed(2)}s`,
-      '--hue': huePalette[index % huePalette.length]
-    }
+      '--hue': huePalette[index % huePalette.length],
+    },
   }
 })
 
@@ -375,8 +386,13 @@ defineExpose({ requestSkip, enter })
   overflow: hidden;
   cursor: pointer;
   color: #3a4a63;
-  background:
-    radial-gradient(120% 85% at 50% -10%, #ffffff 0%, #fdfbf3 30%, #f5f2e8 58%, #eceadf 100%);
+  background: radial-gradient(
+    120% 85% at 50% -10%,
+    #ffffff 0%,
+    #fdfbf3 30%,
+    #f5f2e8 58%,
+    #eceadf 100%
+  );
   clip-path: circle(150% at 50% 50%);
   transition: clip-path 0.78s cubic-bezier(0.55, 0.05, 0.25, 1);
   -webkit-tap-highlight-color: transparent;
@@ -581,7 +597,9 @@ defineExpose({ requestSkip, enter })
   stroke: url(#esRingGradient);
   stroke-width: 7;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.18s linear, filter 0.3s ease;
+  transition:
+    stroke-dashoffset 0.18s linear,
+    filter 0.3s ease;
   filter: drop-shadow(0 0 7px rgba(255, 200, 120, 0.6));
 }
 
@@ -599,7 +617,13 @@ defineExpose({ requestSkip, enter })
     transparent 0.5deg 3deg
   );
   mask-image: radial-gradient(closest-side, transparent 86%, #000 87%, #000 96%, transparent 97%);
-  -webkit-mask-image: radial-gradient(closest-side, transparent 86%, #000 87%, #000 96%, transparent 97%);
+  -webkit-mask-image: radial-gradient(
+    closest-side,
+    transparent 86%,
+    #000 87%,
+    #000 96%,
+    transparent 97%
+  );
   animation: es-spin 70s linear infinite reverse;
   opacity: 0.75;
 }
@@ -678,8 +702,13 @@ defineExpose({ requestSkip, enter })
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.62) 46%, rgba(255, 250, 235, 0.34) 72%, transparent 76%);
+  background: radial-gradient(
+    circle at 34% 28%,
+    rgba(255, 255, 255, 0.98),
+    rgba(255, 255, 255, 0.62) 46%,
+    rgba(255, 250, 235, 0.34) 72%,
+    transparent 76%
+  );
   border: 1px solid rgba(255, 255, 255, 0.72);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
@@ -814,25 +843,43 @@ defineExpose({ requestSkip, enter })
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(58, 74, 99, 0.08);
   backdrop-filter: blur(6px);
-  transition: color 0.35s ease, background 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
+  transition:
+    color 0.35s ease,
+    background 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease;
   opacity: 0;
   animation: es-chip-in 0.5s ease-out both;
   animation-delay: calc(0.7s + var(--i, 0) * 0.06s);
 }
 
-.es-chip:nth-child(1) { animation-delay: 0.70s; }
-.es-chip:nth-child(2) { animation-delay: 0.76s; }
-.es-chip:nth-child(3) { animation-delay: 0.82s; }
-.es-chip:nth-child(4) { animation-delay: 0.88s; }
-.es-chip:nth-child(5) { animation-delay: 0.94s; }
-.es-chip:nth-child(6) { animation-delay: 1.00s; }
+.es-chip:nth-child(1) {
+  animation-delay: 0.7s;
+}
+.es-chip:nth-child(2) {
+  animation-delay: 0.76s;
+}
+.es-chip:nth-child(3) {
+  animation-delay: 0.82s;
+}
+.es-chip:nth-child(4) {
+  animation-delay: 0.88s;
+}
+.es-chip:nth-child(5) {
+  animation-delay: 0.94s;
+}
+.es-chip:nth-child(6) {
+  animation-delay: 1s;
+}
 
 .es-chip-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: rgba(58, 74, 99, 0.2);
-  transition: background 0.35s ease, box-shadow 0.35s ease;
+  transition:
+    background 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
 .es-chip.is-active {
@@ -913,7 +960,9 @@ defineExpose({ requestSkip, enter })
   opacity: 0;
   transform: translateY(18px) scale(0.92);
   pointer-events: none;
-  transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.2, 0.9, 0.25, 1);
+  transition:
+    opacity 0.5s ease,
+    transform 0.55s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
 .es-enter.is-visible {
@@ -1286,11 +1335,15 @@ defineExpose({ requestSkip, enter })
 
 @keyframes es-grid-drift {
   0% {
-    background-position: 0 0, 0 0;
+    background-position:
+      0 0,
+      0 0;
   }
 
   100% {
-    background-position: 48px 96px, 96px 48px;
+    background-position:
+      48px 96px,
+      96px 48px;
   }
 }
 
@@ -1567,12 +1620,16 @@ defineExpose({ requestSkip, enter })
   0%,
   100% {
     transform: translateY(0) scale(1);
-    box-shadow: 0 12px 34px rgba(255, 184, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    box-shadow:
+      0 12px 34px rgba(255, 184, 0, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
   }
 
   50% {
     transform: translateY(-3px) scale(1.035);
-    box-shadow: 0 18px 44px rgba(255, 184, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    box-shadow:
+      0 18px 44px rgba(255, 184, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
   }
 }
 

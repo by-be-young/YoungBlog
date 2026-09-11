@@ -38,11 +38,7 @@
 
     <!-- 入场加载屏（挂到 body，避免与 #app 揭幕动画相互影响） -->
     <Teleport to="body">
-      <EntrySplash
-        v-if="showEntry"
-        @reveal="onEntryReveal"
-        @finished="onEntryFinished"
-      />
+      <EntrySplash v-if="showEntry" @reveal="onEntryReveal" @finished="onEntryFinished" />
     </Teleport>
   </div>
 </template>
@@ -60,7 +56,11 @@ import FloatingControls from '@/components/common/FloatingControls.vue'
 import EntrySplash from '@/components/common/EntrySplash.vue'
 import { useBackgroundStore } from '@/stores/backgroundStore'
 import { useMusicStore } from '@/stores/musicStore'
-import { prefersReducedMotion, DEFAULT_BACKGROUND_IMAGES, resolveBackgroundImages } from '@/composables/useEntryLoader'
+import {
+  prefersReducedMotion,
+  DEFAULT_BACKGROUND_IMAGES,
+  resolveBackgroundImages,
+} from '@/composables/useEntryLoader'
 import { resolveUrl } from '@/utils/url'
 
 const route = useRoute()
@@ -167,17 +167,14 @@ onUnmounted(() => {
 
 <style>
 /* ===== 路由加载条 ===== */
-.route-loader {  position: fixed;
+.route-loader {
+  position: fixed;
   top: 60px;
   left: 0;
   width: 0;
   height: 3px;
   z-index: 9999;
-  background: linear-gradient(90deg,
-    #ffb6c9 0%,
-    #a7f3d0 30%,
-    #9ad7ff 60%,
-    #c7b6ff 100%);
+  background: linear-gradient(90deg, #ffb6c9 0%, #a7f3d0 30%, #9ad7ff 60%, #c7b6ff 100%);
   background-size: 200% 100%;
   border-radius: 0 2px 2px 0;
   pointer-events: none;
@@ -187,20 +184,33 @@ onUnmounted(() => {
 
 .route-loader.is-loading {
   opacity: 1;
-  animation: route-loader-progress 0.8s ease-out forwards,
-             route-loader-shimmer 1.2s ease-in-out infinite;
+  animation:
+    route-loader-progress 0.8s ease-out forwards,
+    route-loader-shimmer 1.2s ease-in-out infinite;
 }
 
 @keyframes route-loader-progress {
-  0%   { width: 0%; }
-  30%  { width: 45%; }
-  60%  { width: 70%; }
-  100% { width: 85%; }
+  0% {
+    width: 0%;
+  }
+  30% {
+    width: 45%;
+  }
+  60% {
+    width: 70%;
+  }
+  100% {
+    width: 85%;
+  }
 }
 
 @keyframes route-loader-shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ==================================================
@@ -226,8 +236,12 @@ html.entry-revealed #app {
 }
 
 @keyframes entry-page-rise {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* 揭幕：首页内容错峰浮入 */
@@ -237,16 +251,36 @@ html.entry-revealed .view-more-wrap {
   animation: entry-card-in 0.74s cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
-html.entry-revealed .sidebar { animation-delay: 0.05s; }
-html.entry-revealed .blog-grid > *:nth-child(1) { animation-delay: 0.10s; }
-html.entry-revealed .blog-grid > *:nth-child(2) { animation-delay: 0.18s; }
-html.entry-revealed .blog-grid > *:nth-child(3) { animation-delay: 0.26s; }
-html.entry-revealed .blog-grid > *:nth-child(4) { animation-delay: 0.34s; }
-html.entry-revealed .blog-grid > *:nth-child(5) { animation-delay: 0.42s; }
-html.entry-revealed .blog-grid > *:nth-child(6) { animation-delay: 0.50s; }
-html.entry-revealed .blog-grid > *:nth-child(7) { animation-delay: 0.58s; }
-html.entry-revealed .blog-grid > *:nth-child(n+8) { animation-delay: 0.66s; }
-html.entry-revealed .view-more-wrap { animation-delay: 0.72s; }
+html.entry-revealed .sidebar {
+  animation-delay: 0.05s;
+}
+html.entry-revealed .blog-grid > *:nth-child(1) {
+  animation-delay: 0.1s;
+}
+html.entry-revealed .blog-grid > *:nth-child(2) {
+  animation-delay: 0.18s;
+}
+html.entry-revealed .blog-grid > *:nth-child(3) {
+  animation-delay: 0.26s;
+}
+html.entry-revealed .blog-grid > *:nth-child(4) {
+  animation-delay: 0.34s;
+}
+html.entry-revealed .blog-grid > *:nth-child(5) {
+  animation-delay: 0.42s;
+}
+html.entry-revealed .blog-grid > *:nth-child(6) {
+  animation-delay: 0.5s;
+}
+html.entry-revealed .blog-grid > *:nth-child(7) {
+  animation-delay: 0.58s;
+}
+html.entry-revealed .blog-grid > *:nth-child(n + 8) {
+  animation-delay: 0.66s;
+}
+html.entry-revealed .view-more-wrap {
+  animation-delay: 0.72s;
+}
 
 @keyframes entry-card-in {
   from {
