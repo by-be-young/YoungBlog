@@ -35,6 +35,15 @@
     <SearchPanel />
     <SettingsModal />
     <AnnouncementModal />
+
+    <!-- 入场加载屏（挂到 body，避免与 #app 揭幕动画相互影响） -->
+    <Teleport to="body">
+      <EntrySplash
+        v-if="showEntry"
+        @reveal="onEntryReveal"
+        @finished="onEntryFinished"
+      />
+    </Teleport>
   </div>
 </template>
 
@@ -48,8 +57,10 @@ import SearchPanel from '@/components/common/SearchPanel.vue'
 import SettingsModal from '@/components/common/SettingsModal.vue'
 import AnnouncementModal from '@/components/common/AnnouncementModal.vue'
 import FloatingControls from '@/components/common/FloatingControls.vue'
+import EntrySplash from '@/components/common/EntrySplash.vue'
 import { useBackgroundStore } from '@/stores/backgroundStore'
 import { useMusicStore } from '@/stores/musicStore'
+import { prefersReducedMotion } from '@/composables/useEntryLoader'
 import { resolveUrl } from '@/utils/url'
 
 const route = useRoute()
@@ -60,6 +71,28 @@ const backgroundImages = ref([])
 const currentBgIndex = ref(0)
 const routeLoading = ref(false)
 let loadingTimer = null
+
+/* ===== 入场加载屏 ===== */
+const showEntry = ref(!prefersReducedMotion())
+let revealTimer = null
+
+// 加载完成，开始揭幕：解除首页元素的暂停状态，并触发内容入场动画
+const onEntryReveal = () => {
+  document.documentElement.classList.remove('entry-loading')
+  document.documentElement.classList.add('entry-revealed')
+  window.scrollTo({ top: 0, behavior: 'auto' })
+  clearTimeout(revealTimer)
+  revealTimer = setTimeout(() => {
+    document.documentElement.classList.remove('entry-revealed')
+  }, 1900)
+}
+
+// 退场动画结束，卸载加载屏
+const onEntryFinished = () => {
+  showEntry.value = false
+  clearTimeout(revealTimer)
+  document.documentElement.classList.remove('entry-loading')
+}
 
 // 显示萤火虫的页面
 const showFireflies = computed(() => {
@@ -111,6 +144,10 @@ const loadBackgrounds = async () => {
 let bgInterval = null
 
 onMounted(() => {
+  if (!showEntry.value) {
+    document.documentElement.classList.remove('entry-loading')
+  }
+
   loadBackgrounds()
 
   bgInterval = setInterval(() => {
@@ -131,13 +168,14 @@ onMounted(() => {
 onUnmounted(() => {
   if (bgInterval) clearInterval(bgInterval)
   clearTimeout(loadingTimer)
+  clearTimeout(revealTimer)
+  document.documentElement.classList.remove('entry-loading', 'entry-revealed')
 })
 </script>
 
 <style>
 /* ===== 路由加载条 ===== */
-.route-loader {
-  position: fixed;
+.route-loader {  position: fixed;
   top: 60px;
   left: 0;
   width: 0;
@@ -171,5 +209,70 @@ onUnmounted(() => {
 @keyframes route-loader-shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* ==================================================
+   入场加载：全局联动样式
+   ================================================== */
+
+/* 加载期间锁定滚动，避免在加载屏背后滚动页面 */
+html.entry-loading,
+html.entry-loading body {
+  overflow: hidden;
+}
+
+/* 加载期间暂停首页 Hero 的入场动画，揭幕后再继续播放 */
+html.entry-loading .welcome-text,
+html.entry-loading .subtitle,
+html.entry-loading .scroll-down {
+  animation-play-state: paused;
+}
+
+/* 揭幕：整页淡入 */
+html.entry-revealed #app {
+  animation: entry-page-rise 0.92s cubic-bezier(0.22, 0.9, 0.25, 1) both;
+}
+
+@keyframes entry-page-rise {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 揭幕：首页内容错峰浮入 */
+html.entry-revealed .sidebar,
+html.entry-revealed .blog-grid > *,
+html.entry-revealed .view-more-wrap {
+  animation: entry-card-in 0.74s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+html.entry-revealed .sidebar { animation-delay: 0.05s; }
+html.entry-revealed .blog-grid > *:nth-child(1) { animation-delay: 0.10s; }
+html.entry-revealed .blog-grid > *:nth-child(2) { animation-delay: 0.18s; }
+html.entry-revealed .blog-grid > *:nth-child(3) { animation-delay: 0.26s; }
+html.entry-revealed .blog-grid > *:nth-child(4) { animation-delay: 0.34s; }
+html.entry-revealed .blog-grid > *:nth-child(5) { animation-delay: 0.42s; }
+html.entry-revealed .blog-grid > *:nth-child(6) { animation-delay: 0.50s; }
+html.entry-revealed .blog-grid > *:nth-child(7) { animation-delay: 0.58s; }
+html.entry-revealed .blog-grid > *:nth-child(n+8) { animation-delay: 0.66s; }
+html.entry-revealed .view-more-wrap { animation-delay: 0.72s; }
+
+@keyframes entry-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.entry-revealed #app,
+  html.entry-revealed .sidebar,
+  html.entry-revealed .blog-grid > *,
+  html.entry-revealed .view-more-wrap {
+    animation: none;
+  }
 }
 </style>
