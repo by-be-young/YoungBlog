@@ -179,7 +179,9 @@ const { percent, percentInt, stageIndex, stages, stageLabel, tip, isSettled, ski
   useEntryLoader({
     lang: () => i18n.getLang(),
     minDuration: 1950,
-    maxDuration: 9000
+    // 图片资源较多（背景轮播 + 首页大图），给足加载时间，
+    // 保证「进度满」时首页图片已真正就绪
+    maxDuration: 15000
   })
 
 /* ---------- 环形进度几何 ---------- */

@@ -60,7 +60,7 @@ import FloatingControls from '@/components/common/FloatingControls.vue'
 import EntrySplash from '@/components/common/EntrySplash.vue'
 import { useBackgroundStore } from '@/stores/backgroundStore'
 import { useMusicStore } from '@/stores/musicStore'
-import { prefersReducedMotion } from '@/composables/useEntryLoader'
+import { prefersReducedMotion, DEFAULT_BACKGROUND_IMAGES, resolveBackgroundImages } from '@/composables/useEntryLoader'
 import { resolveUrl } from '@/utils/url'
 
 const route = useRoute()
@@ -120,22 +120,14 @@ router.afterEach(() => {
   }, 320)
 })
 
-// 默认背景图（JSON 缺失或列表为空时使用）
-const defaultBackgrounds = () => [
-  resolveUrl('/assets/images/background/bg1.png'),
-  resolveUrl('/assets/images/background/bg2.png'),
-  resolveUrl('/assets/images/background/bg3.png')
-]
-
-// 加载背景图
+// 加载背景图（默认列表与入场加载器共用，保证预载的图片与实际渲染一致）
 const loadBackgrounds = async () => {
   try {
     const res = await fetch(resolveUrl('/data/background-images.json'))
     const data = await res.json()
-    const images = Array.isArray(data) ? data : data?.images || []
-    backgroundImages.value = images.length > 0 ? images : defaultBackgrounds()
+    backgroundImages.value = resolveBackgroundImages(data)
   } catch (e) {
-    backgroundImages.value = defaultBackgrounds()
+    backgroundImages.value = [...DEFAULT_BACKGROUND_IMAGES]
   }
   bgStore.setImages(backgroundImages.value)
 }

@@ -124,44 +124,141 @@ export function prefersReducedMotion() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+/**
+ * 默认背景轮播图（与 App.vue 共用，JSON 为空时使用）
+ */
+export const DEFAULT_BACKGROUND_IMAGES = [
+  resolveUrl('/assets/images/background/bg1.png'),
+  resolveUrl('/assets/images/background/bg2.png'),
+  resolveUrl('/assets/images/background/bg3.png')
+]
+
+/** 将 background-images.json 的内容解析为图片列表（为空时回退默认图） */
+export function resolveBackgroundImages(data) {
+  const list = Array.isArray(data) ? data : data?.images || []
+  return list.length > 0 ? list.map((src) => resolveUrl(src)) : [...DEFAULT_BACKGROUND_IMAGES]
+}
+
+/**
+ * 首屏（进入首页立即可见）必须就绪的图片。
+ * 背景轮播的首张图会单独拼到列表最前面。
+ */
+const CRITICAL_IMAGE_PATHS = [
+  '/assets/images/welcome.png', // Hero 云朵主视觉
+  '/assets/avatar.png' // 导航栏 / 资料卡头像
+]
+
+/**
+ * 次要图片：首屏下方才出现，或后续轮播才用到。
+ * 仍会提前预载，但最多只等待 DEFERRED_IMAGE_BUDGET，
+ * 避免大图（如 6MB 的灯笼图）拖死入场。
+ */
+const DEFERRED_IMAGE_PATHS = [
+  '/assets/images/lantern_festival.png',
+  '/assets/images/information.jpg'
+]
+
+/** 次要图片的等待上限（ms）：超时则让它们在后台继续加载，不阻塞入场 */
+const DEFERRED_IMAGE_BUDGET = 2500
+
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => resolve()))
 
 const frames = async (count = 2) => {
-    for (let i = 0; i < count; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await frame()
-    }
+  for (let i = 0; i < count; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await frame()
+  }
 }
 
-/** 图片预载（失败也 resolve，避免阻塞入场） */
-const loadImage = (src) =>
-    new Promise((resolve) => {
-        if (!src) {
-            resolve(null)
-            return
-        }
-        const img = new Image()
-        const done = () => resolve(src)
-        img.onload = done
-        img.onerror = done
+/**
+ * 图片预载（含强制解码）。
+ * 仅等 onload 只代表「下载完成」，浏览器仍可能在揭幕后才解码绘制，
+ * 大图（如 4096×2048 的欢迎图）尤其明显；因此这里再调用 decode()
+ * 把解码结果预热到图片缓存中，避免进入首页后图片才逐张出现。
+ */
+const preloadImage = (src) =>
+  new Promise((resolve) => {
+    if (!src) {
+      resolve(null)
+      return
+    }
+    const img = new Image()
+    const finish = async () => {
+      try {
+        if (img.decode) await img.decode()
+      } catch (e) {
+        /* 解码失败也不阻塞入场 */
+      }
+      resolve(src)
+    }
+    img.onload = finish
+    img.onerror = () => resolve(null)
+    try {
+      img.fetchPriority = 'high'
+    } catch (e) {
+      /* 忽略 */
+    }
+    img.src = src
+  })
+
+const CSS_URL_RE = /url\((['"]?)([^'")]+)\1\)/g
+
+/** 收集页面上「已渲染」的图片：<img> 与关键元素（含伪元素）的 CSS 背景图 */
+const collectRenderedImageUrls = () => {
+  if (typeof document === 'undefined') return []
+  const urls = new Set()
+
+  document.querySelectorAll('#app img').forEach((img) => {
+    const src = img.currentSrc || img.src
+    if (src) urls.add(src)
+  })
+
+  const targets = ['.hero-section', '.slide', '.recent-thumb', '.blog-card', '#home-profile-card']
+  targets.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((el) => {
+      ;[undefined, '::before', '::after'].forEach((pseudo) => {
+        let bg = ''
         try {
-            img.decoding = 'async'
+          bg = getComputedStyle(el, pseudo).backgroundImage
         } catch (e) {
-            /* 忽略 */
+          return
         }
-        img.src = src
+        if (!bg || bg === 'none') return
+        CSS_URL_RE.lastIndex = 0
+        let match = CSS_URL_RE.exec(bg)
+        while (match) {
+          if (!match[2].startsWith('data:')) urls.add(match[2])
+          match = CSS_URL_RE.exec(bg)
+        }
+      })
     })
+  })
+
+  return [...urls]
+}
+
+/** 等待页面中所有 <img> 解码完成 */
+const decodeDomImages = async () => {
+  if (typeof document === 'undefined') return
+  const imgs = [...document.querySelectorAll('#app img')].filter((img) => img.currentSrc || img.src)
+  await Promise.all(
+    imgs.map((img) => {
+      if (!img.decode) return Promise.resolve()
+      return img.decode().catch(() => {})
+    })
+  )
+}
 
 /** JSON 预载（失败返回 null，由调用方兜底） */
 const fetchJSON = async (path) => {
-    try {
-        const res = await fetch(resolveUrl(path))
-        if (!res.ok) return null
-        return await res.json()
-    } catch (e) {
-        return null
-    }
+  try {
+    const res = await fetch(resolveUrl(path))
+    if (!res.ok) return null
+    return await res.json()
+  } catch (e) {
+    return null
+  }
 }
 
 /** 等待字体就绪（带超时保护） */
@@ -345,22 +442,31 @@ export function useEntryLoader(options = {}) {
         ])
         await completeStage(2)
 
-        // 4. 图像资源
-        setStage(3, 0.02)
-        const bgList = Array.isArray(backgroundData) ? backgroundData : backgroundData?.images || []
-        const sources = [
-            ...bgList.slice(0, 2).map((src) => resolveUrl(src)),
-            resolveUrl('/assets/images/welcome.png'),
-            resolveUrl('/assets/images/lantern_festival.png')
-        ].filter(Boolean)
-        await runTasks(3, sources.map((src) => () => loadImage(src)))
-        await completeStage(3)
+// 4. 图像资源：首屏关键图（预载 + 强制解码），次要图限量等待
+    setStage(3, 0.02)
+    const bgImages = resolveBackgroundImages(backgroundData)
+    const criticalImages = [bgImages[0], ...CRITICAL_IMAGE_PATHS.map((path) => resolveUrl(path))].filter(Boolean)
+    const deferredImages = [...bgImages.slice(1), ...DEFERRED_IMAGE_PATHS.map((path) => resolveUrl(path))].filter(
+      (src) => src && !criticalImages.includes(src)
+    )
 
-        // 5. 首页视图构建
-        setStage(4, 0.3)
-        await nextTick()
-        await frames(2)
-        await wait(180)
+    await runTasks(
+      3,
+      criticalImages.map((src) => () => preloadImage(src))
+    )
+    setStage(3, 0.7)
+    await Promise.race([Promise.all(deferredImages.map((src) => preloadImage(src))), wait(DEFERRED_IMAGE_BUDGET)])
+    await completeStage(3)
+
+    // 5. 首页视图构建：等待渲染帧，并让页面上已渲染的图片真正解码完成
+    setStage(4, 0.25)
+    await nextTick()
+    await frames(2)
+    await wait(160)
+    setStage(4, 0.55)
+    await decodeDomImages()
+    await Promise.all(collectRenderedImageUrls().map((src) => preloadImage(src)))
+    await frames(2)
         setStage(4, 1)
         await completeStage(4)
 
