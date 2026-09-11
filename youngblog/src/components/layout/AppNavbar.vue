@@ -28,18 +28,11 @@
           <span>{{ i18n.currentTranslations.search }}</span>
         </button>
 
-        <button
-          class="nav-toggle"
-          type="button"
-          :class="{ 'is-open': isMenuOpen }"
-          :aria-expanded="isMenuOpen ? 'true' : 'false'"
-          :aria-label="
-            isMenuOpen
+        <button class="nav-toggle" type="button" :class="{ 'is-open': isMenuOpen }"
+          :aria-expanded="isMenuOpen ? 'true' : 'false'" :aria-label="isMenuOpen
               ? i18n.currentTranslations.nav_menu_close
               : i18n.currentTranslations.nav_menu_open
-          "
-          @click="toggleMenu"
-        >
+            " @click="toggleMenu">
           <span class="nav-toggle-bar"></span>
           <span class="nav-toggle-bar"></span>
           <span class="nav-toggle-bar"></span>
@@ -54,22 +47,14 @@
     并限制毛玻璃取样范围，因此抽屉必须移出 .navbar 才能正常呈现玻璃质感。
   -->
   <Teleport to="body">
-    <div
-      class="nav-drawer-root"
-      :class="{ 'is-open': isMenuOpen }"
-      :inert="isMenuOpen ? undefined : true"
-    >
+    <div class="nav-drawer-root" :class="{ 'is-open': isMenuOpen }" :inert="isMenuOpen ? undefined : true">
       <div class="nav-drawer-backdrop" @click="closeMenu"></div>
 
       <aside class="nav-drawer" role="dialog" aria-modal="true" aria-label="站点导航">
         <nav class="nav-drawer-nav">
           <ul class="nav-drawer-menu">
             <li v-for="(item, index) in menuItems" :key="item.path" :style="{ '--i': index }">
-              <router-link
-                :to="item.path"
-                :class="{ active: route.path === item.path }"
-                @click="closeMenu"
-              >
+              <router-link :to="item.path" :class="{ active: route.path === item.path }" @click="closeMenu">
                 <span class="nav-drawer-icon"><i :class="item.icon"></i></span>
                 <span class="nav-drawer-label">{{ i18n.currentTranslations[item.key] }}</span>
                 <i class="fas fa-chevron-right nav-drawer-arrow"></i>
@@ -278,12 +263,10 @@ onUnmounted(() => {
   padding-bottom: 16px;
   border-radius: 0 24px 24px 0;
   border-right: 1px solid rgba(255, 255, 255, 0.72);
-  background: linear-gradient(
-    165deg,
-    rgba(255, 255, 255, 0.92) 0%,
-    rgba(243, 248, 255, 0.86) 46%,
-    rgba(255, 245, 250, 0.9) 100%
-  );
+  background: linear-gradient(165deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(243, 248, 255, 0.86) 46%,
+      rgba(255, 245, 250, 0.9) 100%);
   -webkit-backdrop-filter: blur(24px) saturate(1.6);
   backdrop-filter: blur(24px) saturate(1.6);
   box-shadow: 18px 0 48px rgba(24, 32, 54, 0.22);
@@ -388,12 +371,10 @@ onUnmounted(() => {
 .nav-drawer-menu a.active {
   color: #14304a;
   border-color: rgba(255, 255, 255, 0.86);
-  background: linear-gradient(
-    120deg,
-    rgba(255, 182, 201, 0.44) 0%,
-    rgba(167, 243, 208, 0.42) 55%,
-    rgba(154, 215, 255, 0.44) 100%
-  );
+  background: linear-gradient(120deg,
+      rgba(255, 182, 201, 0.44) 0%,
+      rgba(167, 243, 208, 0.42) 55%,
+      rgba(154, 215, 255, 0.44) 100%);
   box-shadow:
     0 12px 26px rgba(24, 32, 54, 0.1),
     inset 0 0 0 1px rgba(255, 255, 255, 0.5);
@@ -463,12 +444,10 @@ onUnmounted(() => {
   padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 14px;
-  background: linear-gradient(
-    120deg,
-    rgba(255, 214, 232, 0.9),
-    rgba(232, 255, 244, 0.85) 55%,
-    rgba(243, 233, 255, 0.9)
-  );
+  background: linear-gradient(120deg,
+      rgba(255, 214, 232, 0.9),
+      rgba(232, 255, 244, 0.85) 55%,
+      rgba(243, 233, 255, 0.9));
   color: #6b2b4a;
   font-weight: 700;
   font-size: 0.98rem;
@@ -489,7 +468,7 @@ onUnmounted(() => {
     display: block;
   }
 
-  .nav-container > .nav-menu {
+  .nav-container>.nav-menu {
     display: none;
   }
 
@@ -580,6 +559,7 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .nav-drawer,
   .nav-drawer-backdrop,
   .nav-drawer-menu li,

@@ -598,21 +598,5 @@
                 "contentFile": "blogs/二上/计组/存储系统/Cache.md"
             }
         ]
-    },
-    {
-        "id": 2354014474,
-        "title": "形式语言与自动机理论",
-        "coverImage": "assets/images/background/bg2.webp",
-        "count": 1,
-        "posts": [
-            {
-                "id": 4196763013,
-                "title": "形式语言与自动机概论",
-                "date": "2026-09-10",
-                "order": 1,
-                "chapter": null,
-                "contentFile": "blogs/三上/形式语言与自动机/形式语言与自动机概论.md"
-            }
-        ]
     }
 ]

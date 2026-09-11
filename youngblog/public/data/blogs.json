@@ -1,20 +1,59 @@
 [
     {
-        "id": 4196763013,
-        "title": "形式语言与自动机概论",
-        "excerpt": "形式语言与自动机理论课程概述、发展概况、符号语言基础及运算性质",
-        "date": "2026-09-10",
+        "id": 3796104188,
+        "title": "计网导论",
+        "excerpt": "涵盖计算机网络定义、互联网历史、网络组成、协议分层与 OSI/TCP-IP 服务模型。",
+        "date": "2026-09-11",
         "image": "assets/images/blog_bg.webp",
         "tags": [
             "三上",
-            "形式语言与自动机"
+            "计网",
+            "概论"
         ],
         "category": "学习",
         "type": "系统笔记",
-        "series": "形式语言与自动机理论",
-        "order": 1,
+        "series": null,
+        "order": null,
         "chapter": null,
-        "contentFile": "blogs/三上/形式语言与自动机/形式语言与自动机概论.md",
+        "contentFile": "blogs/三上/计网/概论/计网导论.md",
+        "recommended": false
+    },
+    {
+        "id": 3594122478,
+        "title": "物理层",
+        "excerpt": "物理层核心概念、数据通信基础、传输媒体、信道复用、数字传输与宽带接入的复习提纲。",
+        "date": "2026-09-11",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "计网",
+            "物理层"
+        ],
+        "category": "学习",
+        "type": "概要笔记",
+        "series": null,
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/三上/计网/物理层/物理层.md",
+        "recommended": false
+    },
+    {
+        "id": 3670854306,
+        "title": "形式语言与自动机概论",
+        "excerpt": "形式语言与自动机理论课程概述、发展概况、符号语言基础及运算性质",
+        "date": "2026-09-11",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "形式语言与自动机",
+            "概论"
+        ],
+        "category": "学习",
+        "type": "系统笔记",
+        "series": null,
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/三上/形式语言与自动机/概论/形式语言与自动机概论.md",
         "recommended": false
     },
     {
@@ -1250,8 +1289,7 @@
         "order": 1,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/启动/计算机的启动过程.md",
-        "recommended": true,
-        "lastEditedDate": "2026-09-10"
+        "recommended": true
     },
     {
         "id": 2069020613,
