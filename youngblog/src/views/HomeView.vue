@@ -4,7 +4,10 @@
     <section class="hero-section">
       <div class="hero-content">
         <!-- 直接使用 currentTranslations，用 v-html 渲染换行 -->
-        <h1 class="welcome-text" v-html="i18n.currentTranslations.welcome_text.replace(/\n/g, '<br>')"></h1>
+        <h1
+          class="welcome-text"
+          v-html="i18n.currentTranslations.welcome_text.replace(/\n/g, '<br>')"
+        ></h1>
         <p class="subtitle">{{ i18n.currentTranslations.beihang }}</p>
       </div>
       <div class="scroll-down" @click="scrollToContent">
@@ -24,8 +27,10 @@
             <div class="blog-grid" id="blogGrid">
               <RecentUpdatesCard v-if="recentBlogs.length" :blogs="recentBlogs" />
 
-              <div class="recommended-blogs-card" style="grid-column: 1 / -1;">
-                <span class="recommended-title">{{ i18n.currentTranslations.home_recommended_blogs }}</span>
+              <div class="recommended-blogs-card" style="grid-column: 1 / -1">
+                <span class="recommended-title">{{
+                  i18n.currentTranslations.home_recommended_blogs
+                }}</span>
               </div>
 
               <BlogCard v-for="blog in recommendedBlogs" :key="blog.id" :blog="blog" />
@@ -83,6 +88,8 @@ onMounted(() => {
 /* ========== Hero 区域 ========== */
 .hero-section {
   height: 100vh;
+  /* 移动端地址栏收起/展开时 svh 更稳定，避免整屏高度跳动 */
+  height: 100svh;
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -165,8 +172,9 @@ onMounted(() => {
   margin-bottom: 1rem;
   animation: fadeInUp 1s ease;
   color: #ff5f8a;
-  text-shadow: 0 2px 0 rgba(140, 140, 140, 0.40),
-    0 12px 24px rgba(255, 95, 138, 0.30);
+  text-shadow:
+    0 2px 0 rgba(140, 140, 140, 0.4),
+    0 12px 24px rgba(255, 95, 138, 0.3);
   word-spacing: 0.6em;
   letter-spacing: 0.01em;
 }
@@ -180,7 +188,8 @@ onMounted(() => {
     color: transparent;
     -webkit-text-fill-color: transparent;
     text-shadow: none;
-    filter: drop-shadow(0 2px 0 rgba(140, 140, 140, 0.38)) drop-shadow(0 12px 24px rgba(255, 95, 138, 0.24));
+    filter: drop-shadow(0 2px 0 rgba(140, 140, 140, 0.38))
+      drop-shadow(0 12px 24px rgba(255, 95, 138, 0.24));
   }
 }
 
@@ -211,7 +220,6 @@ onMounted(() => {
 }
 
 @keyframes bounce {
-
   0%,
   20%,
   50%,
@@ -241,10 +249,12 @@ onMounted(() => {
 /* ========== 内容区域 ========== */
 .content-section {
   position: relative;
-  background: linear-gradient(135deg,
-      rgba(255, 182, 201, 0.22) 0%,
-      rgba(167, 243, 208, 0.22) 45%,
-      rgba(199, 182, 255, 0.22) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 182, 201, 0.22) 0%,
+    rgba(167, 243, 208, 0.22) 45%,
+    rgba(199, 182, 255, 0.22) 100%
+  );
   backdrop-filter: blur(8px) saturate(1.06);
   -webkit-backdrop-filter: blur(8px) saturate(1.06);
   min-height: 100vh;
@@ -310,7 +320,16 @@ onMounted(() => {
   overflow: hidden;
   border: var(--card-border-w, 5px) solid transparent;
   background:
-    var(--card-fill-blog, linear-gradient(135deg, rgba(255, 182, 201, 0.22) 0%, rgba(199, 182, 255, 0.20) 55%, rgba(255, 182, 201, 0.16) 100%)) padding-box,
+    var(
+        --card-fill-blog,
+        linear-gradient(
+          135deg,
+          rgba(255, 182, 201, 0.22) 0%,
+          rgba(199, 182, 255, 0.2) 55%,
+          rgba(255, 182, 201, 0.16) 100%
+        )
+      )
+      padding-box,
     linear-gradient(135deg, #ffb6c9, #a7f3d0, #c7b6ff) border-box;
   backdrop-filter: blur(12px) saturate(1.06);
   -webkit-backdrop-filter: blur(12px) saturate(1.06);
@@ -377,7 +396,10 @@ onMounted(() => {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.66);
   box-shadow: 0 8px 20px rgba(118, 88, 210, 0.08);
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.14s;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.14s;
   width: 100%;
   max-width: 860px;
 }
@@ -387,15 +409,19 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(110deg,
-      rgba(194, 233, 255, 0.92) 0%,
-      rgba(180, 229, 255, 0.91) 22%,
-      rgba(188, 247, 226, 0.91) 50%,
-      rgba(175, 240, 215, 0.91) 76%,
-      rgba(200, 236, 255, 0.92) 100%);
+  background: linear-gradient(
+    110deg,
+    rgba(194, 233, 255, 0.92) 0%,
+    rgba(180, 229, 255, 0.91) 22%,
+    rgba(188, 247, 226, 0.91) 50%,
+    rgba(175, 240, 215, 0.91) 76%,
+    rgba(200, 236, 255, 0.92) 100%
+  );
   background-size: 240% 240%;
   background-position: 0% 50%;
-  transition: filter 0.2s ease, opacity 0.2s ease;
+  transition:
+    filter 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .view-more-btn:hover {
@@ -436,12 +462,93 @@ onMounted(() => {
   }
 
   .view-more-btn::before {
-    background: linear-gradient(110deg,
-        rgba(90, 66, 104, 0.98) 0%,
-        rgba(71, 86, 115, 0.98) 24%,
-        rgba(50, 111, 106, 0.98) 49%,
-        rgba(69, 90, 129, 0.98) 74%,
-        rgba(87, 72, 122, 0.98) 100%);
+    background: linear-gradient(
+      110deg,
+      rgba(90, 66, 104, 0.98) 0%,
+      rgba(71, 86, 115, 0.98) 24%,
+      rgba(50, 111, 106, 0.98) 49%,
+      rgba(69, 90, 129, 0.98) 74%,
+      rgba(87, 72, 122, 0.98) 100%
+    );
+  }
+}
+
+/* ========== 移动端细调 ========== */
+@media (max-width: 720px) {
+  .hero-content {
+    width: min(92vw, 560px);
+  }
+
+  .welcome-text {
+    font-size: clamp(1.75rem, 8vw, 2.2rem);
+    line-height: 1.22;
+    word-spacing: 0.34em;
+    margin-bottom: 0.7rem;
+  }
+
+  .subtitle {
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* 底部提示上移，避开右下角浮动控制按钮 */
+  .scroll-down {
+    bottom: 96px;
+    font-size: 1.55rem;
+    gap: 4px;
+  }
+
+  .music-tip {
+    font-size: 12.5px;
+    line-height: 1.4;
+    margin: 6px 0 4px;
+    max-width: 76vw;
+  }
+
+  /* 移动端弱化毛玻璃，减少长列表滚动的重绘开销 */
+  .content-section {
+    backdrop-filter: blur(6px) saturate(1.04);
+    -webkit-backdrop-filter: blur(6px) saturate(1.04);
+  }
+
+  .blog-grid {
+    gap: 16px;
+  }
+
+  .recommended-blogs-card {
+    min-height: 68px;
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .recommended-blogs-card .recommended-title {
+    font-size: 1.24rem;
+    letter-spacing: 0.05em;
+  }
+
+  .view-more-wrap {
+    margin: 14px 0 4px;
+  }
+
+  .view-more-btn {
+    padding: 12px 18px;
+    font-size: 1rem;
+    border-radius: 11px;
+  }
+}
+
+@media (max-width: 400px) {
+  .welcome-text {
+    font-size: clamp(1.6rem, 8.6vw, 1.95rem);
+    word-spacing: 0.24em;
+  }
+
+  .subtitle {
+    font-size: 0.98rem;
+  }
+
+  .scroll-down {
+    bottom: 88px;
   }
 }
 </style>

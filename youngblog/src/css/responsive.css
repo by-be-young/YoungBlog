@@ -1,8 +1,38 @@
 /* 响应式设计 */
 
+/* ==================== 首页 ==================== */
+
+/* ≤1100px：首页侧栏让位给正文（单列），导航改为抽屉，见 AppNavbar.vue */
+@media (max-width: 1100px) {
+    .home .sidebar {
+        display: none !important;
+    }
+
+    .home .content-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 601–1100px：正文单列但博客保持两列，避免出现「有侧栏、单列」的中间状态 */
+@media (min-width: 601px) and (max-width: 1100px) {
+    .home .blog-grid {
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+        gap: 20px;
+    }
+}
+
+/* ≤600px：博客单列 */
+@media (max-width: 600px) {
+    .home .blog-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==================== 非首页 ==================== */
+
 @media (max-width: 992px) {
 
-    /* 仅对非首页生效，避免首页侧边栏过早折叠导致单列布局 */
+    /* 仅对非首页生效，避免首页布局被过早折叠 */
     body:not(.home) .content-wrapper {
         grid-template-columns: 1fr;
         gap: 30px;
@@ -24,12 +54,6 @@
 }
 
 @media (max-width: 768px) {
-
-    /* 在小屏保留切换按钮，但 offcanvas 菜单样式由 .nav-menu.offcanvas 控制，避免白色/固定像素覆盖 */
-    .nav-toggle {
-        display: block;
-    }
-
     .welcome-text {
         font-size: 2.2rem;
     }
@@ -42,7 +66,6 @@
         flex-direction: column;
         gap: 15px;
     }
-
 }
 
 @media (max-width: 576px) {
@@ -69,74 +92,6 @@
     }
 }
 
-/* 极窄屏（<=600px）：彻底隐藏首页侧栏，头部内联菜单隐藏，显示切换按钮；侧边 offcanvas 使用不透明马卡龙背景并为 30% 宽度（设置最小值以保证可点击） */
-@media (max-width: 600px) {
-    .home .sidebar {
-        display: none !important;
-    }
-
-    .home .content-wrapper {
-        grid-template-columns: 1fr;
-    }
-
-    /* 隐藏头部内联菜单（链接项），但保持搜索控件始终可见 */
-    .nav-container>.nav-menu {
-        display: none !important;
-    }
-
-    .nav-toggle {
-        display: block !important;
-    }
-
-    /* 搜索控件始终可见并可交互，提升层级以覆盖遮罩 */
-    .nav-search-btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        position: relative !important;
-        z-index: 1501 !important;
-    }
-
-    /* offcanvas 使用 transform 隐藏以避免留下可视缝隙，同时使用不透明马卡龙渐变 */
-    .nav-menu.offcanvas {
-        position: fixed;
-        top: 60px;
-        left: 0;
-        transform: translateX(-100%);
-        width: 30% !important;
-        min-width: 240px !important;
-        height: calc(100vh - 60px);
-        background: linear-gradient(135deg, #ffd6e0 0%, #c8f7dc 50%, #e7e7ff 100%) !important;
-        display: flex !important;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        padding: 20px 12px;
-        transition: transform 280ms ease;
-        z-index: 1400;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16) !important;
-        overflow-y: auto;
-    }
-
-    .nav-menu.offcanvas.active {
-        transform: translateX(0) !important;
-    }
-
-    /* 遮罩（默认隐藏）；当 body 有 .offcanvas-open 时显示 */
-    .offcanvas-backdrop {
-        display: none;
-    }
-
-    body.offcanvas-open .offcanvas-backdrop {
-        /* 在极窄屏彻底不显示遮罩 */
-        display: none !important;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.32);
-        z-index: 1350;
-        /* keep below nav-menu (1400) but above page content */
-    }
-}
-
 /* 当视口宽度使网格一行放两个卡片时（近似 520px-900px），强制每个 tag 独占一行 */
 @media (min-width: 520px) and (max-width: 900px) {
     .blog-card .tags {
@@ -151,92 +106,7 @@
     }
 }
 
-/* 新增：在中间宽度区间，隐藏首页侧栏但保持博客两列（避免出现“有侧栏、单列”中间状态） */
-@media (max-width: 1100px) and (min-width: 601px) {
-    .home .sidebar {
-        display: none !important;
-    }
-
-    .home .content-wrapper {
-        grid-template-columns: 1fr;
-    }
-
-    .nav-avatar {
-        display: inline-flex;
-    }
-
-    .home .blog-grid {
-        grid-template-columns: repeat(2, minmax(260px, 1fr));
-        gap: 20px;
-    }
-
-    /* 在无侧栏（中间区间）将导航项收进侧边 off-canvas 菜单 */
-    .nav-toggle {
-        display: block;
-    }
-
-    .nav-container>.nav-menu {
-        display: none;
-    }
-
-    /* 侧边 off-canvas 菜单（复用同一元素，但仅定位在该区间） */
-    .nav-menu.offcanvas {
-        position: fixed;
-        top: 60px;
-        left: 0;
-        transform: translateX(-100%);
-        width: 30% !important;
-        min-width: 260px !important;
-        height: calc(100vh - 60px);
-        background: linear-gradient(135deg, #ffd6e0 0%, #c8f7dc 50%, #e7e7ff 100%) !important;
-        display: flex !important;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        padding: 20px 12px;
-        transition: transform 280ms ease;
-        z-index: 1400;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-        overflow-y: auto;
-    }
-
-    .nav-menu.offcanvas.active {
-        transform: translateX(0);
-    }
-
-    /* 中间区间同样使用遮罩样式 */
-    body.offcanvas-open .offcanvas-backdrop {
-        display: block;
-    }
-}
-
-/* 更窄时改为单列 */
-@media (max-width: 600px) {
-    .home .blog-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* 移动端导航栏：给站点标题更充足空间，避免“白恙的博客”换行 */
-@media (max-width: 600px) {
-    .nav-container {
-        gap: 8px;
-    }
-
-    .nav-brand {
-        flex: 1 1 auto;
-        min-width: 0;
-        margin-right: 0 !important;
-    }
-
-    .nav-brand [data-i18n="brand"] {
-        white-space: nowrap;
-    }
-
-    .nav-actions {
-        flex: 0 0 auto;
-    }
-}
+/* 移动端导航栏（品牌收缩 / 汉堡按钮 / 抽屉）样式见 AppNavbar.vue 的 scoped 样式 */
 
 /* About 页面移动端：左右改为上下，仅在手机宽度生效 */
 @media (max-width: 768px) {
@@ -268,100 +138,4 @@
     }
 }
 
-/* 侧边栏重做：保留原配色，改为标准导航抽屉而非复用顶部按钮样式 */
-@media (max-width: 1100px) {
-    body.offcanvas-open .navbar {
-        z-index: 1500;
-    }
-
-    .nav-menu.offcanvas {
-        position: fixed;
-        top: 60px;
-        left: 0;
-        transform: translateX(-100%);
-        z-index: 1400;
-        width: min(82vw, 320px) !important;
-        max-width: calc(100vw - 20px) !important;
-        min-width: 0 !important;
-        height: calc(100vh - 60px);
-        padding: 12px 0 18px;
-        background: linear-gradient(135deg, #ffd6e0 0%, #c8f7dc 50%, #e7e7ff 100%) !important;
-        border-right: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: 14px 0 36px rgba(0, 0, 0, 0.16) !important;
-        gap: 0;
-        overflow-y: auto;
-    }
-
-    .nav-menu.offcanvas li {
-        width: 100%;
-        margin: 0;
-        list-style: none;
-    }
-
-    .nav-menu.offcanvas li+li {
-        border-top: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    .nav-menu.offcanvas a {
-        display: flex !important;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        padding: 14px 18px;
-        border-radius: 0 !important;
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        color: #2b3440 !important;
-        font-weight: 700;
-        line-height: 1.2;
-        text-decoration: none;
-        transition: background 180ms ease, color 180ms ease, padding-left 180ms ease;
-    }
-
-    .nav-menu.offcanvas a i {
-        width: 20px;
-        text-align: center;
-        color: #55c8ff;
-        opacity: 0.95;
-        font-size: 1rem;
-    }
-
-    .nav-menu.offcanvas a span {
-        flex: 1 1 auto;
-    }
-
-    .nav-menu.offcanvas a::after {
-        content: '›';
-        color: rgba(43, 52, 64, 0.45);
-        font-size: 1.08rem;
-        transition: transform 180ms ease, color 180ms ease;
-    }
-
-    .nav-menu.offcanvas a:hover,
-    .nav-menu.offcanvas a.active {
-        background: linear-gradient(90deg, rgba(255, 182, 201, 0.34), rgba(154, 215, 255, 0.24), rgba(167, 243, 208, 0.26)) !important;
-        color: #2b3440 !important;
-        padding-left: 22px;
-        box-shadow: inset 3px 0 0 #55c8ff;
-    }
-
-    .nav-menu.offcanvas a:hover::after,
-    .nav-menu.offcanvas a.active::after {
-        color: rgba(43, 52, 64, 0.72);
-        transform: translateX(2px);
-    }
-
-    .offcanvas-backdrop {
-        display: none;
-    }
-
-    body.offcanvas-open .offcanvas-backdrop {
-        display: block !important;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.32);
-        z-index: 980;
-        backdrop-filter: blur(2px);
-    }
-}
+/* 导航抽屉（offcanvas）的全部样式已迁移到 AppNavbar.vue 的 scoped 样式中 */

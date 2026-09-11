@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppNavbar from '@/components/layout/AppNavbar.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
@@ -119,6 +119,17 @@ router.afterEach(() => {
     routeLoading.value = false
   }, 320)
 })
+
+// 同步页面标记到 <body>：CSS 依赖 body.home 区分首页布局（侧栏折叠、栅格列数等）
+const syncBodyRouteClass = (name) => {
+  document.body.classList.toggle('home', String(name || '').toLowerCase() === 'home')
+}
+
+watch(
+  () => route.name,
+  (name) => syncBodyRouteClass(name),
+  { immediate: true },
+)
 
 // 加载背景图（默认列表与入场加载器共用，保证预载的图片与实际渲染一致）
 const loadBackgrounds = async () => {

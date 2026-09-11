@@ -12,6 +12,8 @@ const translations = {
         quicklinks: '快捷链接',
         about: '关于',
         search: '搜索',
+        nav_menu_open: '打开导航菜单',
+        nav_menu_close: '关闭导航菜单',
         language: '语种',
         beihang: '中国 北航',
         toc: '目录',
@@ -183,7 +185,7 @@ const translations = {
         immersive_read: '沉浸阅读',
         export_action: '导出',
         display_manage: '显示管理',
-        back_to_previous: '返回'
+        back_to_previous: '返回',
     },
     en: {
         brand: "Young's Escape Journey",
@@ -194,6 +196,8 @@ const translations = {
         quicklinks: 'Quick Links',
         about: 'About',
         search: 'Search',
+        nav_menu_open: 'Open navigation menu',
+        nav_menu_close: 'Close navigation menu',
         language: 'Language',
         beihang: 'Beihang China',
         toc: 'Table of Contents',
@@ -353,7 +357,7 @@ const translations = {
         immersive_read: 'Immersive Read',
         export_action: 'Export',
         display_manage: 'Display',
-        back_to_previous: 'Back'
+        back_to_previous: 'Back',
     },
     ja: {
         brand: '白恙の逃避行',
@@ -364,6 +368,8 @@ const translations = {
         quicklinks: 'クイックリンク',
         about: '概要',
         search: '検索',
+        nav_menu_open: 'ナビゲーションメニューを開く',
+        nav_menu_close: 'ナビゲーションメニューを閉じる',
         language: '言語',
         beihang: '中国 北航',
         toc: '目次',
@@ -523,8 +529,8 @@ const translations = {
         immersive_read: '没入読書',
         export_action: 'エクスポート',
         display_manage: '表示管理',
-        back_to_previous: '戻る'
-    }
+        back_to_previous: '戻る',
+    },
 }
 
 export const useI18nStore = defineStore('i18n', () => {
@@ -564,10 +570,10 @@ export const useI18nStore = defineStore('i18n', () => {
 
     return {
         lang,
-        currentTranslations,  // 模板中使用：{{ i18n.currentTranslations.brand }}
-        t,                    // 模板中使用：{{ i18n.t('brand').value }}
-        get,                  // JS 中使用：i18n.get('brand')
+        currentTranslations, // 模板中使用：{{ i18n.currentTranslations.brand }}
+        t, // 模板中使用：{{ i18n.t('brand').value }}
+        get, // JS 中使用：i18n.get('brand')
         setLang,
-        getLang
+        getLang,
     }
 })
