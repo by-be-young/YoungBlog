@@ -229,13 +229,20 @@ export function useMarkdown() {
         })
     }
 
+    // ==================== 数学公式缓存 ====================
+    /**
+     * 解析阶段把 $$...$$ / $...$ 替换为占位符 @@MATHD_n@@ / @@MATHI_n@@，
+     * 渲染完成后再用 KaTeX 还原（见 renderMathPlaceholders）。
+     * 每次 renderMarkdown 前必须清空。
+     */
+    const displayMathBlocks = []
+    const inlineMathBlocks = []
+
     // ==================== 自定义块解析（完整） ====================
     function processCustomBlocks(markdownText, marked) {
         if (!markdownText) return markdownText
 
         // 辅助：提取数学公式（用于选项内部）
-        const displayMathBlocks = []
-        const inlineMathBlocks = []
         function extractMathFrom(text) {
             if (!text) return ''
             const codeBlocks = []
@@ -577,6 +584,80 @@ export function useMarkdown() {
         })
     }
 
+    // ==================== 数学公式还原（KaTeX） ====================
+    /**
+     * 把文本节点中的 @@MATHD_n@@ / @@MATHI_n@@ 占位符替换为 KaTeX 渲染结果
+     * @param {HTMLElement} rootEl - 待处理的容器
+     * @param {object} katex - KaTeX 实例
+     */
+    function renderMathPlaceholders(rootEl, katex) {
+        if (!rootEl || !katex) return
+        const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null, false)
+        const textNodes = []
+        while (walker.nextNode()) textNodes.push(walker.currentNode)
+
+        textNodes.forEach(node => {
+            const text = node.nodeValue || ''
+            if (!text.includes('@@MATH')) return
+            const parentTag = node.parentElement?.tagName?.toLowerCase() || ''
+            if (['code', 'pre', 'textarea'].includes(parentTag)) return
+
+            const re = /@@MATH([DI])_(\d+)@@/g
+            if (!re.test(text)) return
+            re.lastIndex = 0
+
+            const parts = []
+            let last = 0
+            let m
+            while ((m = re.exec(text)) !== null) {
+                if (m.index > last) parts.push(document.createTextNode(text.slice(last, m.index)))
+                const isDisplay = m[1] === 'D'
+                const tex = (isDisplay ? displayMathBlocks : inlineMathBlocks)[parseInt(m[2], 10)]
+                const span = document.createElement('span')
+                span.className = isDisplay ? 'math-display' : 'math-inline'
+                if (typeof tex === 'string') {
+                    try {
+                        span.innerHTML = katex.renderToString(tex.trim(), {
+                            displayMode: isDisplay,
+                            throwOnError: false,
+                            strict: false
+                        })
+                    } catch (_) {
+                        span.textContent = isDisplay ? `$$${tex}$$` : `$${tex}$`
+                    }
+                }
+                parts.push(span)
+                last = m.index + m[0].length
+            }
+            if (last < text.length) parts.push(document.createTextNode(text.slice(last)))
+            if (!parts.length) return
+
+            const frag = document.createDocumentFragment()
+            parts.forEach(p => frag.appendChild(p))
+            node.parentNode.replaceChild(frag, node)
+        })
+    }
+
+    // ==================== 过宽行内公式标记 ====================
+    /**
+     * 给宽度超出容器的行内公式打上 is-overflowing（只有这类公式才变成可横向滚动的
+     * inline-block，其余保持行内对齐，避免基线偏移）
+     * @param {HTMLElement} rootEl - 已渲染到页面上的文章容器
+     */
+    function markWideMath(rootEl) {
+        if (!rootEl) return
+        rootEl.querySelectorAll('.math-inline').forEach(el => {
+            const parent = el.parentElement
+            if (!parent) return
+            el.classList.remove('is-overflowing')
+            const cs = getComputedStyle(parent)
+            const limit = parent.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0)
+            if (limit > 0 && el.getBoundingClientRect().width > limit + 1) {
+                el.classList.add('is-overflowing')
+            }
+        })
+    }
+
     // ==================== 主渲染函数 ====================
     async function renderMarkdown(rawMarkdown, sourcePath = '') {
         if (!rawMarkdown) return ''
@@ -585,19 +666,31 @@ export function useMarkdown() {
         const { marked } = await import('marked')
         const hljs = (await import('@/utils/highlight')).default
 
+        // 清空上一次渲染遗留的数学公式缓存
+        displayMathBlocks.length = 0
+        inlineMathBlocks.length = 0
+
         // 1. 预处理
         let md = stripFrontMatter(rawMarkdown)
         md = transformObsidianImageEmbeds(md)
         md = normalizeOrderedListIndentation(md)
 
-        // 2. 处理自定义块（返回 HTML 片段）
+        // 2. 处理自定义块（返回 HTML 片段，其中数学公式已被替换为占位符）
         let html = processCustomBlocks(md, marked)
 
-        // 3. 数学公式提取（保护显示/行内公式）
-
-        // 4. 创建临时容器进行后处理
+        // 3. 创建临时容器进行后处理
         const container = document.createElement('div')
         container.innerHTML = html
+
+        // 3.1 还原数学公式（KaTeX 体积较大，仅在存在公式时按需加载）
+        if (displayMathBlocks.length || inlineMathBlocks.length) {
+            try {
+                const katex = (await import('katex')).default
+                renderMathPlaceholders(container, katex)
+            } catch (e) {
+                console.warn('[Markdown] 数学公式渲染失败:', e)
+            }
+        }
 
         // 5. 资源重写
         rewriteMarkdownAssetUrls(container, sourcePath)
@@ -638,6 +731,7 @@ export function useMarkdown() {
         bindAnswers,            // 暴露供外部调用
         initImageViewer,        // 暴露供外部调用
         annotateTaskLabels,
+        markWideMath,
         applyRandomMacaronListMarkerColors,
         rewriteMarkdownAssetUrls,
         transformObsidianImageEmbeds,

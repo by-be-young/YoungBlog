@@ -12,6 +12,7 @@ import './css/butterfly.css'
 import './css/responsive.css'
 import './css/search.css'
 import 'highlight.js/styles/atom-one-dark.css'
+import 'katex/dist/katex.min.css'
 
 const app = createApp(App)
 

@@ -1,5 +1,11 @@
 <template>
-    <nav class="blog-toc" :class="{ 'toc-collapsed': collapsed }">
+  <!--
+    toc-root 使用 display: contents，使内部元素在桌面端仍作为 .container 的直接子项参与布局；
+    移动端（紧凑模式）下导航、遮罩、按钮均脱离文档流，正文占满整行。
+  -->
+  <div class="toc-root">
+    <nav class="blog-toc"
+      :class="{ 'toc-collapsed': collapsed, 'toc-compact': isCompact, 'in-overlay': isCompact, 'is-open': overlayOpen }">
         <div class="toc-header">
             <div class="toc-title">{{ i18n.currentTranslations.toc }}</div>
             <div class="toc-progress">{{ Math.round(progress) }}%</div>
@@ -56,6 +62,19 @@
             <slot name="footer" />
         </div>
     </nav>
+
+    <!-- 紧凑模式（移动端）遮罩：点击空白处关闭目录 -->
+    <div v-if="isCompact" class="toc-overlay" :class="{ 'is-active': overlayOpen }" @click.self="closeOverlay"></div>
+
+    <!-- 紧凑模式（移动端）目录按钮：注入右下角悬浮球组，避免与其它悬浮球重叠 -->
+    <Teleport v-if="isCompact && fabTarget" :to="fabTarget">
+      <button type="button" class="toc-fab floating-btn" :title="i18n.get(overlayOpen ? 'toc_close' : 'toc_open')"
+        :aria-expanded="overlayOpen ? 'true' : 'false'" :aria-label="i18n.get(overlayOpen ? 'toc_close' : 'toc_open')"
+        @click="toggleOverlay">
+        <i :class="overlayOpen ? 'fas fa-times' : 'fas fa-list-ul'" aria-hidden="true"></i>
+      </button>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -634,7 +653,69 @@ function scrollToHeader(node) {
     }
 
     window.scrollTo({ top: y, behavior: 'smooth' })
+    closeOverlay()
 }
+
+// ==================== 一、紧凑模式（移动端） ====================
+
+/** 走马灯式目录弹层的响应式开关 */
+const isCompact = ref(false)
+/** 弹出层是否展开 */
+const overlayOpen = ref(false)
+/** 右下角悬浮球组容器（目录按钮通过 Teleport 注入其中） */
+const fabTarget = ref(null)
+/** 紧凑模式媒体查询（与样式中的断点保持一致） */
+const COMPACT_QUERY = '(max-width: 880px)'
+let compactMql = null
+
+function toggleOverlay() {
+    if (overlayOpen.value) closeOverlay()
+    else openOverlay()
+}
+
+function openOverlay() {
+    overlayOpen.value = true
+    // 弹层展开时锁定页面滚动，避免背景跟随滚动
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onOverlayKeyDown)
+}
+
+function closeOverlay() {
+    if (!overlayOpen.value) return
+    overlayOpen.value = false
+    document.body.style.overflow = ''
+    window.removeEventListener('keydown', onOverlayKeyDown)
+}
+
+function onOverlayKeyDown(e) {
+    if (e.key === 'Escape') closeOverlay()
+}
+
+/** 响应式断点变化：离开紧凑模式时收起弹层 */
+function onCompactChange(matches) {
+    isCompact.value = matches
+    if (!matches) closeOverlay()
+}
+
+/**
+ * 调整目录球在悬浮球组中的位置
+ * 该组为 flex column-reverse（DOM 越靠前视觉越靠下），
+ * 目标视觉顺序（自下而上）：回到顶部 → 目录 → 设置 → 子菜单
+ */
+function placeFab() {
+    const group = fabTarget.value
+    if (!group) return
+    const fab = group.querySelector(':scope > .toc-fab')
+    if (!fab) return
+    const topBtn = group.querySelector('.back-to-top-btn')
+    const anchor = topBtn ? topBtn.nextElementSibling : null
+    if (anchor !== fab && anchor) group.insertBefore(fab, anchor)
+}
+
+watch([isCompact, fabTarget], async () => {
+    await nextTick()
+    placeFab()
+})
 
 // ==================== 监听 contentHtml 重建目录 ====================
 
@@ -663,6 +744,13 @@ function onResize() {
 onMounted(() => {
     window.addEventListener('scroll', throttledScroll)
     window.addEventListener('resize', onResize)
+    // 紧凑模式（移动端目录按钮 + 弹层）
+    compactMql = window.matchMedia(COMPACT_QUERY)
+    onCompactChange(compactMql.matches)
+    compactMql.addEventListener('change', e => onCompactChange(e.matches))
+    // 悬浮球组容器（FloatingControls 与本组件同级，挂载后才存在）
+    fabTarget.value = document.querySelector('#floating-controls')
+    nextTick(placeFab)
     const list = tocListRef.value
     if (list) {
         listScrollHandler = () => {
@@ -678,6 +766,10 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('scroll', throttledScroll)
     window.removeEventListener('resize', onResize)
+    if (compactMql) compactMql.removeEventListener('change', onCompactChange)
+    compactMql = null
+    closeOverlay()
+    document.body.style.overflow = ''
     const list = tocListRef.value
     if (list && listScrollHandler) list.removeEventListener('scroll', listScrollHandler)
     if (rebuildTimer) clearTimeout(rebuildTimer)
@@ -973,33 +1065,20 @@ onUnmounted(() => {
         flex 0.28s ease;
 }
 
-/* ==================== 紧凑模式与弹层 ==================== */
-body.toc-compact-mode .blog-toc:not(.in-overlay) {
-    display: none !important;
+/* ==================== 紧凑模式（移动端）与弹层 ==================== */
+/* 桌面端 toc-root 不生成盒子，内部元素直接作为 .container 的子项参与布局 */
+.toc-root {
+    display: contents;
 }
 
-.toc-fab {
-    width: 48px;
-    height: 48px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-}
-
-.toc-fab:active {
-    transform: scale(0.98);
-}
-
+/* 遮罩层：点击空白处关闭目录 */
 .toc-overlay {
     position: fixed;
     inset: 0;
     z-index: 1098;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(24, 40, 52, 0.42);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.26s ease;
@@ -1010,32 +1089,62 @@ body.toc-compact-mode .blog-toc:not(.in-overlay) {
     pointer-events: auto;
 }
 
-.toc-overlay .blog-toc.in-overlay {
-    position: relative;
-    top: auto;
-    align-self: center;
-    width: min(88vw, 420px);
-    flex: 0 0 auto;
-    max-height: min(78vh, 680px);
-    margin: 0;
-    overflow: hidden;
-    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
-    transform: translate(var(--toc-pop-dx, 0), var(--toc-pop-dy, 0)) scale(0.2);
-    opacity: 0;
-    will-change: transform, opacity;
-    transition:
-        transform 0.32s cubic-bezier(0.2, 0.82, 0.22, 1),
-        opacity 0.24s ease;
+/* 目录按钮：注入右下角悬浮球组（圆形渐变外观由 .floating-btn 提供） */
+.toc-fab {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    font-size: 1.2rem;
+    flex-shrink: 0;
 }
 
-.toc-overlay .blog-toc.in-overlay.is-open {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
+@media (max-width: 720px) {
+    .toc-fab {
+        width: 42px;
+        height: 42px;
+        font-size: 1rem;
+    }
 }
 
 @media (max-width: 880px) {
-    body.toc-compact-mode .toc-fab {
-        display: inline-flex;
+
+    /* 紧凑模式：目录变为居中弹层，正文占满整行 */
+    .blog-toc.in-overlay {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        align-self: center;
+        width: min(88vw, 420px);
+        max-width: 88vw;
+        height: auto;
+        max-height: min(78vh, 640px);
+        margin: 0;
+        padding: 16px 18px;
+        z-index: 1099;
+        overflow: hidden;
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -50%) scale(0.86);
+        transform-origin: 50% 50%;
+        will-change: transform, opacity;
+        transition:
+            transform 0.3s cubic-bezier(0.2, 0.82, 0.22, 1),
+            opacity 0.22s ease;
+    }
+
+    .blog-toc.in-overlay.is-open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .toc-overlay,
+    .blog-toc.in-overlay {
+        transition: none !important;
     }
 }
 </style>

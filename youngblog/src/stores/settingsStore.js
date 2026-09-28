@@ -1,6 +1,6 @@
 /**
  * 显示设置 Store
- * 管理沉浸模式、习题显示模式、代码块折叠状态
+ * 管理沉浸模式、习题显示模式、代码块显示状态
  */
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -9,7 +9,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const isImmersive = ref(false)
     const isWide = ref(false)
     const exerciseMode = ref('collapse')   // 'hide' | 'collapse' | 'practice' | 'expand'
-    const codeMode = ref('expand')         // 'collapse' | 'expand'
+    const codeMode = ref('peek')           // 'peek' | 'collapse' | 'expand'（半展开 / 收起 / 展开）
 
     function toggleImmersive() {
         isImmersive.value = !isImmersive.value

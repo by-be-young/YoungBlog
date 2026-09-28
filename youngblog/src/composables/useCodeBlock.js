@@ -35,63 +35,170 @@ export function useCodeBlock() {
      * 增强页面中的所有代码块
      * @param {HTMLElement} rootEl - 包含代码块的根元素
      */
-    // ---- 折叠/展开辅助（供 enhance 和 rebindEvents 共用） ----
-    function collapseBody(container, bodyEl) {
-        if (!container || !bodyEl) return
-        if (bodyEl.__expandEndHandler) {
-            bodyEl.removeEventListener('transitionend', bodyEl.__expandEndHandler)
-            bodyEl.__expandEndHandler = null
-        }
-        if (bodyEl.__collapseEndHandler) {
-            bodyEl.removeEventListener('transitionend', bodyEl.__collapseEndHandler)
-            bodyEl.__collapseEndHandler = null
-        }
-        bodyEl.hidden = false
-        const currentHeight = bodyEl.getBoundingClientRect().height || bodyEl.scrollHeight
-        bodyEl.style.cssText = `overflow:hidden;transition:height 280ms ease,opacity 220ms ease;height:${currentHeight}px;opacity:1`
-        void bodyEl.offsetHeight
-        requestAnimationFrame(() => {
-            container.classList.add('is-collapsed')
-            bodyEl.style.height = '0px'
-            bodyEl.style.opacity = '0'
-        })
-        const onEnd = (e) => {
-            if (e.propertyName !== 'height') return
-            bodyEl.hidden = true; bodyEl.style.height = ''; bodyEl.style.overflow = ''
-            bodyEl.removeEventListener('transitionend', onEnd)
-            bodyEl.__collapseEndHandler = null
-        }
-        bodyEl.__collapseEndHandler = onEnd
-        bodyEl.addEventListener('transitionend', onEnd)
+    // ==================== 代码块三态（半展开 / 展开 / 收起） ====================
+    /**
+     * 状态说明：
+     * - peek      : 半展开，只显示前 PEEK_LINES 行，第 PEEK_LINES + 1 行开始渐隐
+     * - expanded  : 展开，完整显示
+     * - collapsed : 收起，只保留头部
+     * 其余代码块（行数不超过 PEEK_LINES）仅在 expanded / collapsed 之间切换。
+     */
+    const PEEK_LINES = 10
+    const PEEK_FADE = 56
+
+    /** 状态 → i18n key / 图标 */
+    const STATE_META = {
+        peek: { key: 'code_peek', icon: 'fas fa-ellipsis', label: '半展开' },
+        expanded: { key: 'code_expand', icon: 'fas fa-chevron-up', label: '展开' },
+        collapsed: { key: 'code_collapse', icon: 'fas fa-chevron-down', label: '收起' }
     }
 
-    function expandBody(container, bodyEl) {
-        if (!container || !bodyEl) return
-        if (bodyEl.__collapseEndHandler) {
-            bodyEl.removeEventListener('transitionend', bodyEl.__collapseEndHandler)
-            bodyEl.__collapseEndHandler = null
+    /** 取代码块主体（普通代码块 / Mermaid 块） */
+    function getBodyEl(container) {
+        if (!container) return null
+        return container.querySelector('.codeblock__body, .mermaid-block__body')
+    }
+
+    /** 该代码块行数是否超过半展开阈值 */
+    function isLongBlock(container) {
+        return Number(container?.dataset?.codeLines || 0) > PEEK_LINES
+    }
+
+    /** 计算并写入"半展开"高度（CSS 变量），保证恰好露出 PEEK_LINES 行 + 渐隐区 */
+    function applyPeekMetrics(container) {
+        const pre = container.querySelector('.codeblock__pre')
+        const content = container.querySelector('.codeblock__content')
+        const lines = Number(container.dataset.codeLines || 0)
+        if (!pre || !content || !lines) return
+        const pad = (style, key) => parseFloat(style[key]) || 0
+        const preStyle = getComputedStyle(pre)
+        const contentStyle = getComputedStyle(content)
+        let lineHeight = parseFloat(preStyle.lineHeight)
+        if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
+            const rect = pre.getBoundingClientRect()
+            lineHeight = (rect.height - pad(preStyle, 'paddingTop') - pad(preStyle, 'paddingBottom')) / lines
         }
-        if (bodyEl.__expandEndHandler) {
-            bodyEl.removeEventListener('transitionend', bodyEl.__expandEndHandler)
-            bodyEl.__expandEndHandler = null
+        if (!Number.isFinite(lineHeight) || lineHeight <= 0) lineHeight = 24
+        const height = pad(contentStyle, 'paddingTop') + pad(preStyle, 'paddingTop') + lineHeight * PEEK_LINES + PEEK_FADE
+        container.style.setProperty('--code-peek-height', Math.round(height) + 'px')
+        container.style.setProperty('--code-peek-fade', PEEK_FADE + 'px')
+    }
+
+    /** 读取半展开高度（未计算时回退到固定值） */
+    function peekHeightOf(container, bodyEl) {
+        const value = parseFloat(container.style.getPropertyValue('--code-peek-height'))
+        if (Number.isFinite(value) && value > 0) return Math.round(value)
+        return Math.min(360, bodyEl ? bodyEl.scrollHeight : 360)
+    }
+
+    /** 同步按钮文案与图标（按钮文案表示"当前状态"） */
+    function updateToggleButton(container, state) {
+        const meta = STATE_META[state] || STATE_META.expanded
+        const btn = container.querySelector('[data-code-toggle]') || container.querySelectorAll('.codeblock__btn')[1]
+        if (!btn) return
+        const label = btn.querySelector('.code-toggle-label')
+        const icon = btn.querySelector('i')
+        if (label) label.textContent = i18n.get(meta.key, meta.label)
+        if (icon) icon.className = meta.icon
+    }
+
+    /** 动画结束：清理内联样式并落定状态类 */
+    function settleState(container, bodyEl, state) {
+        bodyEl.style.height = ''
+        bodyEl.style.overflow = ''
+        bodyEl.style.opacity = ''
+        bodyEl.hidden = state === 'collapsed'
+        if (state === 'collapsed') bodyEl.style.cssText = ''
+        container.classList.toggle('is-peek', state === 'peek')
+        container.classList.toggle('is-peek-mask', state === 'peek')
+        container.classList.toggle('is-collapsed', state === 'collapsed')
+    }
+
+    /** 清理未完成的过渡监听/定时器 */
+    function clearBodyTransition(bodyEl) {
+        if (!bodyEl) return
+        if (bodyEl.__stateTimer) { clearTimeout(bodyEl.__stateTimer); bodyEl.__stateTimer = null }
+        if (bodyEl.__stateEndHandler) {
+            bodyEl.removeEventListener('transitionend', bodyEl.__stateEndHandler)
+            bodyEl.__stateEndHandler = null
         }
+    }
+
+    /**
+     * 切换代码块状态（带高度过渡动画）
+     * @param {HTMLElement} container - .codeblock 容器
+     * @param {'peek'|'expanded'|'collapsed'} state - 目标状态
+     * @param {boolean} [animate] - 是否播放动画
+     */
+    function setState(container, state, animate = true) {
+        const bodyEl = getBodyEl(container)
+        if (!bodyEl) return
+        const prev = container.dataset.codeState || 'expanded'
+        if (prev === state) return
+
+        container.dataset.codeState = state
+        updateToggleButton(container, state)
+        clearBodyTransition(bodyEl)
+
+        const from = bodyEl.hidden ? 0 : Math.round(bodyEl.getBoundingClientRect().height)
+        const to = state === 'collapsed'
+            ? 0
+            : (state === 'peek' ? peekHeightOf(container, bodyEl) : bodyEl.scrollHeight)
+
+        // 无动画（或高度无变化）时直接落定
+        if (!animate || from === to) {
+            bodyEl.hidden = false
+            settleState(container, bodyEl, state)
+            return
+        }
+
+        // 动画期间由内联高度控制，避免 max-height 截断
         bodyEl.hidden = false
-        bodyEl.style.cssText = 'overflow:hidden;transition:height 280ms ease,opacity 220ms ease;height:0px;opacity:0'
+        container.classList.remove('is-peek')
+        container.classList.toggle('is-peek-mask', state === 'peek')
+        bodyEl.style.cssText = `overflow:hidden;transition:height 280ms ease,opacity 220ms ease;height:${from}px;opacity:${from > 0 ? '1' : '0'}`
         void bodyEl.offsetHeight
-        container.classList.remove('is-collapsed')
-        const targetHeight = bodyEl.scrollHeight
         requestAnimationFrame(() => {
-            bodyEl.style.height = targetHeight + 'px'
-            bodyEl.style.opacity = '1'
+            bodyEl.style.height = to + 'px'
+            bodyEl.style.opacity = to > 0 ? '1' : '0'
         })
+
+        const finish = () => {
+            clearBodyTransition(bodyEl)
+            settleState(container, bodyEl, state)
+        }
         const onEnd = (e) => {
             if (e.propertyName !== 'height') return
-            bodyEl.style.height = ''; bodyEl.style.overflow = ''
-            bodyEl.removeEventListener('transitionend', onEnd)
-            bodyEl.__expandEndHandler = null
+            finish()
         }
-        bodyEl.__expandEndHandler = onEnd
+        bodyEl.__stateEndHandler = onEnd
         bodyEl.addEventListener('transitionend', onEnd)
+        // 兜底：transitionend 未触发时（如元素不可见）也能落定
+        bodyEl.__stateTimer = setTimeout(finish, 400)
+    }
+
+    // ---- 状态初始化（供 enhance 和 rebindEvents 共用） ----
+    /**
+     * 初始化代码块的初始状态与半展开度量
+     * @param {HTMLElement} container
+     */
+    function initState(container) {
+        const gutter = container.querySelector('.codeblock__gutter')
+        if (!container.dataset.codeLines) {
+            const code = container.querySelector('code')
+            const raw = (code?.textContent || '').replace(/\n$/, '')
+            const lines = gutter
+                ? (gutter.textContent || '').split('\n').length
+                : (raw ? raw.split('\n').length : 1)
+            container.dataset.codeLines = String(lines)
+        }
+        if (!container.dataset.codeState) container.dataset.codeState = 'expanded'
+        if (isLongBlock(container)) {
+            applyPeekMetrics(container)
+            setState(container, 'peek', false)
+        } else {
+            updateToggleButton(container, 'expanded')
+        }
     }
 
     /**
@@ -131,7 +238,8 @@ export function useCodeBlock() {
         btnCollapse.type = 'button'
         btnCollapse.className = 'codeblock__btn'
         btnCollapse.dataset.mermaidCollapse = '1'
-        btnCollapse.innerHTML = `<i class="fas fa-chevron-up"></i><span class="code-toggle-label">${i18n.get('code_collapse')}</span>`
+        btnCollapse.dataset.codeToggle = '1'
+        btnCollapse.innerHTML = `<i class="fas fa-chevron-up"></i><span class="code-toggle-label">${i18n.get('code_expand')}</span>`
 
         // 图表/源码切换按钮
         const btnToggle = document.createElement('button')
@@ -169,6 +277,9 @@ export function useCodeBlock() {
         preParent.insertBefore(container, pre)
         sourceWrap.appendChild(pre)
 
+        // 初始化折叠状态（Mermaid 块只有 展开 / 收起 两态）
+        container.dataset.codeState = 'expanded'
+
         // ---- 复制按钮事件 ----
         let lastCopyAt = 0
         btnCopy.addEventListener('click', async () => {
@@ -194,23 +305,8 @@ export function useCodeBlock() {
             if (now - lastCollapseAt < 200) return
             lastCollapseAt = now
 
-            const wasCollapsed = container.classList.contains('is-collapsed')
-            if (wasCollapsed) {
-                expandBody(container, body)
-            } else {
-                collapseBody(container, body)
-            }
-
-            const icon = btnCollapse.querySelector('i')
-            const label = btnCollapse.querySelector('.code-toggle-label')
-            const nowCollapsed = !wasCollapsed
-            if (nowCollapsed) {
-                if (icon) icon.className = 'fas fa-chevron-down'
-                if (label) label.textContent = i18n.get('code_expand')
-            } else {
-                if (icon) icon.className = 'fas fa-chevron-up'
-                if (label) label.textContent = i18n.get('code_collapse')
-            }
+            const collapsed = (container.dataset.codeState || 'expanded') === 'collapsed'
+            setState(container, collapsed ? 'expanded' : 'collapsed')
         })
 
         // ---- 图表/源码切换按钮 ----
@@ -310,7 +406,8 @@ export function useCodeBlock() {
             const btnToggle = document.createElement('button')
             btnToggle.type = 'button'
             btnToggle.className = 'codeblock__btn'
-            btnToggle.innerHTML = `<i class="fas fa-chevron-up"></i><span class="code-toggle-label">${i18n.get('code_collapse')}</span>`
+            btnToggle.dataset.codeToggle = '1'
+            btnToggle.innerHTML = `<i class="fas fa-chevron-up"></i><span class="code-toggle-label">${i18n.get('code_expand')}</span>`
 
             actions.append(btnCopy, btnToggle)
             header.append(langEl, actions)
@@ -344,6 +441,9 @@ export function useCodeBlock() {
             content.append(gutter, pre)
             body.appendChild(content)
 
+            // ---- 初始化状态：超过 10 行的代码块默认"半展开" ----
+            initState(container)
+
             // ---- 绑定复制按钮 ----
             let lastToggleAt = 0
             btnCopy.addEventListener('click', async () => {
@@ -368,49 +468,30 @@ export function useCodeBlock() {
                 if (now - lastToggleAt < 200) return
                 lastToggleAt = now
 
-                const wasCollapsed = container.classList.contains('is-collapsed')
-                if (wasCollapsed) {
-                    expandBody(container, body)
+                // 长代码块三态循环：半展开 → 展开 → 收起 → 半展开；短代码块两态切换
+                const current = container.dataset.codeState || 'expanded'
+                let next
+                if (isLongBlock(container)) {
+                    next = current === 'peek' ? 'expanded' : (current === 'expanded' ? 'collapsed' : 'peek')
                 } else {
-                    collapseBody(container, body)
+                    next = current === 'collapsed' ? 'expanded' : 'collapsed'
                 }
-
-                const icon = btnToggle.querySelector('i')
-                const label = btnToggle.querySelector('.code-toggle-label')
-                // collapseBody/expandBody 异步添加/移除 class，所以直接取反 wasCollapsed
-                const nowCollapsed = !wasCollapsed
-                if (nowCollapsed) {
-                    if (icon) icon.className = 'fas fa-chevron-down'
-                    if (label) label.textContent = i18n.get('code_expand')
-                } else {
-                    if (icon) icon.className = 'fas fa-chevron-up'
-                    if (label) label.textContent = i18n.get('code_collapse')
-                }
+                setState(container, next)
             })
         })
 
         // ---- 监听语言变化更新按钮文本 ----
         function updateI18n() {
             try {
-                document.querySelectorAll('.codeblock:not(.mermaid-block)').forEach((container) => {
+                document.querySelectorAll('.codeblock').forEach((container) => {
                     const btns = container.querySelectorAll('.codeblock__btn')
                     const btnCopy = btns[0]
-                    const btnToggle = btns[1]
                     if (btnCopy) {
                         const span = btnCopy.querySelector('.code-copy-label')
                         if (span) span.textContent = i18n.get('code_copy', '复制')
                     }
-                    if (btnToggle) {
-                        const span = btnToggle.querySelector('.code-toggle-label')
-                        const icon = btnToggle.querySelector('i')
-                        const collapsed = container.classList.contains('is-collapsed')
-                        if (span) {
-                            span.textContent = collapsed ? i18n.get('code_expand', '展开') : i18n.get('code_collapse', '收起')
-                        }
-                        if (icon) {
-                            icon.className = collapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up'
-                        }
-                    }
+                    // 按钮文案表示"当前状态"
+                    updateToggleButton(container, container.dataset.codeState || 'expanded')
                 })
             } catch (_) { }
         }
@@ -420,6 +501,20 @@ export function useCodeBlock() {
             document.addEventListener('site:languageChanged', updateI18n)
         }
         updateI18n()
+
+        // ---- 视口尺寸变化时重算半展开高度（移动端字号/行高不同） ----
+        if (!window.__codeblockResizeBound) {
+            window.__codeblockResizeBound = true
+            let resizeTimer = null
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer)
+                resizeTimer = setTimeout(() => {
+                    document.querySelectorAll('.codeblock.is-peek').forEach((container) => {
+                        if (isLongBlock(container)) applyPeekMetrics(container)
+                    })
+                }, 180)
+            })
+        }
     }
 
     // 重新绑定已有代码块的事件（结构由 useMarkdown 预渲染，但事件在 v-html 中丢失）
@@ -452,7 +547,9 @@ export function useCodeBlock() {
 
             // 折叠/展开按钮
             const btnCollapse = container.querySelector('[data-mermaid-collapse]')
-            const body = container.querySelector('.mermaid-block__body')
+            const body = getBodyEl(container)
+            if (!container.dataset.codeState) container.dataset.codeState = 'expanded'
+            updateToggleButton(container, container.dataset.codeState)
             if (btnCollapse && !btnCollapse.dataset.bound && body) {
                 btnCollapse.dataset.bound = '1'
                 let lastCollapseAt = 0
@@ -460,22 +557,8 @@ export function useCodeBlock() {
                     const now = Date.now()
                     if (now - lastCollapseAt < 200) return
                     lastCollapseAt = now
-                    const wasCollapsed = container.classList.contains('is-collapsed')
-                    if (wasCollapsed) {
-                        expandBody(container, body)
-                    } else {
-                        collapseBody(container, body)
-                    }
-                    const icon = btnCollapse.querySelector('i')
-                    const label = btnCollapse.querySelector('.code-toggle-label')
-                    const nowCollapsed = !wasCollapsed
-                    if (nowCollapsed) {
-                        if (icon) icon.className = 'fas fa-chevron-down'
-                        if (label) label.textContent = i18n.get('code_expand')
-                    } else {
-                        if (icon) icon.className = 'fas fa-chevron-up'
-                        if (label) label.textContent = i18n.get('code_collapse')
-                    }
+                    const collapsed = (container.dataset.codeState || 'expanded') === 'collapsed'
+                    setState(container, collapsed ? 'expanded' : 'collapsed')
                 })
             }
 
@@ -510,6 +593,9 @@ export function useCodeBlock() {
         const code = container.querySelector('code')
         if (!code) return
 
+        // 状态初始化（行号 / 半展开度量 / 初始状态）
+        initState(container)
+
         // 复制按钮
         if (btnCopy && !btnCopy.dataset.bound) {
             btnCopy.dataset.bound = '1'
@@ -537,28 +623,18 @@ export function useCodeBlock() {
                 if (now - lastToggleAt < 200) return
                 lastToggleAt = now
 
-                const body = container.querySelector('.codeblock__body')
-                if (!body) return
-                const wasCollapsed = container.classList.contains('is-collapsed')
-                if (wasCollapsed) {
-                    expandBody(container, body)
+                // 长代码块三态循环：半展开 → 展开 → 收起 → 半展开；短代码块两态切换
+                const current = container.dataset.codeState || 'expanded'
+                let next
+                if (isLongBlock(container)) {
+                    next = current === 'peek' ? 'expanded' : (current === 'expanded' ? 'collapsed' : 'peek')
                 } else {
-                    collapseBody(container, body)
+                    next = current === 'collapsed' ? 'expanded' : 'collapsed'
                 }
-
-                const icon = btnToggle.querySelector('i')
-                const label = btnToggle.querySelector('.code-toggle-label')
-                const nowCollapsed = !wasCollapsed
-                if (nowCollapsed) {
-                    if (icon) icon.className = 'fas fa-chevron-down'
-                    if (label) label.textContent = i18n.get('code_expand')
-                } else {
-                    if (icon) icon.className = 'fas fa-chevron-up'
-                    if (label) label.textContent = i18n.get('code_collapse')
-                }
+                setState(container, next)
             })
         }
     }
 
-    return { enhance }
+    return { enhance, setState, PEEK_LINES }
 }

@@ -75,7 +75,7 @@
           - 接收已通过 Markdown 渲染为 HTML 的字符串
           - 组件内部负责安全渲染（如 v-html）及代码高亮等
         -->
-        <BlogContent :html="renderedHtml" />
+        <BlogContent :html="renderedHtml" :article-id="blog?.id || ''" />
 
         <!--
           版权声明组件
@@ -877,6 +877,54 @@ a.tag:hover {
 }
 
 /* 移动端适配 */
+@media (max-width: 880px) {
+  /* 目录改为左下角按钮 + 弹层（见 TOC.vue），正文占满整行 */
+  .blog-detail-page .container {
+    padding: 52px 14px 24px 14px;
+    gap: 0;
+  }
+
+  .blog-article {
+    max-width: 100%;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    padding: 22px 15px 18px 15px;
+    border-width: 3px;
+    border-radius: 14px;
+  }
+
+  .blog-article.wide-mode {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .article-title {
+    font-size: 1.6rem;
+    line-height: 1.35;
+    gap: 6px;
+  }
+
+  .article-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+  }
+
+  /* 移动端不需要外发光轮廓，避免窄屏出现横向滚动 */
+  .blog-detail-page.immersive-reading-active .blog-article,
+  .blog-detail-page.wide-mode-active .blog-article {
+    outline: none;
+  }
+
+  #immersive-read-hint {
+    top: 10px;
+    padding: 7px 12px;
+    font-size: 0.86rem;
+    max-width: calc(100vw - 24px);
+  }
+}
+
 @media (max-width: 720px) {
   .article-meta {
     flex-direction: column;
@@ -896,10 +944,9 @@ a.tag:hover {
     flex-basis: auto;
   }
 
-  .blog-article {
-    padding: 24px 16px 16px 16px;
-    margin-top: 16px;
-    margin-bottom: 16px;
+  .tag {
+    font-size: 0.86rem;
+    padding: 3px 10px;
   }
 }
 </style>

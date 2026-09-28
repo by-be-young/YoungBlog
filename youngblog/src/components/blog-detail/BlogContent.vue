@@ -3,19 +3,22 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { resolveUrl } from '@/utils/url'
 import { useMarkdown } from '@/composables/useMarkdown'
 import { useAnswer } from '@/composables/useAnswer'
+import { useChecklist } from '@/composables/useChecklist'
 import { useCodeBlock } from '@/composables/useCodeBlock'
 import { useMermaid } from '@/composables/useMermaid'
 import { useImageViewer } from '@/composables/useImageViewer'
 import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps({
-  html: String
+  html: String,
+  /** 文章 id：用于复选框清单的勾选状态持久化 */
+  articleId: { type: [String, Number], default: '' }
 })
 
 const contentEl = ref(null)
@@ -29,6 +32,7 @@ const { enhance: enhanceCodeBlocks } = useCodeBlock()
 const { render: renderMermaid } = useMermaid()
 const { init: initImageViewer } = useImageViewer()
 const { bindAll: bindAnswers } = useAnswer()
+const { enhance: enhanceChecklist } = useChecklist()
 const { apply: applySettings } = useSettings()
 
 // 监听语言变化，立即重新翻译文章内的 data-i18n 元素
@@ -45,7 +49,7 @@ watch(() => [settingsStore.exerciseMode, settingsStore.codeMode], () => {
     try { applySettings(contentEl.value) } catch (e) { console.warn('[BlogContent] applySettings:', e) }
   }
 })
-const { annotateTaskLabels } = useMarkdown()
+const { annotateTaskLabels, markWideMath } = useMarkdown()
 
 // 翻译 data-i18n 元素 + 刷新 task 标签文字
 function applyI18n(root) {
@@ -72,9 +76,28 @@ watch(() => props.html, async (newHtml) => {
   try { await renderMermaid(el) } catch (e) { console.warn('[BlogContent] renderMermaid:', e) }
   try { initImageViewer(el) } catch (e) { console.warn('[BlogContent] initImageViewer:', e) }
   try { bindAnswers(el) } catch (e) { console.warn('[BlogContent] bindAnswers:', e) }
+  try { enhanceChecklist(el, props.articleId ? String(props.articleId) : '') } catch (e) { console.warn('[BlogContent] enhanceChecklist:', e) }
   try { annotateTaskLabels(el) } catch (e) { console.warn('[BlogContent] annotateTaskLabels:', e) }
   try { applySettings(el) } catch (e) { console.warn('[BlogContent] applySettings:', e) }
+  try { markWideMath(el) } catch (e) { console.warn('[BlogContent] markWideMath:', e) }
 }, { immediate: true, flush: 'post' })
+
+// 视口变化（如旋转屏幕）后重新判断哪些内联公式需要横向滚动
+let wideMathTimer = null
+function onViewportResize() {
+  clearTimeout(wideMathTimer)
+  wideMathTimer = setTimeout(() => {
+    if (contentEl.value) {
+      try { markWideMath(contentEl.value) } catch { /* 忽略：测量失败不影响正常渲染 */ }
+    }
+  }, 180)
+}
+
+onMounted(() => window.addEventListener('resize', onViewportResize))
+onUnmounted(() => {
+  window.removeEventListener('resize', onViewportResize)
+  clearTimeout(wideMathTimer)
+})
 </script>
 
 <style scoped>
@@ -217,6 +240,113 @@ watch(() => props.html, async (newHtml) => {
 .article-content :deep(li > p + p) {
   display: block;
   margin-top: 0.45em;
+}
+
+/* ===== Markdown 任务列表（复选框）适配 ===== */
+.article-content :deep(.md-checklist) {
+  margin: 0.5em 0 1.1em 0;
+}
+
+.article-content :deep(.md-checklist-item) {
+  position: relative;
+  list-style: none;
+  padding-left: 1.9em;
+  margin-bottom: 0.5em;
+  transition: opacity 200ms ease;
+}
+
+.article-content :deep(.md-checklist-item)::marker {
+  content: none;
+}
+
+/* 勾选后整行弱化，方便一眼看出还剩哪些没覆盖 */
+.article-content :deep(.md-checklist-item.is-checked) {
+  opacity: 0.6;
+}
+
+/* 自定义复选框 */
+.article-content :deep(.md-checklist-box) {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 1.08em;
+  height: 1.08em;
+  margin: 0;
+  border-radius: 5px;
+  border: 2px solid rgba(154, 215, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 2px rgba(44, 62, 80, 0.08);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.article-content :deep(.md-checklist-box:hover) {
+  border-color: #48dbbb;
+  box-shadow: 0 0 0 4px rgba(72, 219, 187, 0.14);
+}
+
+.article-content :deep(.md-checklist-box:focus-visible) {
+  outline: 2px solid rgba(0, 172, 255, 0.55);
+  outline-offset: 2px;
+}
+
+.article-content :deep(.md-checklist-box:checked) {
+  border-color: transparent;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.2 8.7l3.1 3.1 6.5-6.9' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, #9ad7ff 0%, #a7f3d0 100%);
+  background-repeat: no-repeat, no-repeat;
+  background-position: center, center;
+  background-size: 76% 76%, 100% 100%;
+  box-shadow: 0 4px 10px rgba(72, 219, 187, 0.26);
+}
+
+/* 覆盖进度 */
+.article-content :deep(.md-checklist-progress) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0.55em 0 0.7em 0;
+}
+
+.article-content :deep(.md-checklist-progress-text) {
+  flex: 0 0 auto;
+  font-family: 'Times New Roman', 'KaiTi', '楷体', STKaiti, serif;
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #5f6b7a;
+  white-space: nowrap;
+}
+
+.article-content :deep(.md-checklist-progress-count) {
+  color: #00acff;
+  font-variant-numeric: tabular-nums;
+}
+
+.article-content :deep(.md-checklist-progress-bar) {
+  flex: 1 1 auto;
+  min-width: 40px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(154, 215, 255, 0.2);
+  box-shadow: inset 0 1px 2px rgba(44, 62, 80, 0.08);
+  overflow: hidden;
+}
+
+.article-content :deep(.md-checklist-progress-fill) {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9ad7ff 0%, #a7f3d0 55%, #ffd2a6 100%);
+  transition: width 260ms ease;
+}
+
+.article-content :deep(.md-checklist-progress.is-complete .md-checklist-progress-text),
+.article-content :deep(.md-checklist-progress.is-complete .md-checklist-progress-count) {
+  color: #19be6b;
 }
 
 .article-content :deep(blockquote) {
@@ -523,6 +653,23 @@ watch(() => props.html, async (newHtml) => {
   background: transparent;
   line-height: 1.7;
   font-family: 'Comic Mono', 'Comic Sans MS', 'Comic Neue', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* ===== 半展开（peek）：显示前 10 行，第 11 行开始渐隐 =====
+   --code-peek-height / --code-peek-fade 由 useCodeBlock 按实际行高写入 */
+.article-content :deep(.codeblock.is-peek .codeblock__body) {
+  max-height: var(--code-peek-height, 340px);
+  overflow: hidden;
+}
+
+.article-content :deep(.codeblock.is-peek .codeblock__body),
+.article-content :deep(.codeblock.is-peek-mask .codeblock__body) {
+  -webkit-mask-image: linear-gradient(to bottom,
+      #000 calc(100% - var(--code-peek-fade, 56px)),
+      rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(to bottom,
+      #000 calc(100% - var(--code-peek-fade, 56px)),
+      rgba(0, 0, 0, 0) 100%);
 }
 
 .article-content :deep(:not(pre) > code) {
@@ -1196,8 +1343,223 @@ watch(() => props.html, async (newHtml) => {
   font-size: 1.8rem;
 }
 
+/* ===== 数学公式（KaTeX，由 useMarkdown.renderMathPlaceholders 生成） ===== */
+.article-content :deep(.katex) {
+  font-size: 1.06em;
+}
+
+/* 行内公式默认保持行内对齐；仅过宽的公式（JS 打标）变为可横向滚动，避免撑破版心 */
+.article-content :deep(.math-inline.is-overflowing) {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: baseline;
+}
+
+/* 行间公式在窄屏可横向滚动，避免撑破版心 */
+.article-content :deep(.katex-display) {
+  margin: 0.85em 0;
+  padding: 2px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.article-content :deep(.katex-error) {
+  color: #c0392b;
+}
+
 /* ===== 练习模式：仅显示标题和习题 ===== */
 .article-content.practice-mode :deep(> :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(.md-task)) {
   display: none !important;
+}
+
+/* ============================================
+   移动端适配（正文）
+   ============================================ */
+@media (max-width: 720px) {
+
+  /* ---- 标题与正文 ---- */
+  .article-content :deep(h1) {
+    font-size: 1.55rem;
+    padding: 8px 10px;
+    border-left-width: 4px;
+  }
+
+  .article-content :deep(h2) {
+    font-size: 1.32rem;
+    padding: 8px 10px;
+    border-left-width: 4px;
+  }
+
+  .article-content :deep(h3) {
+    font-size: 1.16rem;
+    padding: 6px 10px;
+    border-left-width: 3px;
+  }
+
+  .article-content :deep(h4) {
+    font-size: 1rem;
+    padding: 8px 10px;
+  }
+
+  .article-content :deep(p),
+  .article-content :deep(ul li),
+  .article-content :deep(ol li) {
+    font-size: 1.04rem;
+    line-height: 1.95;
+  }
+
+  /* 窄屏下长串内容（长单词 / 长公式 / 长链接）允许断行，避免整页横向滚动 */
+  .article-content :deep(p),
+  .article-content :deep(li),
+  .article-content :deep(h1),
+  .article-content :deep(h2),
+  .article-content :deep(h3),
+  .article-content :deep(h4),
+  .article-content :deep(td),
+  .article-content :deep(th),
+  .article-content :deep(blockquote) {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .article-content :deep(.heading-star-marker) {
+    font-size: 1.7rem;
+  }
+
+  .article-content :deep(blockquote) {
+    padding: 12px 14px;
+    font-size: 1rem;
+  }
+
+  .article-content :deep(blockquote p) {
+    text-indent: 1.2em;
+  }
+
+  .article-content :deep(blockquote:before),
+  .article-content :deep(blockquote:after) {
+    width: 16px;
+    height: 16px;
+  }
+
+  .article-content :deep(img) {
+    max-height: 280px;
+    border-width: 10px;
+  }
+
+  .article-content :deep(th),
+  .article-content :deep(td) {
+    padding: 8px 10px;
+    font-size: 0.94rem;
+  }
+
+  .article-content :deep(:not(pre) > code) {
+    font-size: 0.96rem;
+  }
+
+  /* ---- 代码块（半展开 / 展开 / 收起） ---- */
+  .article-content :deep(.codeblock) {
+    margin: 14px 0;
+  }
+
+  .article-content :deep(.codeblock__header) {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .article-content :deep(.codeblock__lang) {
+    font-size: 0.78rem;
+  }
+
+  .article-content :deep(.codeblock__actions) {
+    gap: 6px;
+  }
+
+  /* 按钮改为图标态，唯独折叠按钮保留文字，便于区分三态 */
+  .article-content :deep(.codeblock__btn) {
+    width: auto;
+    min-width: 0;
+    height: 28px;
+    padding: 0 8px;
+    gap: 4px;
+  }
+
+  .article-content :deep(.codeblock__btn:first-child) {
+    width: 28px;
+    min-width: 28px;
+    padding: 0;
+    gap: 0;
+  }
+
+  .article-content :deep(.codeblock__btn .code-toggle-label) {
+    display: inline;
+    font-size: 0.76rem;
+  }
+
+  .article-content :deep(.codeblock__btn .code-copy-label) {
+    display: none;
+  }
+
+  .article-content :deep(.codeblock__content) {
+    padding: 10px 8px 12px 8px;
+  }
+
+  .article-content :deep(.codeblock__gutter) {
+    padding: 14px 6px 14px 8px;
+    font-size: 0.92rem;
+  }
+
+  .article-content :deep(.codeblock__body pre),
+  .article-content :deep(pre) {
+    font-size: 0.92rem;
+  }
+
+  .article-content :deep(pre) {
+    padding: 14px 12px;
+  }
+
+  .article-content :deep(.mermaid-block__diagram-wrap),
+  .article-content :deep(.mermaid-block__source) {
+    max-height: 320px;
+  }
+
+  /* ---- 复选框清单 ---- */
+  .article-content :deep(.md-checklist-item) {
+    padding-left: 1.7em;
+    margin-bottom: 0.45em;
+  }
+
+  .article-content :deep(.md-checklist-progress) {
+    gap: 8px;
+  }
+
+  .article-content :deep(.md-checklist-progress-text) {
+    font-size: 0.86rem;
+  }
+
+  .article-content :deep(.md-checklist-progress-bar) {
+    height: 7px;
+  }
+
+  /* ---- 习题 ---- */
+  .article-content :deep(.md-task) {
+    border-radius: 10px;
+  }
+
+  .article-content :deep(.answer-inner) {
+    padding: 12px;
+  }
+
+  .article-content :deep(.answer-toggle) {
+    height: 40px;
+  }
+
+  .article-content :deep(.answer-submit) {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    margin-left: 0;
+  }
 }
 </style>

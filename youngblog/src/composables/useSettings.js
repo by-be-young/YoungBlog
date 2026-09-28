@@ -1,10 +1,12 @@
 /**
- * 应用显示设置（练习模式、答案折叠、代码折叠）
+ * 应用显示设置（练习模式、答案折叠、代码块显示状态）
  */
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useCodeBlock } from '@/composables/useCodeBlock'
 
 export function useSettings() {
     const settings = useSettingsStore()
+    const { setState: setCodeBlockState, PEEK_LINES } = useCodeBlock()
 
     /**
      * 应用当前设置到文章内容
@@ -44,25 +46,17 @@ export function useSettings() {
             })
         }
 
-        // 代码块折叠（使用第二个按钮即折叠按钮）
+        // 代码块显示状态：peek（半展开）/ expand（展开）/ collapse（收起）
+        // 注：Mermaid 块只有 展开 / 收起 两态，不做半展开
         const codeblocks = contentEl.querySelectorAll('.codeblock')
-        if (codeMode === 'collapse') {
-            codeblocks.forEach(block => {
-                if (!block.classList.contains('is-collapsed')) {
-                    const btns = block.querySelectorAll('.codeblock__btn')
-                    const toggle = btns[1] // 第二个 btn 是折叠/展开
-                    if (toggle) toggle.click()
-                }
-            })
-        } else {
-            codeblocks.forEach(block => {
-                if (block.classList.contains('is-collapsed')) {
-                    const btns = block.querySelectorAll('.codeblock__btn')
-                    const toggle = btns[1]
-                    if (toggle) toggle.click()
-                }
-            })
-        }
+        codeblocks.forEach(block => {
+            const isMermaid = block.classList.contains('mermaid-block')
+            const isLong = Number(block.dataset.codeLines || 0) > PEEK_LINES
+            let target = 'expanded'
+            if (codeMode === 'collapse') target = 'collapsed'
+            else if (codeMode === 'peek' && isLong && !isMermaid) target = 'peek'
+            setCodeBlockState(block, target, false)
+        })
     }
 
     return { apply }

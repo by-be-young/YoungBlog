@@ -17,8 +17,9 @@
             <div class="display-option-group">
               <p class="display-option-label">{{ i18n.t('display_code_label') }}</p>
               <div class="display-option-list" role="radiogroup" :aria-label="i18n.t('display_code_radiogroup')">
-                <label class="display-option-item"><input type="radio" name="display-code" value="collapse" v-model="codeMode"> {{ i18n.t('display_code_collapse') }}</label>
+                <label class="display-option-item"><input type="radio" name="display-code" value="peek" v-model="codeMode"> {{ i18n.t('display_code_peek') }}</label>
                 <label class="display-option-item"><input type="radio" name="display-code" value="expand" v-model="codeMode"> {{ i18n.t('display_code_expand') }}</label>
+                <label class="display-option-item"><input type="radio" name="display-code" value="collapse" v-model="codeMode"> {{ i18n.t('display_code_collapse') }}</label>
               </div>
             </div>
             <div class="display-actions">
