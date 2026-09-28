@@ -1,5 +1,44 @@
 [
     {
+        "id": 4227364283,
+        "title": "编译实验-文法解读",
+        "excerpt": "2421编译实验作业——文法解读实验心得",
+        "date": "2026-09-28",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "编译",
+            "文法与词法"
+        ],
+        "category": "学习",
+        "type": "系统笔记",
+        "series": "编译原理",
+        "order": 1,
+        "chapter": "2-实验",
+        "contentFile": "blogs/三上/编译/文法与词法/编译实验-文法解读.md",
+        "recommended": true
+    },
+    {
+        "id": 2536514388,
+        "title": "语法分析",
+        "excerpt": "语法分析功能、自顶向下分析、左递归消除、回溯、FIRST/FOLLOW 集与递归子程序法。",
+        "date": "2026-09-26",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "编译",
+            "语法分析"
+        ],
+        "category": "学习",
+        "type": "系统笔记",
+        "series": "编译原理",
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/三上/编译/语法分析/第06讲-语法分析.md",
+        "recommended": false,
+        "lastEditedDate": "2026-09-28"
+    },
+    {
         "id": 3796104188,
         "title": "计网导论",
         "excerpt": "涵盖计算机网络定义、互联网历史、网络组成、协议分层与 OSI/TCP-IP 服务模型。",
@@ -71,9 +110,10 @@
         "type": "系统笔记",
         "series": "编译原理",
         "order": 3,
-        "chapter": null,
+        "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/文法与词法/词法分析.md",
-        "recommended": false
+        "recommended": false,
+        "lastEditedDate": "2026-09-28"
     },
     {
         "id": 2725175255,
@@ -185,9 +225,10 @@
         "type": "系统笔记",
         "series": "编译原理",
         "order": 1,
-        "chapter": null,
+        "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/概论/编译概论.md",
-        "recommended": false
+        "recommended": false,
+        "lastEditedDate": "2026-09-28"
     },
     {
         "id": 2620711677,
@@ -261,28 +302,10 @@
         "type": "系统笔记",
         "series": "编译原理",
         "order": 2,
-        "chapter": null,
+        "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/文法与词法/文法和语言.md",
-        "recommended": false
-    },
-    {
-        "id": 2536514388,
-        "title": "第06讲 语法分析",
-        "excerpt": "语法分析基于上下文无关文法识别单词串的语法结构，分为自顶向下推导和自底向上归约两大类，左递归与二义性是主要障碍。",
-        "date": "2026-09-08",
-        "image": "assets/images/blog_bg.webp",
-        "tags": [
-            "三上",
-            "编译",
-            "语法分析"
-        ],
-        "category": "学习",
-        "type": "概念笔记",
-        "series": "编译原理",
-        "order": null,
-        "chapter": null,
-        "contentFile": "blogs/三上/编译/语法分析/第06讲-语法分析.md",
-        "recommended": false
+        "recommended": false,
+        "lastEditedDate": "2026-09-28"
     },
     {
         "id": 1040867593,
