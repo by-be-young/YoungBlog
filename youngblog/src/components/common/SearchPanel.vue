@@ -3,7 +3,7 @@
     <div 
       v-if="isOpen" 
       class="search-panel"
-      :class="[{ active: isOpen, 'right-sidebar': isDetailPage }]"
+      :class="[{ active: isOpen, 'right-sidebar': isDetailPage, 'search-card': !isDetailPage }]"
       @click="handleBackdropClick"
     >
       <div class="search-wrap" role="dialog" aria-label="site-search">
@@ -13,13 +13,20 @@
         </button>
 
         <div class="search-modal-content">
+          <!-- 站内搜索标题栏（详情页为侧边卡片，不需要） -->
+          <div v-if="!isDetailPage" class="search-head">
+            <span class="search-head-icon" aria-hidden="true"><i class="fas fa-magnifying-glass"></i></span>
+            <span class="search-head-title">{{ i18n.currentTranslations.search }}</span>
+            <span class="search-head-hint">{{ i18n.currentTranslations.search_close_hint }}</span>
+          </div>
           <!-- 搜索输入 -->
           <div class="search-row">
             <div class="search-input">
+              <i class="fas fa-magnifying-glass search-input-icon" aria-hidden="true"></i>
               <input 
                 ref="inputRef"
                 type="search" 
-                :placeholder="i18n.currentTranslations.search_placeholder"
+                :placeholder="isDetailPage ? i18n.currentTranslations.search_article_placeholder : i18n.currentTranslations.search_placeholder"
                 v-model="keyword"
                 @input="onSearch"
                 @keydown.enter="onSearch"
@@ -28,8 +35,8 @@
             </div>
           </div>
 
-          <!-- 搜索选项 -->
-          <div class="search-options" role="group" aria-label="search-options">
+          <!-- 搜索选项（详情页为「篇内搜索」，无需正文开关） -->
+          <div class="search-options" role="group" aria-label="search-options" v-if="!isDetailPage">
             <label class="search-option-item">
               <input type="checkbox" v-model="includeBody" />
               <span>{{ i18n.currentTranslations.search_include_body }}</span>
@@ -39,29 +46,52 @@
           <!-- 搜索结果 -->
           <div class="search-results" id="search-results" role="list">
             <div v-if="!keyword" class="search-empty-hint">
-              {{ i18n.currentTranslations.search_idle_hint }}
+              {{ isDetailPage ? i18n.currentTranslations.search_article_idle : i18n.currentTranslations.search_idle_hint }}
             </div>
             <div v-else-if="isLoading" class="search-loading">
               {{ i18n.currentTranslations.search_body_loading }}
             </div>
             <div v-else-if="results.length === 0" class="search-empty">
-              {{ i18n.currentTranslations.search_no_results }}
+              {{ isDetailPage ? i18n.currentTranslations.search_article_no_results : i18n.currentTranslations.search_no_results }}
             </div>
             <div 
               v-for="(result, index) in results" 
               :key="index"
               class="search-item"
-              @click="navigateToBlog(result.blog.id, keyword)"
+              :class="{ 'detail-search-item': !!result.el }"
+              @click="onResultClick(result)"
             >
-              <div class="title">
-                {{ result.blog.title }}
-                <span v-if="result.blog.type" class="blog-type">{{ result.blog.type }}</span>
-              </div>
-              <div class="snippet">{{ result.blog.excerpt || '' }}</div>
-              <div v-if="result.blog.tags" class="meta-tags">
-                <span v-for="tag in result.blog.tags" :key="tag" class="meta-tag">{{ tag }}</span>
-              </div>
+              <!-- 详情页：序号 + 命中内容所在的一/二级标题 + 段落摘要 -->
+              <template v-if="result.el">
+                <div class="result-index">{{ index + 1 }}</div>
+                <div class="result-main">
+                  <div class="result-headings">
+                    <div v-if="result.h1" class="result-h1" :title="result.h1">{{ result.h1 }}</div>
+                    <div v-if="result.h2" class="result-h2" :title="result.h2">{{ result.h2 }}</div>
+                  </div>
+                  <div class="result-paragraph" v-html="result.snippet"></div>
+                </div>
+              </template>
+              <!-- 其它页面：站内文章搜索 -->
+              <template v-else>
+                <div class="title">
+                  <span class="title-text" v-html="highlightText(result.blog?.title, keyword)"></span>
+                  <span v-if="result.blog?.type" class="blog-type">{{ result.blog.type }}</span>
+                </div>
+                <div class="snippet" v-html="highlightText(result.blog?.excerpt || '', keyword)"></div>
+                <div v-if="result.blog?.tags" class="meta-tags">
+                  <span v-for="tag in result.blog.tags" :key="tag" class="meta-tag" v-html="highlightText(tag, keyword)"></span>
+                </div>
+              </template>
             </div>
+          </div>
+
+          <!-- 站内搜索底部状态栏 -->
+          <div v-if="!isDetailPage && keyword && results.length" class="search-foot">
+            <span class="search-foot-count">
+              {{ i18n.currentTranslations.search_results_count.replace('{n}', String(results.length)) }}
+            </span>
+            <span class="search-foot-deco" aria-hidden="true"></span>
           </div>
         </div>
       </div>
@@ -93,7 +123,10 @@ const isDetailPage = computed(() => route.name === 'BlogDetail')
 // 打开搜索
 const openSearch = () => {
   isOpen.value = true
-  document.body.classList.add('search-modal-open')
+  // 详情页为「篇内搜索」侧边卡片，保留页面滚动（点击结果需要滚动定位）
+  if (!isDetailPage.value) {
+    document.body.classList.add('search-modal-open')
+  }
   nextTick(() => {
     inputRef.value?.focus()
   })
@@ -122,6 +155,12 @@ const onSearch = async () => {
     return
   }
 
+  // 详情页：仅搜索当前文章内容，不检索其它博客
+  if (isDetailPage.value) {
+    results.value = searchInArticle(q)
+    return
+  }
+
   isLoading.value = true
   
   try {
@@ -146,7 +185,7 @@ const onSearch = async () => {
           const res = await fetch(resolveUrl(blog.contentFile))
           const text = await res.text()
           if (text.toLowerCase().includes(q)) score += 5
-        } catch (e) {
+        } catch {
           // 忽略加载错误
         }
       }
@@ -165,11 +204,116 @@ const onSearch = async () => {
   }
 }
 
+/* ==================== 详情页：篇内搜索 ==================== */
+
+/** 参与搜索的块级元素（只取最内层，避免父子重复命中） */
+const ARTICLE_BLOCK_SELECTOR = 'h1, h2, h3, h4, p, li, td, th, pre'
+
+function escapeHtml(value) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+  return String(value).replace(/[&<>"']/g, ch => map[ch])
+}
+
+/** 把命中的关键词包成 <mark>（用于站内搜索结果的标题、摘要与标签） */
+function highlightText(text, query) {
+  const raw = String(text ?? '')
+  const q = String(query || '').trim()
+  if (!q) return escapeHtml(raw)
+  const lowerRaw = raw.toLowerCase()
+  const lowerQ = q.toLowerCase()
+  let out = ''
+  let from = 0
+  let at = lowerRaw.indexOf(lowerQ)
+  while (at >= 0) {
+    out += escapeHtml(raw.slice(from, at))
+    out += `<mark class="match-highlight">${escapeHtml(raw.slice(at, at + q.length))}</mark>`
+    from = at + q.length
+    at = lowerRaw.indexOf(lowerQ, from)
+  }
+  return out + escapeHtml(raw.slice(from))
+}
+
+/** 生成带关键词高亮的摘要（截取命中位置前后的上下文） */
+function buildSnippet(text, index, length) {
+  const start = Math.max(0, index - 24)
+  const end = Math.min(text.length, index + length + 56)
+  const before = escapeHtml(text.slice(start, index))
+  const hit = escapeHtml(text.slice(index, index + length))
+  const after = escapeHtml(text.slice(index + length, end))
+  return `${start > 0 ? '…' : ''}${before}<mark class="match-highlight">${hit}</mark>${after}${end < text.length ? '…' : ''}`
+}
+
+/**
+ * 在当前文章内容中搜索关键词
+ * @param {string} query - 关键词
+ * @returns {Array<{el: HTMLElement, index: number, h1: string, h2: string, snippet: string}>}
+ */
+function searchInArticle(query) {
+  const root = document.querySelector('.article-content')
+  if (!root) return []
+  const lower = query.toLowerCase()
+  const all = Array.from(root.querySelectorAll(ARTICLE_BLOCK_SELECTOR))
+  const blocks = all.filter(el =>
+    !el.querySelector(ARTICLE_BLOCK_SELECTOR) &&
+    !el.classList.contains('codeblock__gutter')   // 排除代码块行号
+  )
+  const out = []
+  let h1 = ''
+  let h2 = ''
+
+  blocks.forEach(el => {
+    const tag = el.tagName.toLowerCase()
+    const text = (el.textContent || '').replace(/\s+/g, ' ').trim()
+    // 记录当前所在的一级、二级标题（标题自身命中时即为自身）
+    if (tag === 'h1') { h1 = text; h2 = '' }
+    else if (tag === 'h2') { h2 = text }
+    if (!text || el.closest('[hidden]')) return
+    const at = text.toLowerCase().indexOf(lower)
+    if (at < 0) return
+    out.push({ el, index: out.length + 1, h1, h2, snippet: buildSnippet(text, at, query.length) })
+  })
+
+  return out
+}
+
+/** 点击结果：篇内结果滚动定位，站内结果跳转文章 */
+function onResultClick(result) {
+  if (result?.el) {
+    goToArticleMatch(result)
+    return
+  }
+  if (result?.blog) navigateToBlog(result.blog.id, keyword.value)
+}
+
+/** 滚动到命中段落并短暂高亮 */
+function goToArticleMatch(result) {
+  const el = result?.el
+  if (!el || !document.body.contains(el)) return
+  const nav = document.querySelector('.navbar')
+  const offset = (nav?.offsetHeight || 0) + 14
+  const top = el.getBoundingClientRect().top + window.scrollY - offset
+  window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
+
+  el.classList.remove('search-target-flash')
+  void el.offsetWidth
+  el.classList.add('search-target-flash')
+  setTimeout(() => el.classList.remove('search-target-flash'), 1800)
+
+  // 移动端面板遮挡面积较大，点击后自动收起
+  if (window.matchMedia('(max-width: 720px)').matches) closeSearch()
+}
+
 // 跳转到文章
 const navigateToBlog = (id, keyword) => {
   closeSearch()
   router.push(`/blog/${id}?q=${encodeURIComponent(keyword)}`)
 }
+
+// 详情页 ↔ 其它页面切换时重置搜索，避免篇内结果与站内结果混用
+watch(isDetailPage, () => {
+  results.value = []
+  keyword.value = ''
+})
 
 // 监听键盘事件
 const handleKeydown = (e) => {
@@ -814,6 +958,430 @@ body.search-modal-open {
 
   .search-item {
     transition: none !important;
+  }
+}
+
+/* ==================================================
+   SECTION: 详情页篇内搜索（序号 + 命中的一/二级标题 + 摘要）
+   ================================================== */
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(3, 105, 161, 0.08);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: rgba(191, 219, 254, 0.35);
+  border-radius: 8px;
+}
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-headings {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-h1,
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-h2 {
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-h1 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #00acff;
+}
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-h2 {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #13d18a;
+}
+
+.search-panel.right-sidebar .search-results .search-item.detail-search-item .result-paragraph {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #047857;
+}
+
+/* 移动端：详情页搜索改为顶部整宽卡片，点击结果后自动收起 */
+@media (max-width: 720px) {
+  .search-panel.right-sidebar {
+    left: 8px;
+    right: 8px;
+    top: 66px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - 150px);
+  }
+
+  .search-panel.right-sidebar .search-wrap {
+    height: auto;
+    max-height: inherit;
+    padding: 10px;
+  }
+
+  .search-panel.right-sidebar .search-results {
+    max-height: min(56vh, 460px);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .search-panel.right-sidebar .search-results .search-item.detail-search-item {
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  .search-panel.right-sidebar .search-results .search-item.detail-search-item .result-index {
+    font-size: 0.86rem;
+  }
+
+  .search-panel.right-sidebar .search-results .search-item.detail-search-item .result-h1 {
+    font-size: 0.86rem;
+  }
+
+  .search-panel.right-sidebar .search-results .search-item.detail-search-item .result-h2 {
+    font-size: 0.8rem;
+  }
+
+  .search-panel.right-sidebar .search-results .search-item.detail-search-item .result-paragraph {
+    font-size: 0.82rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}
+
+/* ==================================================
+   SECTION: 详情页侧边卡片——结果列表内部滚动
+   （滚轮悬停在列表上时只滚动列表，不再带动整页）
+   ================================================== */
+
+.search-panel.right-sidebar {
+  max-height: calc(100vh - 100px);
+}
+
+.search-panel.right-sidebar .search-results {
+  min-height: 0;
+  max-height: min(56vh, 520px);
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 720px) {
+  .search-panel.right-sidebar .search-results {
+    max-height: min(50vh, 420px);
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 侧边卡片输入框：同样内嵌放大镜图标 */
+.search-panel.right-sidebar .search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-panel.right-sidebar .search-input-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 0.9rem;
+  color: rgba(0, 172, 255, 0.7);
+  pointer-events: none;
+}
+
+.search-panel.right-sidebar .search-input input {
+  padding-left: 34px;
+}
+
+/* ==================================================
+   SECTION: 站内搜索弹窗样式优化（非详情页）
+   ================================================== */
+
+.search-panel.search-card {
+  background: rgba(24, 40, 52, 0.42);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.search-panel.search-card .search-wrap {
+  width: min(860px, calc(100vw - 28px));
+  height: min(72vh, 560px);
+  padding: 0;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: 0 24px 60px rgba(24, 40, 52, 0.28);
+}
+
+/* 卡片：白底 + 马卡龙渐变描边（与详情页文章卡片一致） */
+.search-panel.search-card .search-modal-content {
+  gap: 12px;
+  padding: 16px 18px 14px;
+  border-radius: 18px;
+  border: 3px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)) padding-box,
+    linear-gradient(135deg,
+      rgba(255, 182, 201, 0.95),
+      rgba(154, 215, 255, 0.92),
+      rgba(167, 243, 208, 0.92)) border-box;
+}
+
+/* 标题栏 */
+.search-panel.search-card .search-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 42px;
+}
+
+.search-panel.search-card .search-head-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.86rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #9ad7ff 0%, #a7f3d0 100%);
+  box-shadow: 0 6px 14px rgba(72, 219, 187, 0.22);
+}
+
+.search-panel.search-card .search-head-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2b3440;
+  letter-spacing: 0.02em;
+}
+
+.search-panel.search-card .search-head-hint {
+  margin-left: auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  color: #7b8794;
+  background: rgba(154, 215, 255, 0.14);
+}
+
+/* 输入框：内嵌放大镜图标 */
+.search-panel.search-card .search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-panel.search-card .search-input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 0.95rem;
+  color: rgba(0, 172, 255, 0.75);
+  pointer-events: none;
+}
+
+.search-panel.search-card input[type="search"] {
+  padding: 12px 14px 12px 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(154, 215, 255, 0.45);
+  background: rgba(255, 255, 255, 0.95);
+  color: #2b3440;
+  font-size: 1rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.search-panel.search-card input[type="search"]:focus {
+  border-color: rgba(0, 172, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(154, 215, 255, 0.22);
+}
+
+/* 选项做成轻量胶囊 */
+.search-panel.search-card .search-options {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px dashed rgba(19, 209, 138, 0.35);
+  background: rgba(167, 243, 208, 0.18);
+}
+
+.search-panel.search-card .search-option-item {
+  gap: 7px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #3f6b57;
+}
+
+/* 结果区与结果卡片 */
+.search-panel.search-card .search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(24, 49, 58, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  overscroll-behavior: contain;
+}
+
+.search-panel.search-card .search-empty-hint {
+  flex: 1 1 auto;
+  color: #7b8794;
+}
+
+.search-panel.search-card .search-results .search-item {
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 10px;
+  background: transparent;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+/* 去掉左侧渐变竖条与小横线装饰 */
+.search-panel.search-card .search-results .search-item::before {
+  content: none;
+}
+
+.search-panel.search-card .search-results .search-item:hover {
+  background: rgba(154, 215, 255, 0.14);
+  border-color: rgba(154, 215, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.search-panel.search-card .search-results .search-item .title {
+  margin-left: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #1f3b57;
+}
+
+.search-panel.search-card .search-results .search-item .title .blog-type {
+  color: #0b7285;
+  background: rgba(167, 243, 208, 0.32);
+}
+
+.search-panel.search-card .search-results .search-item .snippet {
+  margin-left: 0;
+  margin-top: 2px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #5f6b7a;
+}
+
+.search-panel.search-card .search-results .search-item .meta-tag {
+  background: rgba(167, 243, 208, 0.34);
+  color: #0b7285;
+}
+
+/* 底部状态栏 */
+.search-panel.search-card .search-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+  font-size: 0.8rem;
+  color: #7b8794;
+}
+
+.search-panel.search-card .search-foot-count {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.search-panel.search-card .search-foot-deco {
+  flex: 1 1 auto;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(255, 182, 201, 0.55),
+    rgba(154, 215, 255, 0.55),
+    rgba(167, 243, 208, 0.55));
+}
+
+.search-panel.search-card .search-close-btn {
+  top: 14px;
+  right: 14px;
+}
+
+/* 弹窗移动端适配 */
+@media (max-width: 720px) {
+  .search-panel.search-card {
+    padding: 10px;
+  }
+
+  .search-panel.search-card .search-wrap {
+    width: calc(100vw - 20px);
+    height: min(78vh, 620px);
+    border-radius: 16px;
+  }
+
+  .search-panel.search-card .search-modal-content {
+    gap: 10px;
+    padding: 14px 12px 12px;
+    border-width: 2px;
+  }
+
+  .search-panel.search-card .search-head {
+    padding-right: 38px;
+  }
+
+  .search-panel.search-card .search-head-title {
+    font-size: 0.98rem;
+  }
+
+  .search-panel.search-card .search-head-hint {
+    display: none;
+  }
+
+  .search-panel.search-card .search-results {
+    padding: 4px;
+  }
+
+  .search-panel.search-card .search-results .search-item {
+    padding: 10px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "title"
+      "snippet";
+  }
+
+  .search-panel.search-card .search-results .search-item .meta-tags {
+    display: none;
+  }
+
+  .search-panel.search-card .search-results .search-item .title {
+    font-size: 0.95rem;
+  }
+
+  .search-panel.search-card .search-results .search-item .snippet {
+    font-size: 0.86rem;
   }
 }
 </style>
