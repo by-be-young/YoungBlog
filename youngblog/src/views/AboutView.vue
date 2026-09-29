@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useI18nStore } from '@/stores/i18nStore'
 import { useBlogStore } from '@/stores/blogStore'
 import { useMarkdown } from '@/composables/useMarkdown'
@@ -116,7 +116,7 @@ const loadAbout = async () => {
         renderedHtml.value = await renderMarkdown(cleaned, path)
         return
       }
-    } catch (e) {
+    } catch {
       // 继续尝试下一个路径
     }
   }
@@ -139,7 +139,7 @@ const calculateWordCount = async () => {
     }
     const lang = i18n.getLang()
     wordCount.value = lang === 'zh' ? (total / 10000).toFixed(1) + 'w' : Math.round(total / 1000) + 'k'
-  } catch (e) {
+  } catch {
     wordCount.value = '0.0w'
   }
 }
@@ -476,17 +476,22 @@ window.addEventListener('site:languageChanged', loadAbout)
     align-self: auto;
   }
 
+  .blog-article {
+    margin-top: 0;
+  }
+
+  /* 资料卡改为网格：第 1 行「头像 | 昵称 | 社交」，其余整行铺满 */
   .profile-card {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 16px;
-    padding: 24px 20px;
+    gap: 10px 16px;
+    padding: 20px 18px;
   }
 
   .profile-card .avatar {
+    grid-column: 1;
     margin-bottom: 0;
-    flex: 0 0 auto;
   }
 
   .profile-card .avatar img {
@@ -495,55 +500,145 @@ window.addEventListener('site:languageChanged', loadAbout)
   }
 
   .profile-card .name {
+    grid-column: 2;
+    text-align: left;
     margin-bottom: 0;
     font-size: 1.2rem;
   }
 
+  .profile-card .contact-links {
+    grid-column: 3;
+    grid-row: 1;
+    margin-left: 0;
+  }
+
+  /* 信息：标签在上、值在下，列数随宽度自适应 */
   .profile-card .profile-info {
-    flex: 1 1 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 16px;
-    margin-bottom: 8px;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px 14px;
+    margin: 4px 0 0;
   }
 
   .profile-card .profile-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 0;
     border-bottom: none;
-    padding: 4px 0;
-    flex: 0 0 auto;
+    min-width: 0;
   }
 
   .profile-card .profile-interests {
-    flex: 1 1 100%;
-    margin-bottom: 8px;
+    grid-column: 1 / -1;
+    margin: 4px 0 0;
   }
 
   .profile-card .stats {
-    flex: 1 1 100%;
-    margin-bottom: 0;
-    padding: 12px 0;
-  }
-
-  .profile-card .contact-links {
-    flex: 0 0 auto;
-    margin-left: auto;
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 0;
+    margin: 4px 0 0;
+    padding: 10px 0 0;
+    border-bottom: none;
   }
 }
 
 /* 小屏：移动端精简 */
 @media (max-width: 720px) {
+  /* 资料卡与正文之间保持紧凑间距（覆盖全局的 30px） */
+  .about-page .content-wrapper {
+    gap: 16px;
+  }
+
   .blog-article {
-    padding: 24px 16px 16px 16px;
-    margin-top: 16px;
-    margin-bottom: 16px;
+    /* 底部留白：避开左下角固定悬浮按钮 */
+    padding: 20px 16px 64px 16px;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+
+  .article-header {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
   }
 
   .article-title {
     font-size: 1.6rem;
   }
 
+  /* 资料卡（结构继承 ≤960px 网格），仅收紧尺寸 */
   .profile-card {
-    padding: 20px 16px;
+    gap: 6px 12px;
+    padding: 16px 14px;
+  }
+
+  .profile-card .avatar img {
+    width: 60px;
+    height: 60px;
+    border-width: 2px;
+  }
+
+  .profile-card .name {
+    font-size: 1.15rem;
+  }
+
+  .profile-card .contact-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+
+  /* 窄屏信息 2 列 */
+  .profile-card .profile-info {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px 12px;
+    margin-top: 6px;
+  }
+
+  .profile-card .profile-label {
+    font-size: 0.76rem;
+    line-height: 1.3;
+  }
+
+  .profile-card .profile-value {
+    font-size: 0.88rem;
+    line-height: 1.35;
+  }
+
+  .profile-card .profile-interests {
+    margin-top: 6px;
+  }
+
+  .profile-card .interests-label {
+    font-size: 0.76rem;
+    margin-bottom: 6px;
+  }
+
+  .profile-card .interests-list {
+    gap: 6px;
+  }
+
+  .profile-card .interest {
+    font-size: 0.78rem;
+    padding: 2px 10px;
+    border-radius: 10px;
+  }
+
+  /* 统计横排（覆盖全局 .stats 在 ≤768px 变竖排的规则） */
+  .profile-card .stats {
+    margin-top: 6px;
+    padding: 10px 0 0;
+  }
+
+  .profile-card .stat .count {
+    font-size: 1.2rem;
+  }
+
+  .profile-card .stat .label {
+    font-size: 0.72rem;
   }
 }
 </style>
