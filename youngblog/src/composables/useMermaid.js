@@ -79,13 +79,20 @@ export function useMermaid() {
             overlay.setAttribute('aria-hidden', 'true')
             overlay.innerHTML = `
                 <div class="mermaid-viewer-stage" role="dialog" aria-modal="true" aria-label="Mermaid 全屏预览">
-                    <div class="mermaid-viewer-toolbar">
-                        <button class="mermaid-viewer-close" type="button" aria-label="关闭全屏预览">&times;</button>
-                    </div>
                     <div class="mermaid-viewer-content"></div>
+                </div>
+                <div class="mermaid-viewer-toolbar">
+                    <button class="mermaid-viewer-close" type="button" aria-label="关闭全屏预览">&times;</button>
                 </div>
             `
             document.body.appendChild(overlay)
+        }
+
+        // 兼容旧结构：工具条必须在舞台之外，否则会随滚动条一起滚动
+        const toolbarEl = overlay.querySelector('.mermaid-viewer-toolbar')
+        const stageEl = overlay.querySelector('.mermaid-viewer-stage')
+        if (toolbarEl && stageEl && stageEl.contains(toolbarEl)) {
+            overlay.appendChild(toolbarEl)
         }
 
         const contentEl = overlay.querySelector('.mermaid-viewer-content')
@@ -135,23 +142,41 @@ export function useMermaid() {
             const svg = diagramEl.querySelector('svg')
             if (!svg || !contentEl) return false
 
+            // 取源图基准尺寸：优先页面上的实际渲染尺寸，其次 viewBox
+            const rect = svg.getBoundingClientRect()
+            let baseW = rect.width
+            let baseH = rect.height
+            if (!baseW || !baseH) {
+                const vb = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number)
+                if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
+                    baseW = vb[2]
+                    baseH = vb[3]
+                }
+            }
+            if (!baseW || !baseH) return false
+
+            // 初始缩放：尽量铺满可用区域（小图适度放大，大图按比例缩小）
+            const stage = overlay.querySelector('.mermaid-viewer-stage')
+            const stageStyle = stage ? getComputedStyle(stage) : null
+            const padX = stageStyle ? (parseFloat(stageStyle.paddingLeft) || 0) + (parseFloat(stageStyle.paddingRight) || 0) : 0
+            const padY = stageStyle ? (parseFloat(stageStyle.paddingTop) || 0) + (parseFloat(stageStyle.paddingBottom) || 0) : 0
+            const maxW = Math.max(120, (stage?.clientWidth || window.innerWidth * 0.9) - padX - 8)
+            const maxH = Math.max(120, (stage?.clientHeight || window.innerHeight * 0.9) - padY - 8)
+            const fitScale = clamp(Math.min(maxW / baseW, maxH / baseH), 0.2, 3)
+
             contentEl.innerHTML = ''
             const svgClone = svg.cloneNode(true)
             svgClone.removeAttribute('style')
             svgClone.removeAttribute('width')
             svgClone.removeAttribute('height')
-            svgClone.style.cssText = 'width:auto;height:auto;max-width:100%;max-height:100%'
+            svgClone.style.display = 'block'
             contentEl.appendChild(svgClone)
 
             zoomState.svg = svgClone
-            requestAnimationFrame(() => {
-                if (!zoomState.svg) return
-                const rect = zoomState.svg.getBoundingClientRect()
-                zoomState.baseWidth = rect.width || 0
-                zoomState.baseHeight = rect.height || 0
-                zoomState.scale = 1
-                applyZoom()
-            })
+            zoomState.baseWidth = baseW
+            zoomState.baseHeight = baseH
+            zoomState.scale = fitScale
+            applyZoom()
 
             overlay.classList.add('is-open')
             overlay.setAttribute('aria-hidden', 'false')

@@ -4,9 +4,12 @@
  * 依赖：useI18nStore
  */
 import { useI18nStore } from '@/stores/i18nStore'
+import { useMermaid } from '@/composables/useMermaid'
 
 export function useCodeBlock() {
     const i18n = useI18nStore()
+    // Mermaid 全屏查看器（复用 useMermaid 中已有的实现）
+    const { openFullscreen } = useMermaid()
 
     // 复制文本到剪贴板（独立实现）
     async function copyTextToClipboard(text) {
@@ -248,7 +251,14 @@ export function useCodeBlock() {
         btnToggle.dataset.mermaidToggle = '1'
         btnToggle.innerHTML = '<i class="fas fa-code"></i><span class="mermaid-toggle-label">源码</span>'
 
-        actions.append(btnCopy, btnCollapse, btnToggle)
+        // 全屏按钮
+        const btnFullscreen = document.createElement('button')
+        btnFullscreen.type = 'button'
+        btnFullscreen.className = 'codeblock__btn'
+        btnFullscreen.dataset.mermaidFullscreen = '1'
+        btnFullscreen.innerHTML = `<i class="fas fa-expand"></i><span class="mermaid-fullscreen-label">${i18n.get('code_fullscreen')}</span>`
+
+        actions.append(btnCopy, btnCollapse, btnToggle, btnFullscreen)
         header.append(langEl, actions)
 
         // ---- Body ----
@@ -325,6 +335,9 @@ export function useCodeBlock() {
                 if (label) label.textContent = '图表'
             }
         })
+
+        // ---- 全屏按钮 ----
+        btnFullscreen.addEventListener('click', () => openFullscreen(diagram))
     }
 
     function enhance(rootEl) {
@@ -490,6 +503,9 @@ export function useCodeBlock() {
                         const span = btnCopy.querySelector('.code-copy-label')
                         if (span) span.textContent = i18n.get('code_copy', '复制')
                     }
+                    // Mermaid 全屏按钮文案
+                    const fsLabel = container.querySelector('.mermaid-fullscreen-label')
+                    if (fsLabel) fsLabel.textContent = i18n.get('code_fullscreen')
                     // 按钮文案表示"当前状态"
                     updateToggleButton(container, container.dataset.codeState || 'expanded')
                 })
@@ -582,6 +598,16 @@ export function useCodeBlock() {
                         if (icon) icon.className = 'fas fa-image'
                         if (label) label.textContent = '图表'
                     }
+                })
+            }
+
+            // 全屏按钮
+            const btnFullscreen = container.querySelector('[data-mermaid-fullscreen]')
+            if (btnFullscreen && !btnFullscreen.dataset.bound) {
+                btnFullscreen.dataset.bound = '1'
+                btnFullscreen.addEventListener('click', () => {
+                    const diagramEl = container.querySelector('.mermaid-block__diagram')
+                    if (diagramEl) openFullscreen(diagramEl)
                 })
             }
             return
