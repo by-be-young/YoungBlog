@@ -1,5 +1,24 @@
 [
     {
+        "id": 1727027237,
+        "title": "编译实验-词法分析",
+        "excerpt": "2421编译实验作业——词法分析实验心得",
+        "date": "2026-10-01",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "编译",
+            "文法与词法"
+        ],
+        "category": "学习",
+        "type": "系统笔记",
+        "series": "编译原理",
+        "order": 2,
+        "chapter": "2-实验",
+        "contentFile": "blogs/三上/编译/文法与词法/编译实验-词法分析.md",
+        "recommended": true
+    },
+    {
         "id": 4227364283,
         "title": "编译实验-文法解读",
         "excerpt": "2421编译实验作业——文法解读实验心得",
@@ -16,7 +35,8 @@
         "order": 1,
         "chapter": "2-实验",
         "contentFile": "blogs/三上/编译/文法与词法/编译实验-文法解读.md",
-        "recommended": true
+        "recommended": true,
+        "lastEditedDate": "2026-10-01"
     },
     {
         "id": 2536514388,
@@ -35,8 +55,7 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语法分析/第06讲-语法分析.md",
-        "recommended": false,
-        "lastEditedDate": "2026-09-28"
+        "recommended": false
     },
     {
         "id": 3796104188,
@@ -112,8 +131,7 @@
         "order": 3,
         "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/文法与词法/词法分析.md",
-        "recommended": false,
-        "lastEditedDate": "2026-09-28"
+        "recommended": false
     },
     {
         "id": 2725175255,
@@ -227,8 +245,7 @@
         "order": 1,
         "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/概论/编译概论.md",
-        "recommended": false,
-        "lastEditedDate": "2026-09-28"
+        "recommended": false
     },
     {
         "id": 2620711677,
@@ -304,8 +321,7 @@
         "order": 2,
         "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/文法与词法/文法和语言.md",
-        "recommended": false,
-        "lastEditedDate": "2026-09-28"
+        "recommended": false
     },
     {
         "id": 1040867593,
@@ -1046,7 +1062,8 @@
         "order": 4,
         "chapter": "3-实验",
         "contentFile": "blogs/二下/操作系统/系统调用/系统调用-MOS实验.md",
-        "recommended": true
+        "recommended": false,
+        "lastEditedDate": "2026-10-01"
     },
     {
         "id": 650786542,
@@ -1293,7 +1310,8 @@
         "order": 2,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/启动/ELF文件结构.md",
-        "recommended": true
+        "recommended": false,
+        "lastEditedDate": "2026-10-01"
     },
     {
         "id": 3791533123,
@@ -1312,7 +1330,8 @@
         "order": 1,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/启动/计算机的启动过程.md",
-        "recommended": true
+        "recommended": false,
+        "lastEditedDate": "2026-10-01"
     },
     {
         "id": 2069020613,

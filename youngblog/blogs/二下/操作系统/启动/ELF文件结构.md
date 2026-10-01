@@ -1,7 +1,7 @@
 ---
 type: 系统笔记
 excerpt: ELF文件结构概述、Linker Script的作用及内容、Lab1实验相关
-recommended: true
+recommended: false
 series: 操作系统
 chapter: 2-理论
 order: "2"
