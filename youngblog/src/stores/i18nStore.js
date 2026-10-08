@@ -199,6 +199,11 @@ const translations = {
         export_action: '导出',
         display_manage: '显示管理',
         back_to_previous: '返回',
+        // 沉浸阅读退出（触屏无 Esc 键，需提供可点按的退出入口）
+        immersive_hint_esc: '沉浸阅读模式 · 按 Esc 退出',
+        immersive_hint_touch: '沉浸阅读模式 · 轻点下方按钮退出',
+        immersive_exit: '退出沉浸阅读',
+        immersive_exiting_hint: '已退出沉浸阅读',
     },
     en: {
         brand: "Young's Escape Journey",
@@ -384,6 +389,11 @@ const translations = {
         export_action: 'Export',
         display_manage: 'Display',
         back_to_previous: 'Back',
+        // Immersive reading exit (touch devices have no Esc key)
+        immersive_hint_esc: 'Immersive reading · press Esc to exit',
+        immersive_hint_touch: 'Immersive reading · tap the button below to exit',
+        immersive_exit: 'Exit immersive reading',
+        immersive_exiting_hint: 'Exited immersive reading',
     },
     ja: {
         brand: '白恙の逃避行',
@@ -569,6 +579,11 @@ const translations = {
         export_action: 'エクスポート',
         display_manage: '表示管理',
         back_to_previous: '戻る',
+        // 没入読書の終了（タッチ端末には Esc キーがない）
+        immersive_hint_esc: '没入読書モード · Esc キーで終了',
+        immersive_hint_touch: '没入読書モード · 下のボタンをタップして終了',
+        immersive_exit: '没入読書を終了',
+        immersive_exiting_hint: '没入読書を終了しました',
     },
 }
 

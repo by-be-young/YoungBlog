@@ -100,6 +100,7 @@
  */
 
 import { ref, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18nStore } from '@/stores/i18nStore'
 import { resolveUrl } from '@/utils/url'
 
@@ -664,9 +665,25 @@ const isCompact = ref(false)
 const overlayOpen = ref(false)
 /** 右下角悬浮球组容器（目录按钮通过 Teleport 注入其中） */
 const fabTarget = ref(null)
-/** 紧凑模式媒体查询（与样式中的断点保持一致） */
-const COMPACT_QUERY = '(max-width: 880px)'
+/**
+ * 紧凑模式媒体查询。
+ * 断点从 880 提升到 1024：881–1024 区间原先仍走桌面侧栏（固定 300px 宽），
+ * 在 900px 级宽度上会把正文压到约 560px；改为弹层后正文占满整行，平板阅读更舒适。
+ * ⚠️ 此常量必须与 <style> 中 `@media (max-width: 1024px)` 完全一致：
+ *    JS 决定是否渲染弹层/目录球，CSS 决定弹层的定位与外观，两者错位就会出现
+ *    「JS 认为是弹层、CSS 仍按桌面侧栏排版」或反之的破版。
+ *    另注：AppNavbar 到 ≤1100px 才切换为抽屉，与本断点相差 76px，不冲突。
+ */
+const COMPACT_QUERY = '(max-width: 1024px)'
 let compactMql = null
+
+/**
+ * 打开弹层前 body 上的 overflow 值。
+ * 不直接写死 '' 回填，是为了不破坏其它组件（如导航抽屉）可能设置的滚动锁。
+ */
+let bodyOverflowBeforeLock = ''
+/** 是否由本组件锁定了 body 滚动，用于幂等恢复 */
+let bodyOverflowLocked = false
 
 function toggleOverlay() {
     if (overlayOpen.value) closeOverlay()
@@ -674,16 +691,28 @@ function toggleOverlay() {
 }
 
 function openOverlay() {
+    // 幂等：重复调用不重复加监听、不重复覆盖已记录的原始 overflow
+    if (overlayOpen.value) return
     overlayOpen.value = true
     // 弹层展开时锁定页面滚动，避免背景跟随滚动
+    bodyOverflowBeforeLock = document.body.style.overflow
+    bodyOverflowLocked = true
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onOverlayKeyDown)
 }
 
+/**
+ * 关闭弹层。
+ * 幂等：无论弹层是否处于打开状态都可安全调用，并且只要本组件加过滚动锁就一定恢复，
+ * 这样「断点切回桌面 / 路由变化 / 组件卸载」等非点击路径也能保证页面恢复可滚动。
+ */
 function closeOverlay() {
-    if (!overlayOpen.value) return
     overlayOpen.value = false
-    document.body.style.overflow = ''
+    if (bodyOverflowLocked) {
+        document.body.style.overflow = bodyOverflowBeforeLock
+        bodyOverflowBeforeLock = ''
+        bodyOverflowLocked = false
+    }
     window.removeEventListener('keydown', onOverlayKeyDown)
 }
 
@@ -696,6 +725,17 @@ function onCompactChange(matches) {
     isCompact.value = matches
     if (!matches) closeOverlay()
 }
+
+/** 当前路由：用于监听路由变化 */
+const route = useRoute()
+
+/**
+ * 路由变化时收起弹层。
+ * 为什么需要：详情页在「文章 A → 文章 B」跳转时会复用同一个组件实例，onUnmounted 不会触发，
+ * 若弹层此时是打开的，body 上的 overflow:hidden 就会残留到新文章，页面永久无法滚动。
+ * （跳转到完全不同的路由时组件会卸载，onUnmounted 里的 closeOverlay 同样兜住。）
+ */
+watch(() => route.fullPath, closeOverlay)
 
 /**
  * 调整目录球在悬浮球组中的位置
@@ -768,8 +808,9 @@ onUnmounted(() => {
     window.removeEventListener('resize', onResize)
     if (compactMql) compactMql.removeEventListener('change', onCompactChange)
     compactMql = null
+    // 卸载时恢复 body 滚动锁并移除键盘监听：
+    // closeOverlay 已做幂等处理，只在确实加过锁时回填，避免误清其它组件的滚动锁
     closeOverlay()
-    document.body.style.overflow = ''
     const list = tocListRef.value
     if (list && listScrollHandler) list.removeEventListener('scroll', listScrollHandler)
     if (rebuildTimer) clearTimeout(rebuildTimer)
@@ -1089,44 +1130,63 @@ onUnmounted(() => {
     pointer-events: auto;
 }
 
-/* 目录按钮：注入右下角悬浮球组（圆形渐变外观由 .floating-btn 提供） */
-.toc-fab {
-    width: 48px;
-    height: 48px;
+/* 目录按钮：注入右下角悬浮球组（圆形渐变外观由 .floating-btn 提供）
+   尺寸与图标字号直接复用 FloatingControls.vue 定义在 #floating-controls 上的
+   --fab-size / --fab-icon-size：Teleport 注入的按钮是它的直接子元素，会继承这两个变量，
+   这样目录球在手机(≤480)/小平板(481–900)/平板(901–1100)三档里与同组其它球完全等大，
+   不需要在本文件重复维护尺寸断点；回退值 48px / 1.2rem 保证变量缺失时仍不小于 44×44 触控热区。
+   选择器加 #floating-controls 前缀提高权重，避免与 FloatingControls 的 .floating-btn 因样式注入顺序不同而互相覆盖。 */
+#floating-controls .toc-fab {
+    width: var(--fab-size, 48px);
+    height: var(--fab-size, 48px);
     padding: 0;
-    font-size: 1.2rem;
+    font-size: var(--fab-icon-size, 1.2rem);
     flex-shrink: 0;
 }
 
-@media (max-width: 720px) {
-    .toc-fab {
-        width: 42px;
-        height: 42px;
-        font-size: 1rem;
-    }
-}
+/*
+ * ==================== 紧凑模式（平板 / 手机）与弹层 ====================
+ *
+ * ⚠️ 断点 1024px 必须与 script 中的 COMPACT_QUERY 保持一致（见该常量上方注释）。
+ * 为什么从 880 提高到 1024：881–1024 原先仍是桌面侧栏（.blog-toc 固定 300px + flex 0 0 300px），
+ * 在 900px 级宽度上正文被压到约 560px；切到弹层后正文占满整行，平板（768×1024、1024×768）体验更好。
+ * 为什么不跟着 AppNavbar 用 1100：目录在平板上更需要弹层，而导航抽屉在 1100 才切换，
+ * 两者错开 76px 并不冲突（1024–1100 区间为「导航仍是横向 + 目录已是弹层」）。
+ * 1280×800 / 1100×800 等更宽视口不进入本媒体查询，仍保持与改动前完全一致的桌面侧栏形态。
+ */
+@media (max-width: 1024px) {
 
-@media (max-width: 880px) {
-
-    /* 紧凑模式：目录变为居中弹层，正文占满整行 */
+    /* 弹层基础形态：手机竖屏「底部弹出」（bottom sheet）。
+       原来用 top:50% + translate(-50%,-50%) 垂直居中，矮屏（横屏手机、分屏、带键盘）上容易上下溢出；
+       改为贴底弹出后配合 dvh 高度上限，无论屏高多少都能完整落在视口内。 */
     .blog-toc.in-overlay {
         position: fixed;
-        top: 50%;
+        top: auto;
         left: 50%;
+        /* 底部偏移叠加安全区：带手势条的机型不会被系统横条盖住 */
+        bottom: max(12px, env(safe-area-inset-bottom, 0px));
         align-self: center;
-        width: min(88vw, 420px);
-        max-width: 88vw;
+        /* 宽度用 min(92vw, 420px)：窄屏几乎占满，宽一点的手机仍保持弹窗宽度 */
+        width: min(92vw, 420px);
+        max-width: 92vw;
         height: auto;
-        max-height: min(78vh, 640px);
+        /* 先写 vh 作为不支持 dvh 的浏览器兜底，再用 dvh 覆盖：
+           dvh 不随移动浏览器地址栏收放而跳变，避免弹层高度忽大忽小 */
+        max-height: min(72vh, 640px);
+        max-height: min(72dvh, 640px);
         margin: 0;
-        padding: 16px 18px;
+        /* 左右留出横向安全区（刘海屏横握），底部再补一条安全区，
+           避免内容被圆角/手势条裁掉；整体仍保持 16/18 的原有内边距观感 */
+        padding: 16px calc(18px + env(safe-area-inset-right, 0px))
+            calc(16px + env(safe-area-inset-bottom, 0px)) calc(18px + env(safe-area-inset-left, 0px));
         z-index: 1099;
         overflow: hidden;
         box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
         opacity: 0;
         pointer-events: none;
-        transform: translate(-50%, -50%) scale(0.86);
-        transform-origin: 50% 50%;
+        /* 用向下位移模拟「从底部升起」，比原来的缩小淡入更符合底部弹出的空间感 */
+        transform: translate(-50%, 24px) scale(0.98);
+        transform-origin: 50% 100%;
         will-change: transform, opacity;
         transition:
             transform 0.3s cubic-bezier(0.2, 0.82, 0.22, 1),
@@ -1136,8 +1196,131 @@ onUnmounted(() => {
     .blog-toc.in-overlay.is-open {
         opacity: 1;
         pointer-events: auto;
+        transform: translate(-50%, 0) scale(1);
+    }
+
+    /* 目录列表：作为独立滚动区，
+       - overscroll-behavior: contain 让滚到两端时不再把滚动链传给页面（避免背景被带着晃）；
+       - -webkit-overflow-scrolling: touch 显式开启 iOS 惯性滚动。 */
+    .blog-toc.in-overlay .toc-list {
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        /* 保底高度：避免页脚（上一篇/下一篇）较高时把列表压到几乎看不见。
+           先给 120px，但矮屏（如 480×320 分屏、横屏手机）按 22dvh 收缩，
+           否则「列表保底 + 页脚」会一起超过弹层高度上限而被裁掉。 */
+        min-height: min(120px, 22vh);
+        min-height: min(120px, 22dvh);
+    }
+
+    /* 页脚自身也限制高度：文章页脚可能同时含上一篇/下一篇/相似推荐，
+       超长时让它在内部滚动，而不是挤占列表的保底高度。 */
+    .blog-toc.in-overlay .toc-footer {
+        max-height: 30vh;
+        max-height: 30dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/*
+ * 横屏矮屏（如 844×390，或横屏平板 1024×560）：底部弹出只剩约 300px 高度，
+ * 目录头 + 列表 + 页脚会被压扁，因此回到居中弹窗形态，
+ * 并把高度上限放宽到 84dvh，让列表拿到足够的滚动空间。
+ * 拆成独立媒体查询（而不是嵌套在 1024 那条里）是为了不依赖「条件规则嵌套」的解析差异，
+ * 同时让后面的平板档位按源码顺序覆盖它，优先级一目了然。
+ */
+@media (max-width: 1024px) and (orientation: landscape) and (max-height: 560px) {
+    .blog-toc.in-overlay {
+        top: 50%;
+        bottom: auto;
+        max-height: min(84vh, 640px);
+        max-height: min(84dvh, 640px);
+        transform: translate(-50%, -50%) scale(0.94);
+        transform-origin: 50% 50%;
+    }
+
+    .blog-toc.in-overlay.is-open {
         transform: translate(-50%, -50%) scale(1);
     }
+}
+
+/*
+ * 平板档位（721–1024，如 iPad 820×1180、1024×768）：居中弹窗形态，
+ * 宽度放宽到 560px 但不超视口的 78%，避免弹层在横屏平板上显得过窄。
+ * 放在横屏矮屏规则之后：两者同时命中时（如 844×390、1024×560）以本档位为准，
+ * 这样矮屏横屏也能拿到 560px 的宽度与更大的触控热区。
+ */
+@media (min-width: 721px) and (max-width: 1024px) {
+    .blog-toc.in-overlay {
+        top: 50%;
+        bottom: auto;
+        width: min(560px, 78vw);
+        max-width: 78vw;
+        max-height: min(84vh, 640px);
+        max-height: min(84dvh, 640px);
+        padding: 18px 22px;
+        transform: translate(-50%, -50%) scale(0.94);
+        transform-origin: 50% 50%;
+    }
+
+    .blog-toc.in-overlay.is-open {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* 平板观看距离更远，条目字号略微上调（只调链接，不动 .toc-toggle 的字号） */
+    .blog-toc.in-overlay .toc-h1>a {
+        font-size: 1.16rem;
+    }
+
+    .blog-toc.in-overlay .toc-h2>a {
+        font-size: 1.08rem;
+    }
+
+    .blog-toc.in-overlay .toc-h3>a {
+        font-size: 1.02rem;
+    }
+
+    /* 平板以触摸为主：目录条目行高提到 40px，保证手指点击命中率
+       （桌面端不进入本媒体查询，仍保持原有紧凑行距） */
+    .blog-toc.in-overlay .toc-h1>a,
+    .blog-toc.in-overlay .toc-h2>a,
+    .blog-toc.in-overlay .toc-h3>a {
+        line-height: 40px;
+    }
+
+    /* 展开/折叠箭头热区扩大到 32×32：用 padding 撑开，字号保持不变 */
+    .blog-toc.in-overlay .toc-toggle {
+        display: inline-block;
+        min-width: 32px;
+        min-height: 32px;
+        padding: 4px;
+        margin-right: 2px;
+        line-height: 24px;
+        text-align: center;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+}
+
+/*
+ * ==================== 沉浸模式兜底 ====================
+ * 1) 沉浸模式下桌面侧栏需要隐藏目录（BlogDetailView 已有同条件规则），这里再声明一次作为兜底，
+ *    保证组件被复用到没有该规则的页面时，沉浸态不会残留一个点了没反应的目录球。
+ *    条件与对方完全一致（同样排除 .immersive-mobile-mode），不会与对方规则冲突。
+ * 2) BlogDetailView 为了隐藏桌面侧栏写了 `.immersive-reading-active .blog-toc { display: none }`，
+ *    该规则会连移动端弹层一起隐藏，导致「沉浸模式下目录球可点却弹不出内容」；
+ *    这里仅在弹层已打开（.is-open）时恢复显示，权重(0,6,0)高于对方(0,4,0)，不依赖样式注入顺序。
+ *    桌面端不会命中本规则：.in-overlay 只在紧凑模式（isCompact）下才渲染。
+ */
+.blog-detail-page.immersive-reading-active:not(.immersive-mobile-mode) .toc-fab {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.blog-detail-page.immersive-reading-active .blog-toc.in-overlay.is-open {
+    display: flex;
 }
 
 @media (prefers-reduced-motion: reduce) {

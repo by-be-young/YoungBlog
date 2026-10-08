@@ -264,14 +264,45 @@ onUnmounted(() => {
  *   DOM 顺序（从上到下）：回到顶部 → 设置按钮 → 子菜单
  *   视觉顺序（从下到上）：回到顶部 → 设置按钮 → 子菜单
  *   因此：子菜单在设置按钮上方展开，回到顶部在设置按钮下方出现
+ *
+ * 为什么把尺寸与偏移集中成 CSS 变量：
+ * 下方"窄屏子菜单溢出保护"的 max-height 需要引用"按钮尺寸 + 间距 + 底部偏移"来预留空间，
+ * 若各处硬编码就会出现"改了断点却忘了改计算式"的隐患；
+ * 集中成令牌后，响应式断点只需覆盖变量值，尺寸/字号/间距/溢出自适应全部跟随。
+ * 变量定义在容器上，因此也会被 TOC.vue 通过 Teleport 注入的同级目录球继承。
  */
 #floating-controls {
+  /* 按钮边长（默认桌面 48px，与改动前完全一致） */
+  --fab-size: 48px;
+  /* 按钮内图标字号 */
+  --fab-icon-size: 1.2rem;
+  /* 按钮之间的垂直间距 */
+  --fab-gap: 10px;
+  /* 一个"按钮 + 间距"的纵向占位，供窄屏的溢出保护复用（会自动跟随上方变量） */
+  --fab-step: calc(var(--fab-size) + var(--fab-gap));
+  /*
+   * 窄屏子菜单最大高度里需要留给下方元素的空间：
+   * 3 个球位（回到顶部 / 目录球 / 设置）+ 它们之间的间距 + 12px 余量。
+   * 刻意只用加法串联而不写 "* 3"：加减法是 calc() 各实现一致支持的最小算子集合，
+   * 避免乘法算子在某些解析实现中被丢弃，导致溢出保护静默失效却难以察觉。
+   */
+  --fab-reserved: calc(var(--fab-step) + var(--fab-step) + var(--fab-step) + 12px);
+  /*
+   * 底部 / 右侧偏移
+   * - calc 中叠加 env(safe-area-inset-*)：桌面或没有安全区的设备取回退值 0px，
+   *   结果与改动前的 40px / 32px 完全相同，所以桌面视觉不变；
+   *   在带刘海、圆角或底部手势条的触屏设备上则自动向内让出安全区，避免按钮被遮挡。
+   */
+  --fab-offset-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+  --fab-offset-right: calc(32px + env(safe-area-inset-right, 0px));
+
   position: fixed;
-  bottom: 40px;
-  right: 32px;
+  bottom: var(--fab-offset-bottom);
+  right: var(--fab-offset-right);
   display: flex;
   flex-direction: column-reverse;
-  gap: 10px;
+  gap: var(--fab-gap);
+  /* 层级必须低于目录弹层（TOC.vue 中为 1099），否则手机上目录会被悬浮球压住 */
   z-index: 1000;
   align-items: flex-end;
 }
@@ -286,15 +317,22 @@ onUnmounted(() => {
  * - 圆形按钮，带渐变背景
  * - 悬停时轻微上浮并增强阴影
  * - 点击时缩小产生按压反馈
+ * - 尺寸与字号取自容器上的 CSS 变量，便于响应式断点统一覆盖
  */
 .floating-btn {
-  width: 48px;
-  height: 48px;
+  width: var(--fab-size);
+  height: var(--fab-size);
+  /*
+   * 触控最小热区兜底：任何断点都不得小于 44×44（WCAG 2.5.5 / iOS HIG 的推荐下限）。
+   * 用 min-* 而非只改 width/height，是为了让将来有人误把 --fab-size 调小时也不会跌破可点按尺寸。
+   */
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(135deg, #00acff, #48dbbb, #ff6e9b);
   color: #fff;
-  font-size: 1.2rem;
+  font-size: var(--fab-icon-size);
   box-shadow: 0 2px 12px rgba(52, 152, 219, 0.25);
   cursor: pointer;
   display: inline-flex;
@@ -302,6 +340,16 @@ onUnmounted(() => {
   justify-content: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   flex-shrink: 0;
+  /*
+   * 触控可用性（只影响触屏/点按，桌面鼠标渲染结果与改动前一致）：
+   * - touch-action: manipulation 告诉浏览器本元素只做平移与捏合，取消双击缩放判定，
+   *   从而避免移动端点击时等待"是否双击"的延迟；
+   * - -webkit-tap-highlight-color: transparent 去掉 iOS/Android 点按时盖在圆形按钮上的灰色方块；
+   * - user-select: none 防止长按图标时选中文本或弹出系统文本选择菜单。
+   */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 /* 悬停：上浮 2px + 阴影加深 */
@@ -310,9 +358,20 @@ onUnmounted(() => {
   box-shadow: 0 6px 20px rgba(52, 152, 219, 0.35);
 }
 
-/* 点击：缩小至 95% 模拟按压 */
+/* 点击/触摸：缩小至 95% 模拟按压；不依赖 hover，所以在触屏上同样有反馈 */
 .floating-btn:active {
   transform: scale(0.95);
+}
+
+/*
+ * 键盘可见焦点环
+ * 为什么用 :focus-visible 而不是 :focus：
+ * 前者只在键盘（Tab）导航时出现，鼠标或触摸点击不会留下外圈，
+ * 因此桌面观感与改动前一致，同时键盘用户能清楚看到当前焦点落在哪个悬浮球上。
+ */
+.floating-btn:focus-visible {
+  outline: 3px solid rgba(0, 172, 255, 0.9);
+  outline-offset: 2px;
 }
 
 /* 屏幕阅读器专用文本，视觉上隐藏 */
@@ -353,7 +412,7 @@ onUnmounted(() => {
 .sub-btns-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--fab-gap);
   align-items: flex-end;
 
   /* 初始状态：隐藏 */
@@ -412,6 +471,26 @@ onUnmounted(() => {
 /* 返回上级（如有） */
 
 /* ===========================
+   触屏下的子按钮层次增强
+   =========================== */
+
+/**
+ * 触屏设备为子按钮补一条常驻的轻微描边 + 稍强的外阴影
+ * 为什么需要：
+ * 桌面靠 :hover 的上浮与阴影加深来提示"这是可点的子项"，
+ * 而触屏既没有 hover、也无法通过鼠标位置区分按压态，子按钮未展开时的层次感偏弱；
+ * 这里用媒体查询限定生效范围——只有"主指针没有悬停能力"（hover: none，
+ * 如 iPad / 手机）或"主指针为粗粒度"（pointer: coarse）的设备才会命中，
+ * 桌面鼠标环境（hover: hover + pointer: fine）完全不受影响，hover 行为与观感保持原样。
+ */
+@media (hover: none), (pointer: coarse) {
+  .sub-btn {
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 4px 16px rgba(52, 152, 219, 0.3);
+  }
+}
+
+/* ===========================
    回到顶部按钮
    =========================== */
 
@@ -425,22 +504,100 @@ onUnmounted(() => {
 }
 
 /* ===========================
-   响应式适配
+   响应式适配（三档）
    =========================== */
 
 /**
- * 移动端（宽度 ≤ 720px）调整按钮大小和位置
+ * 触屏档位统一约定：
+ * - 每个触屏档位的按钮边长都 ≥ 44px（触控最小热区）；
+ * - 偏移一律写成 calc(<基础值> + env(safe-area-inset-*, 0px))，
+ *   保证在刘海屏、圆角屏与底部手势条设备上不被遮挡；
+ * - 档位只覆盖 CSS 变量，按钮尺寸 / 图标字号 / 间距 / 溢出保护会自动跟随，
+ *   避免同一数值散落在多条规则里造成漏改。
+ * 桌面（>1100px）不进入任何触屏档位，保持 48px / bottom 40px / right 32px 不变。
  */
-@media (max-width: 720px) {
+
+/**
+ * 档位一：手机（≤480px）
+ * - 44px 是触控热区下限，比原来的 42px 略大，保证拇指点得准；
+ * - 间距收到 8px、偏移收到 18/14px，让 4 个子按钮展开后仍完整留在矮视口内。
+ */
+@media (max-width: 480px) {
   #floating-controls {
-    bottom: 24px;
-    right: 16px;
+    --fab-size: 44px;
+    --fab-icon-size: 1rem;
+    --fab-gap: 8px;
+    --fab-offset-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    --fab-offset-right: calc(14px + env(safe-area-inset-right, 0px));
+  }
+}
+
+/**
+ * 档位二：小平板 / 横屏手机（481–900px，如 iPad 竖屏 820×1180）
+ * - 按钮 46px：比桌面略小以少遮正文，又明显大于 44px 的下限；
+ * - right 从 32px 收到 20px，配合安全区继续内让。
+ * 注意：≤880px 时 TOC.vue 处于紧凑模式，会向本容器注入目录球，
+ * 因此这一档实际可能有 4 个球叠在一起，底部偏移不宜过大。
+ */
+@media (min-width: 481px) and (max-width: 900px) {
+  #floating-controls {
+    --fab-size: 46px;
+    --fab-offset-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    --fab-offset-right: calc(20px + env(safe-area-inset-right, 0px));
+  }
+}
+
+/**
+ * 档位三：平板（901–1100px，如 iPad 横屏 1024×768）
+ * - 按钮沿用桌面 48px：手指点按更稳，也无需为了省空间牺牲热区；
+ * - right 由 32px 收到 24px：平板可视宽度比桌面紧张，悬浮球更容易贴住正文，
+ *   内收可减少遮挡；任务下限要求不小于 20px，取 24px 留出叠加安全区的余量；
+ * - bottom 由 40px 收到 36px，兼顾底部手势条。
+ */
+@media (min-width: 901px) and (max-width: 1100px) {
+  #floating-controls {
+    --fab-size: 48px;
+    --fab-offset-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+    --fab-offset-right: calc(24px + env(safe-area-inset-right, 0px));
+  }
+}
+
+/**
+ * ≤1100px 时显式维持 z-index: 1000
+ * 为什么单独再写一遍：目录弹层（TOC.vue 的 .blog-toc.in-overlay）使用 1099，
+ * 这里把值写死并留下约束说明，防止后续调整平板/手机布局时顺手抬高层级把目录压住。
+ */
+@media (max-width: 1100px) {
+  #floating-controls {
+    z-index: 1000;
+  }
+}
+
+/**
+ * 窄屏（≤900px）子菜单溢出保护
+ * 为什么需要：showBack 为 true 时子菜单有 4 个按钮（沉浸 / 导出 / 显示 / 返回上级），
+ * 在横屏手机、分屏、地址栏+键盘占位等"矮视口"下，整列按钮可能超过可视高度而溢出屏幕顶部。
+ * 给容器一个最大高度并允许内部滚动，保证每个按钮都仍可触达且不越出视口。
+ * 预留高度由容器上的 --fab-reserved 提供（3 个球位 + 间距 + 余量），因此改断点不会漏算；
+ * 100dvh 写在 100vh 之后：支持的浏览器用动态视口高度计算，移动端地址栏收放时也不会溢出。
+ * 内边距用于给按钮外阴影留出空间（滚动容器会裁掉溢出内容），再用等量负外边距抵消，
+ * 使子按钮依旧与母按钮保持右对齐（全局 * { box-sizing: border-box }，故 max-height 含内边距）。
+ */
+@media (max-width: 900px) {
+  .sub-btns-wrapper {
+    max-height: calc(100vh - var(--fab-offset-bottom) - var(--fab-reserved));
+    max-height: calc(100dvh - var(--fab-offset-bottom) - var(--fab-reserved));
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px;
+    margin-right: -6px;
+    /* 隐藏滚动条：滚动只是矮视口的兜底交互，露出滚动条会破坏悬浮球组的圆形节奏 */
+    scrollbar-width: none;
   }
 
-  .floating-btn {
-    width: 42px;
-    height: 42px;
-    font-size: 1rem;
+  .sub-btns-wrapper::-webkit-scrollbar {
+    width: 0;
+    height: 0;
   }
 }
 </style>

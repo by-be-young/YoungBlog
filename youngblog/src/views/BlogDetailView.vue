@@ -108,13 +108,30 @@
     <!--
       沉浸阅读模式提示
       - 动态绑定 CSS 类名控制显示/隐藏及淡入淡出动画
-      - 提示用户按 Esc 键可退出沉浸模式
+      - 文案按设备分流：桌面读 immersive_hint_esc（按 Esc 退出），
+        触屏读 immersive_hint_touch（轻点下方按钮退出）——触屏没有 Esc 键，写死 Esc 是错的
+      - 文案里的 Esc 关键字仍以原「彩色关键字」样式渲染，桌面端视觉与改动前一致
     -->
     <div id="immersive-read-hint" :class="hintClass">
       <span class="immersive-hint-line">
-        沉浸阅读模式 · 按 <span class="immersive-key">Esc</span> 退出
+        <span v-for="(seg, idx) in hintSegments" :key="idx"
+          :class="{ 'immersive-key': seg.highlight }">{{ seg.text }}</span>
       </span>
     </div>
+
+    <!--
+      移动端沉浸阅读「退出胶囊」
+      - 触屏设备没有 Esc 键：没有常驻可点的退出入口，用户会被困在沉浸模式里
+      - 单击「立即」退出沉浸模式（不做「先展开、再点第二次」的两段式交互）
+      - 仅触屏/平板可见：桌面端的显隐完全交给 CSS 媒体查询（默认 display: none），
+        桌面端仍沿用顶部提示 + Esc 退出，交互不变
+    -->
+    <button v-if="settings.isImmersive" type="button" class="immersive-exit-fab"
+      :class="{ 'is-collapsed': pillCollapsed }" :aria-label="i18n.get('immersive_exit')"
+      @click="exitImmersive">
+      <i class="fas fa-compress-arrows-alt" aria-hidden="true"></i>
+      <span class="immersive-exit-fab-text">{{ i18n.get('immersive_exit') }}</span>
+    </button>
   </main>
 </template>
 
@@ -210,6 +227,53 @@ let hintTimer = null
  */
 const mainRef = ref(null)
 
+/**
+ * 页面主元素的「普通变量」副本
+ * - Vue 卸载组件子树时就会把模板 ref 置空，而 onUnmounted 里仍需要清理它身上的类名
+ *   （路由离开动画期间旧 DOM 还会短暂停留在页面上，带着沉浸样式播放离场动画），
+ *   因此在挂载时另存一份引用
+ */
+let mainEl = null
+
+// ==================== 移动端退出胶囊相关状态 ====================
+/**
+ * 退出胶囊是否处于「收起」态
+ * - false：完整显示（刚进入沉浸模式，或被用户轻点「呼出」之后）
+ * - true ：半透明 + 略微缩小，但仍然保持可点按（进入沉浸模式约 3.2 秒后自动进入）
+ */
+const pillCollapsed = ref(false)
+/**
+ * 胶囊自动收起定时器 ID
+ * - 进入沉浸模式（或用户轻点呼出）后 3.2 秒把胶囊切到收起态
+ */
+let pillCollapseTimer = null
+
+// ==================== 设备形态（触屏）判定 ====================
+/**
+ * 是否为触屏/无精确指针设备
+ * - 用媒体查询而非 UA 嗅探：UA 可被伪装，媒体特性反映的是浏览器真实的输入能力
+ * - 顶部沉浸提示的文案按它分流（触屏没有 Esc 键），不能写死
+ */
+const isTouchDevice = ref(false)
+/** 触屏判定媒体查询对象（保留引用，卸载时需要移除 change 监听） */
+let touchPointerQuery = null
+/**
+ * 触屏判定的兜底媒体查询（平板及以下宽度）
+ * - 原因一：部分触屏笔记本只报告 hover:hover + pointer:coarse，只看指针特性会漏判；
+ * - 原因二：只切换视口宽度的预览/自动化环境不会改变指针媒体特性，
+ *   若只认指针特性，这些场景会同时丢掉触屏文案和退出入口；
+ * - 注意：1100px 必须与下方 CSS 中控制胶囊显隐的媒体查询保持一致
+ */
+let narrowViewportQuery = null
+
+/**
+ * 媒体查询变化回调
+ * - 任一判定命中即视为触屏形态；外接鼠标、平板接键盘等场景可实时切换提示文案
+ */
+function onTouchMediaChange() {
+  isTouchDevice.value = !!(touchPointerQuery?.matches || narrowViewportQuery?.matches)
+}
+
 // ==================== 计算属性 ====================
 
 /**
@@ -221,6 +285,33 @@ const mainRef = ref(null)
 const permalink = computed(() => {
   if (!blog.value) return ''
   return new URL(`/blog-detail?id=${blog.value.id}`, window.location.origin).href
+})
+
+/**
+ * 顶部沉浸提示的文案分段
+ *
+ * 背景：提示文案此前写死中文「按 Esc 退出」，触屏设备没有 Esc 键，提示内容本身就是错的。
+ * 现在按设备读取 i18n：
+ * - 桌面：immersive_hint_esc（沉浸阅读模式 · 按 Esc 退出）
+ * - 触屏：immersive_hint_touch（沉浸阅读模式 · 轻点下方按钮退出）
+ *
+ * 桌面文案里原本就把 Esc 高亮成彩色关键字，为了不改动桌面端既有视觉，
+ * 这里按关键字 'Esc' 把整句切成「普通文本 / 高亮文本」若干段渲染：
+ * 既不写死中英文案，又保留原有的强调效果。
+ *
+ * @returns {Array<{ text: string, highlight: boolean }>} 文案分段
+ */
+const hintSegments = computed(() => {
+  const text = i18n.get(isTouchDevice.value ? 'immersive_hint_touch' : 'immersive_hint_esc')
+  const keyword = 'Esc'
+  const idx = text.indexOf(keyword)
+  // 找不到关键字（某些语言可能不出现 Esc）时整句按普通文本渲染，保证不会丢字
+  if (idx === -1) return [{ text, highlight: false }]
+  return [
+    { text: text.slice(0, idx), highlight: false },
+    { text: keyword, highlight: true },
+    { text: text.slice(idx + keyword.length), highlight: false },
+  ]
 })
 
 // ==================== 工具函数 ====================
@@ -311,7 +402,7 @@ async function loadBlog() {
        */
       const cleanText = cleaned
         .replace(/```[\s\S]*?```/g, ' ')   // 替换代码块为空格
-        .replace(/[#>*~\-]/g, ' ')          // 移除 Markdown 语法标记
+        .replace(/[#>*~-]/g, ' ')           // 移除 Markdown 语法标记（'-' 在字符类末尾无需转义）
         .replace(/\s+/g, '')                // 移除所有空白字符
       wordCount.value = cleanText.length
 
@@ -335,7 +426,8 @@ async function loadBlog() {
   // 步骤 6: 计算导航文章
   const allBlogs = blogStore.blogs
   const series = found.series || ''
-  let sorted = []
+  // 两个分支都会立即赋值，这里不预设初值，避免一次马上被覆盖的无用赋值（静态检查会报错）
+  let sorted
 
   if (series) {
     // 有系列归属：按系列筛选并按 order 字段排序
@@ -416,8 +508,9 @@ function navigate(href) {
  * 2. 在 body 和主元素上同步切换 CSS 类名
  *    - 'immersive-reading-active': 沉浸阅读样式
  *    - 'wide-mode-active': 宽屏布局样式
- * 3. 进入时隐藏顶部导航栏并显示提示
- * 4. 退出时恢复导航栏并隐藏提示
+ *    - 'immersive-mobile-mode': 移动端沉浸形态（安全区留白等）
+ * 3. 进入时隐藏顶部导航栏并显示提示；触屏下额外启动底部退出胶囊的收起节奏
+ * 4. 退出时恢复导航栏、隐藏提示并复位胶囊
  */
 function toggleImmersive() {
   const isNowImmersive = !settings.isImmersive
@@ -428,9 +521,13 @@ function toggleImmersive() {
   document.body.classList.toggle('wide-mode-active', isNowImmersive)
 
   // 同步主元素的类名（组件作用域样式依赖）
-  if (mainRef.value) {
-    mainRef.value.classList.toggle('immersive-reading-active', isNowImmersive)
-    mainRef.value.classList.toggle('wide-mode-active', isNowImmersive)
+  // - immersive-mobile-mode：标记「移动端沉浸」形态，其中的安全区留白样式只在移动端媒体查询下生效，
+  //   因此桌面端加上它也不会有任何视觉影响
+  const rootEl = mainEl || mainRef.value
+  if (rootEl) {
+    rootEl.classList.toggle('immersive-reading-active', isNowImmersive)
+    rootEl.classList.toggle('wide-mode-active', isNowImmersive)
+    rootEl.classList.toggle('immersive-mobile-mode', isNowImmersive)
   }
 
   if (isNowImmersive) {
@@ -445,6 +542,11 @@ function toggleImmersive() {
     }
     // 显示沉浸阅读提示
     showImmersiveHint()
+    // 触屏下启动退出胶囊的「先完整显示、再自动收起」节奏
+    // 桌面端不显示胶囊（纯 CSS 隐藏），无需计时
+    if (isTouchDevice.value) {
+      schedulePillCollapse()
+    }
   } else {
     // === 退出沉浸模式 ===
     // 恢复顶部导航栏
@@ -457,6 +559,9 @@ function toggleImmersive() {
     }
     // 立即隐藏提示
     hideImmersiveHint()
+    // 停掉收起定时器并复位胶囊形态，避免下一次进入沉浸模式时残留「收起」态
+    clearPillTimer()
+    pillCollapsed.value = false
   }
 }
 
@@ -487,6 +592,52 @@ function showImmersiveHint() {
 function hideImmersiveHint() {
   clearTimeout(hintTimer)
   hintClass.value = ''
+}
+
+// ==================== 移动端退出胶囊逻辑 ====================
+
+/**
+ * 启动退出胶囊的收起节奏
+ * 
+ * 行为：
+ * - 先恢复完整显示：用户刚进入沉浸模式时必须一眼看到「怎么退出」
+ * - 3.2 秒后转为收起态（半透明 + 略微缩小），避免长期遮挡正文；收起态依旧可点按
+ */
+function schedulePillCollapse() {
+  clearPillTimer()
+  pillCollapsed.value = false
+  pillCollapseTimer = setTimeout(() => {
+    // 异步回调里再确认一次是否仍在沉浸模式：这 3.2 秒内用户可能已经退出
+    if (settings.isImmersive) pillCollapsed.value = true
+  }, 3200) // 3.2s：比顶部提示的 3s 稍晚，避免两个提示同一瞬间变化，显得突兀
+}
+
+/**
+ * 清除胶囊自动收起定时器
+ * - 退出沉浸模式与组件卸载时都必须调用，防止定时器在界面已变化后仍去改状态
+ */
+function clearPillTimer() {
+  clearTimeout(pillCollapseTimer)
+  pillCollapseTimer = null
+}
+
+/**
+ * 全局轻点处理：轻点屏幕任意位置（含胶囊自身）都把胶囊「呼出」为完整显示
+ * - 等价于「点一下就能看清退出按钮」，随后重新按 3.2 秒节奏收起
+ * - 用 pointerdown 统一鼠标/触屏/触控笔，无需分别监听 mousedown 与 touchstart
+ */
+function onGlobalTap() {
+  if (!settings.isImmersive || !isTouchDevice.value) return
+  schedulePillCollapse()
+}
+
+/**
+ * 退出沉浸模式（供移动端退出胶囊调用）
+ * - 与 toggleImmersive 的区别：只有当前确实处于沉浸模式才退出，
+ *   避免与 Esc / 其他入口并发触发时把状态又切回沉浸模式
+ */
+function exitImmersive() {
+  if (settings.isImmersive) toggleImmersive()
 }
 
 /**
@@ -544,11 +695,25 @@ function backToPrevious() {
 
 /**
  * 组件挂载时：
- * 1. 注册全局键盘事件监听（用于 Esc 退出沉浸模式）
- * 2. 加载博客数据（若 store 中已有数据则直接加载，否则先拉取）
+ * 1. 保存主元素引用（onUnmounted 里模板 ref 已被置空，见 mainEl 注释）
+ * 2. 读取并监听设备形态媒体查询（触屏提示文案 / 退出胶囊节奏都依赖它）
+ * 3. 注册全局键盘事件监听（用于 Esc 退出沉浸模式）
+ * 4. 注册全局轻点监听（触屏下「点击呼出」底部退出胶囊）
+ * 5. 加载博客数据（若 store 中已有数据则直接加载，否则先拉取）
  */
 onMounted(() => {
+  mainEl = mainRef.value
+  // 设备形态判定：挂载时读取一次并持续监听，外接鼠标/平板接键盘时提示文案能实时切换
+  if (typeof window.matchMedia === 'function') {
+    touchPointerQuery = window.matchMedia('(hover: none) and (pointer: coarse)')
+    narrowViewportQuery = window.matchMedia('(max-width: 1100px)')
+    onTouchMediaChange()
+    touchPointerQuery.addEventListener('change', onTouchMediaChange)
+    narrowViewportQuery.addEventListener('change', onTouchMediaChange)
+  }
   document.addEventListener('keydown', onKeyDown)
+  // 轻点「呼出」胶囊：在捕获阶段监听，保证页面内任何元素（即便子组件里 stopPropagation）都能触发
+  document.addEventListener('pointerdown', onGlobalTap, true)
   if (!blogStore.blogs.length) {
     // 博客列表为空，先异步获取再加载文章
     blogStore.fetchBlogs().then(loadBlog)
@@ -560,25 +725,44 @@ onMounted(() => {
 
 /**
  * 组件卸载时清理：
- * 1. 移除键盘事件监听
- * 2. 清除沉浸提示定时器
- * 3. 清理所有可能残留的全局状态（body class、navbar 样式等）
+ * 1. 移除键盘/轻点事件监听与媒体查询监听
+ * 2. 清除沉浸提示、退出胶囊的定时器
+ * 3. 清理所有可能残留的全局状态（body class、主元素 class、navbar 样式等）
+ * 4. 复位 store 中的沉浸状态
  */
 onUnmounted(() => {
   isActive = false
   document.removeEventListener('keydown', onKeyDown)
+  document.removeEventListener('pointerdown', onGlobalTap, true)
   clearTimeout(hintTimer)
+  clearPillTimer()
+  // 移除媒体查询监听，避免组件销毁后回调仍去改动已卸载的响应式状态
+  if (typeof window.matchMedia === 'function') {
+    touchPointerQuery?.removeEventListener('change', onTouchMediaChange)
+    narrowViewportQuery?.removeEventListener('change', onTouchMediaChange)
+  }
+  pillCollapsed.value = false
   // 清理 body 上可能残留的 class
   document.body.classList.remove(
     'immersive-reading-active', 'wide-mode-active',
     'image-viewer-open', 'mermaid-viewer-open',
     'export-modal-open', 'display-modal-open'
   )
+  // 清理主元素上的沉浸/宽屏类名
+  // - 离开详情页有过渡动画，旧 DOM 会短暂留在页面上，不清掉会带着沉浸样式播完离场动画
+  const rootEl = mainEl || mainRef.value
+  if (rootEl) {
+    rootEl.classList.remove('immersive-reading-active', 'wide-mode-active', 'immersive-mobile-mode')
+  }
   // 恢复导航栏内联样式（如果被沉浸模式修改过）
   const navbar = document.querySelector('.navbar')
   if (navbar) {
     navbar.style.cssText = ''
   }
+  // 复位 store 中的沉浸状态：不做这一步的话，离开详情页后 isImmersive 仍为 true，
+  // 沉浸状态会被带到其他页面（实测表现为导航栏/悬浮元素在别的页面也不正常）
+  // 注意：settingsStore 未提供 setter，此处按 Pinia setup store 的写法直接赋值
+  settings.isImmersive = false
 })
 
 // ==================== 路由监听 ====================
@@ -791,8 +975,11 @@ a.tag:hover {
   justify-content: center;
 }
 
-/* 沉浸模式：隐藏目录 */
-.blog-detail-page.immersive-reading-active .blog-toc {
+/* 沉浸模式：隐藏目录（PC 端侧栏）
+   必须用 :deep() 穿透：.blog-toc 渲染在子组件 TOC.vue 内部（且不是该组件根元素），
+   scoped 样式不穿透时选择器匹配不到它，规则会静默失效（此前 PC 端沉浸态目录侧栏一直未隐藏）。
+   移动端弹层在打开时由 TOC.vue 的 .blog-toc.in-overlay.is-open { display: flex } 以更高权重恢复显示，不受影响。 */
+.blog-detail-page.immersive-reading-active :deep(.blog-toc) {
   display: none;
 }
 
@@ -810,24 +997,31 @@ a.tag:hover {
   transition: transform 0.28s ease, opacity 0.22s ease, visibility 0.22s ease !important;
 }
 
-/* 沉浸模式：隐藏浮动控件 */
-.blog-detail-page.immersive-reading-active:not(.immersive-mobile-mode) #floating-controls {
+/*
+ * 沉浸模式：隐藏浮动控件
+ * - 说明：这里刻意不带 `:not(.immersive-mobile-mode)` 一类的排除条件。
+ *   改动前那个排除条件依赖一个从未被添加过的类名，等价于「无条件生效」；
+ *   现在 immersive-mobile-mode 会真实出现在主元素上，若保留排除条件反而会
+ *   改变移动端的实际表现（悬浮球在沉浸模式下不再隐藏），所以只保留有效选择器。
+ * - 移动端沉浸时的退出入口由底部常驻胶囊承担（见 .immersive-exit-fab），不依赖悬浮球
+ */
+.blog-detail-page.immersive-reading-active #floating-controls {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
   transform: translateY(28px) scale(0.96) !important;
 }
 
-/* 沉浸模式：隐藏目录 FAB */
-.blog-detail-page.immersive-reading-active:not(.immersive-mobile-mode) :deep(.toc-fab) {
+/* 沉浸模式：隐藏目录 FAB（移动端目录按钮被注入在悬浮球组里，需要单独隐藏） */
+.blog-detail-page.immersive-reading-active :deep(.toc-fab) {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
   transform: translateY(28px) scale(0.96) !important;
 }
 
-/* 沉浸模式：隐藏目录覆盖层 */
-.blog-detail-page.immersive-reading-active:not(.immersive-mobile-mode) :deep(.toc-overlay) {
+/* 沉浸模式：隐藏目录覆盖层（沉浸时应只剩正文，弹层不允许再出现） */
+.blog-detail-page.immersive-reading-active :deep(.toc-overlay) {
   display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
@@ -836,7 +1030,9 @@ a.tag:hover {
 /* ===== 沉浸阅读提示 ===== */
 #immersive-read-hint {
   position: fixed;
-  top: 14px;
+  /* 叠加安全区高度：viewport-fit=cover 后刘海/状态栏会覆盖内容，提示不能顶到刘海下面
+     （桌面端 env() 为 0，位置数值与改动前完全一致） */
+  top: calc(14px + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translate(-50%, -10px);
   z-index: 1205;
@@ -876,12 +1072,111 @@ a.tag:hover {
   display: block;
 }
 
+/* ============================================
+   移动端沉浸阅读：底部常驻「退出胶囊」
+   ============================================ */
+/*
+ * 设计意图：
+ * - 触屏设备没有 Esc 键，沉浸模式必须有一个常驻可点的退出入口，否则用户会被困住；
+ * - 固定在底部居中：不抢占右下角悬浮球的位置，也不遮挡右上角的显示设置弹窗；
+ * - bottom 叠加 env(safe-area-inset-bottom)：避开 iPhone 底部手势条（依赖 index.html 的 viewport-fit=cover）；
+ * - z-index 取 1205：高于悬浮球组(1000)与目录弹层(1099)，低于弹窗(1210)与导航抽屉(1600)。
+ *
+ * 默认 display: none —— 桌面端不出现胶囊，仍沿用顶部提示 + Esc 退出，交互与改动前一致；
+ * 只在下方媒体查询命中触屏/平板时才显示。
+ */
+.immersive-exit-fab {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 1205;
+  /* 触控热区不小于 44×44 CSS px：纵向用 min-height 保证，横向由文字长度 + 左右内边距保证 */
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  /* 文案不换行、且不超出视口：其它语言（如英文 Exit immersive reading）文案更长，
+     换行会把胶囊撑成两块而不是一个「胶囊」；
+     width: max-content 让盒子按内容收缩，配合 translateX(-50%) 才能精确居中 */
+  white-space: nowrap;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  /* 玻璃拟态：半透明深色底 + 背景模糊，在深浅两种阅读背景上都清晰可读 */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(35, 47, 58, 0.62);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 26px rgba(24, 49, 58, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  cursor: pointer;
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  /* 触屏可用性：去掉双击缩放延迟与点击高亮块，避免点按时页面闪一下 */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: opacity 0.28s ease, transform 0.28s ease, background 0.2s ease;
+}
+
+/*
+ * 收起态：整体半透明并略微缩小（长期不遮挡正文），但绝不可设 pointer-events: none，
+ * 否则胶囊会变成看得见点不动的「假按钮」，用户依然出不去
+ */
+.immersive-exit-fab.is-collapsed {
+  opacity: 0.62;
+  transform: translateX(-50%) scale(0.94);
+}
+
+/* 按压反馈：触屏没有 hover，用缩小的 :active 给出「点到了」的确认 */
+.immersive-exit-fab:active {
+  transform: translateX(-50%) scale(0.9);
+}
+
+/* 键盘可达性：平板外接键盘用 Tab 找到胶囊时必须有清晰焦点环 */
+.immersive-exit-fab:focus-visible {
+  outline: 3px solid #ff6e9b;
+  outline-offset: 3px;
+}
+
+.immersive-exit-fab i {
+  font-size: 0.95rem;
+}
+
+/*
+ * 胶囊显示条件：触屏（无悬停 + 粗指针）或平板及以下宽度（1100px）
+ * 之所以叠加宽度条件：
+ * 1. 部分触屏笔记本只报告 hover:hover + pointer:coarse，只看指针特性会漏判；
+ * 2. 只切换视口宽度的预览/自动化环境不会改变指针媒体特性，
+ *    只认指针会让这些环境（含验收用的 390×844 / 820×1180 视口）丢失退出入口。
+ * 注意：1100px 必须与 script 中 narrowViewportQuery 的取值保持一致。
+ */
+@media (hover: none) and (pointer: coarse), (max-width: 1100px) {
+  .immersive-exit-fab {
+    display: inline-flex;
+  }
+}
+
 /* 移动端适配 */
 @media (max-width: 880px) {
   /* 目录改为左下角按钮 + 弹层（见 TOC.vue），正文占满整行 */
   .blog-detail-page .container {
     padding: 52px 14px 24px 14px;
     gap: 0;
+  }
+
+  /*
+   * 移动端沉浸：导航栏已被隐藏，正文不需要再为它预留 52px，
+   * 改为「安全区高度（刘海/状态栏）+ 少量呼吸空间」，避免正文顶到刘海区域
+   */
+  .blog-detail-page.immersive-mobile-mode .container {
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
   }
 
   .blog-article {
@@ -918,7 +1213,8 @@ a.tag:hover {
   }
 
   #immersive-read-hint {
-    top: 10px;
+    /* 同样叠加安全区高度：移动端刘海屏上提示不能被状态栏压住 */
+    top: calc(10px + env(safe-area-inset-top, 0px));
     padding: 7px 12px;
     font-size: 0.86rem;
     max-width: calc(100vw - 24px);

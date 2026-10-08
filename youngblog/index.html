@@ -4,7 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--
+      viewport-fit=cover
+      ------------------------------------------------------------------
+      不写 viewport-fit 时，页面在刘海屏上会被强制收进安全区内，
+      所有 env(safe-area-inset-*) 都会返回 0，calc(... + env(...)) 的留白全部失效。
+      沉浸模式的底部退出胶囊与吸顶提示依赖这些变量避开刘海/底部手势条，
+      因此必须开启 cover，再由布局自己主动留白。
+    -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Vite App</title>
 
   <!--

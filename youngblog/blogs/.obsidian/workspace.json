@@ -14,7 +14,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "三上/编译/文法与词法/编译实验-词法分析.md",
+                "file": "三上/编译/文法与词法/编译实验-文法解读.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -58,7 +58,8 @@
               "title": "编译实验-文法解读"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -195,7 +196,7 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "三上/编译/文法与词法/编译实验-词法分析.md"
+                "file": "三上/编译/文法与词法/编译实验-文法解读.md"
               },
               "icon": "lucide-info",
               "title": "笔记属性"
@@ -219,7 +220,7 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "c14d4d4c37e68dbb",
+  "active": "81a9862af24cb34e",
   "lastOpenFiles": [
     "三上/编译/文法与词法/编译实验-文法解读.md",
     "三上/编译/文法与词法/编译实验-词法分析.md",

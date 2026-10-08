@@ -424,6 +424,8 @@ onUnmounted(() => {
   overflow: hidden;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  /* 宽表在窄屏横向滑动到位后不再把滚动继续传给页面（避免误触页面横向漂移） */
+  overscroll-behavior-x: contain;
   background: transparent;
   border-radius: 12px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.72) inset, 0 8px 20px rgba(44, 62, 80, 0.06);
@@ -611,6 +613,9 @@ onUnmounted(() => {
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
+  /* 触屏：惯性滚动 + 到边不再链式传递给页面 */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   transition: height 280ms ease, opacity 220ms ease;
 }
 
@@ -1343,6 +1348,70 @@ onUnmounted(() => {
   font-size: 1.8rem;
 }
 
+/* ============================================
+   沉浸阅读：窄屏（手机 / 竖屏平板）排版收敛
+   --------------------------------------------
+   上面那条通栏规则按「桌面阅读距离」设定 1.5rem / 2.4 行高，
+   在 ≤720px 的视口里每行只能排下十几个字，反而比普通模式更难读。
+   这里按字号比例收敛：1.12rem / 1.9 行高约合每行 21 个汉字，
+   同时按比例缩小标题与段间距，避免标题比正文大出两倍。
+   ============================================ */
+@media (max-width: 720px) {
+
+  .blog-detail-page.immersive-reading-active .article-content :deep(p),
+  .blog-detail-page.immersive-reading-active .article-content :deep(li),
+  .blog-detail-page.immersive-reading-active .article-content :deep(blockquote),
+  .blog-detail-page.immersive-reading-active .article-content :deep(h4) {
+    font-size: 1.12rem;
+    line-height: 1.9;
+  }
+
+  /* 段间距同样需要收敛，否则大字号的 1em 会撑成一道鸿沟 */
+  .blog-detail-page.immersive-reading-active .article-content :deep(p) {
+    margin: 0.85em 0;
+  }
+
+  .blog-detail-page.immersive-reading-active .article-content :deep(ul li),
+  .blog-detail-page.immersive-reading-active .article-content :deep(ol li) {
+    margin-bottom: 0.4em;
+  }
+
+  .blog-detail-page.immersive-reading-active .article-content :deep(h1) {
+    font-size: 1.7rem;
+    line-height: 1.4;
+    margin: 1.1em 0 0.6em 0;
+  }
+
+  .blog-detail-page.immersive-reading-active .article-content :deep(h2) {
+    font-size: 1.44rem;
+    line-height: 1.45;
+    margin: 1em 0 0.55em 0;
+  }
+
+  .blog-detail-page.immersive-reading-active .article-content :deep(h3) {
+    font-size: 1.24rem;
+    line-height: 1.5;
+    margin: 1em 0 0.55em 0;
+  }
+
+  .blog-detail-page.immersive-reading-active .article-content :deep(h4) {
+    line-height: 1.5;
+    margin: 0.85em 0 0.6em 0;
+  }
+
+  /* 沉浸模式刻意放大正文，长公式/长链接更容易把窄屏撑出横向滚动条 */
+  .blog-detail-page.immersive-reading-active .article-content :deep(p),
+  .blog-detail-page.immersive-reading-active .article-content :deep(li),
+  .blog-detail-page.immersive-reading-active .article-content :deep(a),
+  .blog-detail-page.immersive-reading-active .article-content :deep(h1),
+  .blog-detail-page.immersive-reading-active .article-content :deep(h2),
+  .blog-detail-page.immersive-reading-active .article-content :deep(h3),
+  .blog-detail-page.immersive-reading-active .article-content :deep(h4) {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+}
+
 /* ===== 数学公式（KaTeX，由 useMarkdown.renderMathPlaceholders 生成） ===== */
 .article-content :deep(.katex) {
   font-size: 1.06em;
@@ -1560,6 +1629,31 @@ onUnmounted(() => {
     width: auto;
     min-width: 0;
     margin-left: 0;
+  }
+}
+
+/* ============================================
+   触屏可用性（手机 / 平板）
+   --------------------------------------------
+   仅针对「无悬停、粗指针」的设备，桌面端不受影响。
+   1) 去掉 iOS/Safari 默认的灰色点击高亮块，改由各组件自己的 :active 反馈；
+   2) touch-action: manipulation 消除双击缩放带来的 300ms 点击延迟；
+   3) 习题选项 / 答案按钮 / 复制按钮 / 复选框在移动端热区不低于 44px。
+   ============================================ */
+@media (hover: none) and (pointer: coarse) {
+
+  .article-content :deep(a),
+  .article-content :deep(button),
+  .article-content :deep(label),
+  .article-content :deep(summary),
+  .article-content :deep(.md-checklist-box) {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* 按住整行即进入选中/选择状态时给出反馈，避免触屏上“点了没反应”的错觉 */
+  .article-content :deep(:not(pre) > code:active) {
+    background-color: rgba(154, 215, 255, 0.28);
   }
 }
 </style>
