@@ -85,92 +85,19 @@
     </nav>
 
     <!-- 右上角：圆形入口，点开整屏云图 -->
-    <button ref="fabRef" type="button" class="cat-fab" :aria-label="t('categories_filter_title').value"
-      :title="t('categories_filter_title').value" :inert="filterOpen ? true : undefined" @click="openFilter">
+    <button ref="fabRef" type="button" class="cat-fab" :class="{ 'is-atlas-open': filterOpen }"
+      :aria-label="t('categories_filter_title').value" :title="t('categories_filter_title').value"
+      :inert="filterOpen ? true : undefined" @click="openFilter">
       <i class="fas fa-cloud" aria-hidden="true"></i>
     </button>
 
-    <!-- 云图筛选：占满整屏的一级界面，出现时看不到博客卡片 -->
-    <div class="cat-veil" :data-open="filterOpen ? 'true' : 'false'" aria-hidden="true"></div>
-    <section ref="panelRef" class="cat-sheet" :data-open="filterOpen ? 'true' : 'false'" role="dialog" aria-modal="true"
-      :aria-label="t('categories_filter_title').value" :inert="filterOpen ? undefined : true"
-      @keydown="handlePanelKeydown">
-      <header class="cat-sheet__head">
-        <div class="cat-sheet__bar">
-          <span class="cat-sheet__title">{{ t('categories_filter_title') }}</span>
-
-          <!-- 面包屑：回到任意一层；末尾还会补一个「这一层该选什么」的提示 -->
-          <nav class="cat-crumb cat-crumb--sheet" :aria-label="t('categories_filter_title').value">
-            <span v-if="!tagPath.length" class="cat-crumb__item is-current" aria-current="true">
-              {{ t('filter_all') }}
-            </span>
-            <button v-else type="button" class="cat-crumb__item" @click="jumpTo(0)">
-              {{ t('filter_all') }}
-            </button>
-            <template v-for="(tag, i) in tagPath" :key="`${i}-${tag}`">
-              <i class="fas fa-chevron-right cat-crumb__sep" aria-hidden="true"></i>
-              <span v-if="i === tagPath.length - 1" class="cat-crumb__item is-current" aria-current="true">
-                {{ tag }}
-              </span>
-              <!-- jumpTo(i + 1)：点「三上」是钻进三上（保留它、进到科目层），不是把它清掉 -->
-              <button v-else type="button" class="cat-crumb__item" @click="jumpTo(i + 1)">
-                {{ tag }}
-              </button>
-            </template>
-            <template v-if="pendingLevel !== null">
-              <i class="fas fa-chevron-right cat-crumb__sep" aria-hidden="true"></i>
-              <span class="cat-crumb__item is-ghost">{{ levelLabels[pendingLevel] }}</span>
-            </template>
-          </nav>
-
-          <!-- 类型筛选 -->
-          <div class="cat-type" role="radiogroup" :aria-label="t('categories_filter_title').value"
-            :style="{ '--idx': filterIndex }">
-            <span class="cat-type__pill" aria-hidden="true"></span>
-            <button v-for="filter in filterOptions" :key="filter.key" type="button" class="cat-type__btn"
-              :class="{ 'is-active': currentFilter === filter.key }" role="radio"
-              :aria-checked="currentFilter === filter.key ? 'true' : 'false'" @click="setFilter(filter.key)">
-              {{ t(filter.labelKey) }}
-            </button>
-          </div>
-
-          <button type="button" class="cat-sheet__close" :aria-label="t('close').value" @click="closeFilter">
-            <i class="fas fa-xmark" aria-hidden="true"></i>
-          </button>
-        </div>
-      </header>
-
-      <!-- 整屏云海：三层景深不变，各朵云的位置按需随机撒开 -->
-      <div ref="stackRef" class="cat-stack">
-        <div class="cat-stack__stage" @click.self="closeFilter">
-          <section v-for="level in MAX_LEVELS" :key="level - 1" class="cat-layer" :data-level="level - 1"
-            :data-depth="depthOf(level - 1)" role="group" :aria-label="levelLabels[level - 1]"
-            :inert="depthOf(level - 1) > 0 ? true : undefined">
-            <button v-for="(tile, idx) in cloudTiles(level - 1)"
-              :key="`${level}-${activeLevel}-${tile.tag ?? '__all__'}`" type="button" class="cat-cloud" :class="{
-                'is-active': isTagSelected(level - 1, tile.tag),
-                'is-all': tile.tag === null,
-              }" :style="{
-                '--x': `${tile.x}%`,
-                '--y': `${tile.y}%`,
-                '--sc': tile.scale,
-                '--bob': `${tile.bob}s`,
-                '--i': idx,
-              }" :tabindex="tileTabIndex(level - 1, tile.tag)"
-              :aria-pressed="isTagSelected(level - 1, tile.tag) ? 'true' : 'false'"
-              @click="handleTileClick(level - 1, tile.tag)" @keydown="handleTileKeydown(level - 1, idx, $event)">
-              <span class="cat-cloud__float">
-                <span class="cat-cloud__puff" aria-hidden="true"></span>
-                <span class="cat-cloud__label">{{
-                  tile.tag === null ? t('filter_all') : tile.tag
-                }}</span>
-                <span class="cat-cloud__count">{{ countFor(level - 1, tile.tag) }}</span>
-              </span>
-            </button>
-          </section>
-        </div>
-      </div>
-    </section>
+    <!-- 云图筛选：全新独立组件，Canvas 云海 + 严格逐级选择 -->
+    <CloudAtlas :open="filterOpen" :tags="atlasTags" :ancestors="atlasAncestors" :active-level="activeLevel"
+      :max-levels="MAX_LEVELS" :level-label="levelLabels[activeLevel]" :level-labels="levelLabels" :path="tagPath"
+      :pending-label="atlasPendingLabel" :total="filteredBlogs.length" :types="atlasTypes"
+      :current-type="currentFilter" :title="t('categories_filter_title').value"
+      :all-label="t('filter_all').value" :close-label="t('close').value" @close="closeFilter"
+      @select="handleAtlasSelect" @jump="jumpTo" @type="setFilter" />
   </main>
 </template>
 
@@ -180,6 +107,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { useBlogStore } from '@/shared/stores/blogStore'
 import { getBlogTypeStyle } from '@/shared/utils/blogTypeTone'
+import CloudAtlas from './CloudAtlas.vue'
 
 const { t } = useI18nStore()
 const route = useRoute()
@@ -201,8 +129,6 @@ const selectedTags = ref([])
 const filterOpen = ref(false)
 /** 当前选中的那张卡片，永远有一张（找不到就退回第一张） */
 const selectedId = ref(null)
-const panelRef = ref(null)
-const stackRef = ref(null)
 const wallRef = ref(null)
 const fabRef = ref(null)
 
@@ -218,13 +144,6 @@ const levelLabels = computed(() => [
   t('label_subject').value || '科目',
   t('label_topic').value || '主题',
 ])
-
-const filterIndex = computed(() =>
-  Math.max(
-    0,
-    filterOptions.findIndex((f) => f.key === currentFilter.value),
-  ),
-)
 
 /** 筛选指纹：变化时让卡片重挂载，重播瀑布入场 */
 const filterKey = computed(() => `${currentFilter.value}|${JSON.stringify(selectedTags.value)}`)
@@ -246,8 +165,6 @@ const isLearningBlog = (blog) => {
   return firstTag === '二上' || firstTag === '二下'
 }
 
-const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
-
 // ==================== 标签树构建 ====================
 const getBaseBlogs = () => {
   const blogs = blogStore.blogs || []
@@ -260,6 +177,8 @@ const getBaseBlogs = () => {
   return blogs
 }
 
+const TAG_POSTS = Symbol('tagPosts')
+
 const tagTree = computed(() => {
   const tree = {}
   const blogs = getBaseBlogs()
@@ -270,15 +189,16 @@ const tagTree = computed(() => {
 
     let node = tree
     tags.forEach((tag, i) => {
-      const isLeaf = i === tags.length - 1
-      if (!node[tag]) {
-        node[tag] = isLeaf ? [] : {}
+      // 同一个标签既可能是终点，也可能还有下一层：统一用对象承载，
+      // 直达文章放在 Symbol 里，既不干扰子标签枚举，又不会丢计数
+      let child = node[tag]
+      if (!child || Array.isArray(child)) {
+        const posts = Array.isArray(child) ? child : []
+        child = { [TAG_POSTS]: posts }
+        node[tag] = child
       }
-      if (isLeaf) {
-        node[tag].push(blog)
-      } else {
-        node = node[tag]
-      }
+      node = child
+      if (i === tags.length - 1) node[TAG_POSTS].push(blog)
     })
   })
   return tree
@@ -313,7 +233,8 @@ const isTagSelected = (level, tag) => {
 const countLeaves = (node) => {
   if (Array.isArray(node)) return node.length
   if (!node || typeof node !== 'object') return 0
-  return Object.values(node).reduce((sum, child) => sum + countLeaves(child), 0)
+  const own = node[TAG_POSTS]?.length || 0
+  return Object.values(node).reduce((sum, child) => sum + countLeaves(child), own)
 }
 
 const countFor = (level, tag) => {
@@ -326,83 +247,6 @@ const countFor = (level, tag) => {
   }
   return countLeaves(node)
 }
-
-// ==================== 云图随机布点 ====================
-/** 一次会话一个种子：刷新会换一片天，但交互过程中云不会乱跳 */
-const cloudSeed = Math.floor(Math.random() * 0xffffffff)
-
-const hash32 = (text) => {
-  let h = 2166136261
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return h >>> 0
-}
-
-/** xorshift32：同一个标签每次都落回同一朵云的位置 */
-const makeRandom = (key) => {
-  let state = hash32(`${cloudSeed}|${key}`) || 20240910
-  return () => {
-    state ^= state << 13
-    state >>>= 0
-    state ^= state >>> 17
-    state ^= state << 5
-    state >>>= 0
-    return state / 4294967296
-  }
-}
-
-/**
- * 网格分层 + 格内抖动：位置是随机的，但不会全挤成一团、也不会压到屏幕边。
- * 「全部」不参与掷点，钉死在正中心。
- */
-const scatterClouds = (level, tags) => {
-  const rest = tags.filter((tag) => tag !== null)
-  const count = rest.length
-  // 至少分两列：别让某朵云正好落在正中心那颗圆上
-  const cols = Math.max(2, Math.round(Math.sqrt(count * 1.7)))
-  const rows = Math.max(1, Math.ceil(count / cols))
-  const random = makeRandom(`${level}|${tags.join('|')}`)
-
-  // 格子和标签随机配对（Fisher–Yates），免得编号大的标签永远待在右下角
-  const cells = []
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) cells.push([c, r])
-  }
-  for (let i = cells.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1))
-    const swap = cells[i]
-    cells[i] = cells[j]
-    cells[j] = swap
-  }
-
-  const cellW = 100 / cols
-  const cellH = 100 / rows
-  const placed = rest.map((tag, i) => {
-    const [c, r] = cells[i % cells.length]
-    return {
-      tag,
-      x: clamp(cellW * (c + 0.5) + (random() - 0.5) * cellW * 0.6, 11, 89),
-      y: clamp(cellH * (r + 0.5) + (random() - 0.5) * cellH * 0.6, 14, 86),
-      scale: 0.84 + random() * 0.36,
-      bob: Number((6 + random() * 4).toFixed(2)),
-    }
-  })
-
-  return [{ tag: null, x: 50, y: 50, scale: 1.06, bob: 8.6 }, ...placed]
-}
-
-/** 三层云图各自的布点，随所在层的标签集合重算 */
-const cloudLevels = computed(() => {
-  const levels = []
-  for (let level = 0; level < MAX_LEVELS; level++) {
-    levels.push(scatterClouds(level, getTagsForLevel(level)))
-  }
-  return levels
-})
-
-const cloudTiles = (level) => cloudLevels.value[level] || []
 
 // ==================== 层深与钻取 ====================
 /**
@@ -430,9 +274,6 @@ const tagPath = computed(() => {
 
 /** 叶子不推进层级，所以层号要另外夹一次 */
 const activeLevel = computed(() => Math.min(tagPath.value.length, MAX_LEVELS - 1))
-
-/** 0 = 最前，负数 = 已钻过的层（后退），正数 = 尚未到达的层（候场） */
-const depthOf = (level) => clamp(level - activeLevel.value, -(MAX_LEVELS - 1), 1)
 
 /**
  * 当前这一层还没挑标签时，告诉用户该挑什么（「科目」「主题」），
@@ -464,51 +305,43 @@ const jumpTo = (keep) => {
   updateUrl()
 }
 
-// ==================== 层内键盘与焦点 ====================
-const focusTile = (level, index) => {
-  const layer = stackRef.value?.querySelector(`.cat-layer[data-level="${level}"]`)
-  const tiles = layer?.querySelectorAll('.cat-cloud')
-  if (!tiles?.length) return
-  tiles[clamp(index, 0, tiles.length - 1)]?.focus({ preventScroll: true })
-}
+// ==================== 云图数据（交给独立 Canvas 云图组件） ====================
+const atlasTags = computed(() => {
+  const level = activeLevel.value
+  return getTagsForLevel(level).map((tag) => ({
+    tag,
+    // 「全部」对齐页面总篇数；具体标签按标签树里可归类的文章数
+    count: tag === null ? filteredBlogs.value.length : countFor(level, tag),
+    selected: isTagSelected(level, tag),
+  }))
+})
 
-/** 每层只有一个 Tab 停靠点（选中项，没有则第一项），层内用方向键移动 */
-const tileTabIndex = (level, tag) => {
-  if (depthOf(level) !== 0) return -1
-  const tags = getTagsForLevel(level)
-  const selected = tags.findIndex((item) => isTagSelected(level, item))
-  return tags.indexOf(tag) === (selected >= 0 ? selected : 0) ? 0 : -1
-}
+const atlasAncestors = computed(() =>
+  selectedTags.value
+    .slice(0, activeLevel.value)
+    .filter(Boolean)
+    .map((tag, level) => ({ tag, level, count: countFor(level, tag) })),
+)
 
-const handleTileClick = (level, tag) => {
-  // 先记下点的是不是当前这一层：点后退层是「回退」，不算选完
-  const fromActiveLevel = depthOf(level) === 0
+const atlasTypes = computed(() =>
+  filterOptions.map((filter) => ({ key: filter.key, label: t(filter.labelKey).value })),
+)
+
+const atlasPendingLabel = computed(() =>
+  pendingLevel.value === null ? '' : levelLabels.value[pendingLevel.value] || '',
+)
+
+const handleAtlasSelect = (tag) => {
+  const level = activeLevel.value
   selectTag(level, tag)
-  nextTick(focusActiveTile)
 
-  // 选完最后一级就自动收起来；留一点时间让选中高亮和层级动画被看到
-  if (fromActiveLevel && isFinalPick(level, tag)) {
-    autoCloseTimer = window.setTimeout(() => closeFilter(), 420)
+  if (isFinalPick(level, tag)) {
+    autoCloseTimer = window.setTimeout(() => {
+      closeFilter()
+    }, 460)
   } else if (autoCloseTimer) {
     window.clearTimeout(autoCloseTimer)
     autoCloseTimer = 0
-  }
-}
-
-const handleTileKeydown = (level, index, event) => {
-  const total = getTagsForLevel(level).length
-  if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-    event.preventDefault()
-    focusTile(level, (index + 1) % total)
-  } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-    event.preventDefault()
-    focusTile(level, (index - 1 + total) % total)
-  } else if (event.key === 'Home') {
-    event.preventDefault()
-    focusTile(level, 0)
-  } else if (event.key === 'End') {
-    event.preventDefault()
-    focusTile(level, total - 1)
   }
 }
 
@@ -655,18 +488,11 @@ const lockBodyScroll = (locked) => {
 }
 
 /** 焦点落到当前层的 Tab 停靠点（选中那朵云）：重挂载后焦点不会掉回 body */
-const focusActiveTile = () => {
-  const layer = panelRef.value?.querySelector('.cat-layer[data-depth="0"]')
-  const target = layer?.querySelector('.cat-cloud[tabindex="0"]') || layer?.querySelector('.cat-cloud')
-  target?.focus({ preventScroll: true })
-}
-
 const openFilter = () => {
   if (filterOpen.value) return
   // 打开云图是「接着调」，不是「清空重来」：保留当前类型筛选与已选层级
   filterOpen.value = true
   lockBodyScroll(true)
-  nextTick(focusActiveTile)
 }
 
 const closeFilter = () => {
@@ -680,24 +506,6 @@ const closeFilter = () => {
 // ==================== 环境变化 ====================
 const handleMotionChange = (event) => {
   reducedMotion.value = event.matches
-}
-
-/**
- * 只挂在面板上、不挂 window：搜索面板/公告弹窗也吃 Escape，
- * 挂 window 会在关掉它们的同时顺带把分类层级弹掉
- */
-const handlePanelKeydown = (event) => {
-  if (event.key !== 'Escape') return
-  if (filterOpen.value) {
-    closeFilter()
-    return
-  }
-  // 先清掉伸出当前层之外的那一级选择，再逐层回退
-  if (selectedTags.value.length > activeLevel.value) {
-    jumpTo(activeLevel.value)
-  } else if (activeLevel.value > 0) {
-    jumpTo(activeLevel.value - 1)
-  }
 }
 
 // ==================== 初始化 ====================
@@ -771,6 +579,23 @@ onUnmounted(() => {
 
 <style scoped>
 /* ===== 页面框架 ===== */
+.categories-page {
+  --cat-ink: #17222f;
+  --cat-ink-soft: rgba(23, 34, 47, 0.62);
+  --cat-ink-faint: rgba(23, 34, 47, 0.42);
+  --cat-rose: #e85d84;
+  --cat-sky: #6fc5ff;
+  --cat-mint: #58d8b2;
+  --cat-iris: #a08cff;
+  --cat-amber: #ffd38a;
+  --cat-line: rgba(255, 255, 255, 0.64);
+  --cat-glass: rgba(255, 255, 255, 0.62);
+  --cat-glass-strong: rgba(255, 255, 255, 0.82);
+  --cat-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  color: var(--cat-ink);
+}
+
 .categories-section {
   padding: 72px 20px 96px;
   position: relative;
@@ -782,6 +607,38 @@ onUnmounted(() => {
 .cat-shell {
   max-width: 1560px;
   margin: 0 auto;
+  position: relative;
+  isolation: isolate;
+  padding: clamp(12px, 1.8vw, 22px);
+  border: 1px solid var(--cat-line);
+  border-radius: 34px;
+  background:
+    radial-gradient(120% 70% at 10% -6%, rgba(255, 182, 201, 0.13), transparent 58%),
+    radial-gradient(80% 62% at 96% 12%, rgba(154, 215, 255, 0.17), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 250, 255, 0.5));
+  box-shadow:
+    0 34px 86px -46px rgba(23, 34, 47, 0.56),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(1.14);
+  -webkit-backdrop-filter: blur(24px) saturate(1.14);
+}
+
+/* 顶光与底部薄雾：玻璃板不是一块死白，卡片也不会悬空 */
+.cat-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgba(255, 255, 255, 0.34), transparent 72%),
+    radial-gradient(80% 46% at 50% 100%, rgba(154, 215, 255, 0.08), transparent 78%);
+}
+
+.cat-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* 页头：左上角的大字报头，给满屏卡堆一个叙事起点 */
@@ -847,12 +704,15 @@ onUnmounted(() => {
   bottom: 24px;
   z-index: 80;
   max-width: min(620px, calc(100vw - 150px));
-  padding: 6px 12px 6px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(16px) saturate(1.08);
-  box-shadow: 0 16px 30px -22px rgba(38, 56, 86, 0.75);
+  padding: 7px 12px 7px 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  background: rgba(255, 255, 255, 0.56);
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  box-shadow:
+    0 16px 30px -22px rgba(38, 56, 86, 0.66),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .cat-crumb__count {
@@ -875,531 +735,69 @@ onUnmounted(() => {
   z-index: 80;
   width: 58px;
   height: 58px;
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 246, 214, 0.98), rgba(206, 231, 255, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(238, 246, 255, 0.5));
   color: #2b3440;
   font-size: 21px;
   cursor: pointer;
-  box-shadow: 0 14px 26px -16px rgba(38, 56, 86, 0.85);
+  box-shadow:
+    0 16px 30px -18px rgba(38, 56, 86, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px) saturate(1.16);
+  -webkit-backdrop-filter: blur(18px) saturate(1.16);
   transition:
     transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 260ms ease;
+    box-shadow 260ms ease,
+    border-color 260ms ease;
+}
+
+.cat-fab::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(232, 93, 132, 0.14);
+  border-radius: 12px;
+  pointer-events: none;
 }
 
 .cat-fab:hover {
+  border-color: rgba(232, 93, 132, 0.28);
   transform: translateY(-3px) rotate(-6deg);
-  box-shadow: 0 20px 32px -16px rgba(38, 56, 86, 0.9);
+  box-shadow:
+    0 22px 36px -18px rgba(38, 56, 86, 0.72),
+    0 0 24px -10px rgba(232, 93, 132, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .cat-fab:focus-visible {
-  outline: 2px solid #55c8ff;
+  outline: 2px solid rgba(232, 93, 132, 0.48);
   outline-offset: 3px;
 }
 
-/* ===== 蒙版 + 云图筛选层（占满整屏的一级界面，出现时看不到卡片） ===== */
-.cat-veil {
-  position: fixed;
-  inset: 0;
-  z-index: 1700;
-  background: radial-gradient(120% 100% at 50% 0%,
-      rgba(250, 252, 255, 0.94),
-      rgba(224, 236, 250, 0.97));
-  backdrop-filter: blur(18px) saturate(1.06);
+.cat-fab.is-atlas-open {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 380ms ease;
+  transform: scale(0.82);
 }
 
-.cat-veil[data-open='true'] {
-  opacity: 1;
+/* 云图是整屏界面，打开时让全局浮动按钮退到幕后，避免压住面包屑与层级提示 */
+:global(body.cat-sheet-lock .fab-btn) {
+  display: none !important;
 }
 
-/* 不是弹窗，是整整一屏：云海直接铺满视口 */
-.cat-sheet {
-  position: fixed;
-  inset: 0;
-  z-index: 1750;
-  display: flex;
-  flex-direction: column;
-  background:
-    radial-gradient(120% 82% at 50% -10%, rgba(255, 249, 226, 0.9), rgba(255, 255, 255, 0) 58%),
-    linear-gradient(180deg, #fbfdff 0%, #eef5fd 52%, #e4eefb 100%);
-  opacity: 0;
+/* 只隐藏按钮会留下玻璃容器本身，整组一起让位 */
+:global(body.cat-sheet-lock .floating-controls-container) {
+  display: none !important;
+}
+
+:global(body.cat-sheet-lock .cat-crumb--float) {
+  display: none !important;
+}
+
+:global(body.cat-sheet-lock .cat-fab) {
   visibility: hidden;
-  transform: scale(1.02);
-  transition:
-    opacity 380ms ease,
-    transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 560ms;
-}
-
-.cat-sheet[data-open='true'] {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  transition:
-    opacity 380ms ease,
-    transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s;
-}
-
-/* 顶栏不再是整条横栏，而是浮在云海之上的一枚胶囊 */
-.cat-sheet__head {
-  position: absolute;
-  inset: 0 0 auto;
-  z-index: 3;
-  padding: 16px clamp(16px, 3vw, 34px);
-  /* 只有胶囊自己吃指针，其余位置留给云海（点空白收面板） */
-  pointer-events: none;
-}
-
-.cat-sheet__bar {
-  pointer-events: auto;
-  position: relative;
-  max-width: 1180px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 8px 10px 8px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.74);
-  backdrop-filter: blur(16px) saturate(1.08);
-  box-shadow: 0 20px 38px -26px rgba(38, 56, 86, 0.85);
-}
-
-.cat-sheet__title {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #2b3440;
-  font-weight: 900;
-  font-size: 15px;
-  letter-spacing: 0.6px;
-  white-space: nowrap;
-}
-
-.cat-sheet__title::before {
-  content: '';
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ffe9a8, #9ad7ff, #a7f3d0);
-  box-shadow: 0 0 0 4px rgba(255, 214, 128, 0.22);
-}
-
-.cat-sheet__close {
-  flex: none;
-  /* 关闭固定在最右边 */
-  margin-left: auto;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 12px;
-  background: rgba(43, 52, 64, 0.06);
-  color: #4e5d6f;
-  font-size: 15px;
-  cursor: pointer;
-  transition:
-    background 200ms ease,
-    color 200ms ease,
-    transform 200ms ease;
-}
-
-.cat-sheet__close:hover {
-  background: rgba(255, 226, 184, 0.5);
-  color: #2b3440;
-  transform: rotate(90deg);
-}
-
-/* ===== 面包屑 ===== */
-.cat-crumb {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  flex-wrap: nowrap;
-  gap: 4px;
-  min-width: 0;
-  min-height: 30px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.cat-crumb::-webkit-scrollbar {
-  display: none;
-}
-
-.cat-crumb--sheet {
-  flex: none;
-  /* 限宽：中间那排类型筛选是绝对居中的，别被长路径压到 */
-  max-width: min(38%, 360px);
-}
-
-.cat-crumb__item {
-  flex: none;
-  padding: 5px 11px;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: #5b6d81;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    background 220ms ease,
-    color 220ms ease,
-    transform 220ms ease;
-}
-
-button.cat-crumb__item:hover {
-  background: rgba(154, 215, 255, 0.22);
-  color: #2b3440;
-  transform: translateY(-1px);
-}
-
-.cat-crumb__item.is-current {
-  background: rgba(85, 200, 255, 0.16);
-  color: #1e3146;
-  cursor: default;
-}
-
-/* 这一层还没挑，先占个虚位提示该挑什么 */
-.cat-crumb__item.is-ghost {
-  border: 1px dashed rgba(91, 109, 129, 0.35);
-  color: rgba(91, 109, 129, 0.75);
-  cursor: default;
-}
-
-.cat-crumb__sep {
-  flex: none;
-  font-size: 9px;
-  color: rgba(91, 109, 129, 0.5);
-}
-
-/* ===== 整屏云海：三层景深保留，云在整块屏幕上随机撒开 ===== */
-.cat-stack {
-  --sx: 0deg;
-  --sy: 0deg;
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  perspective: 1500px;
-}
-
-/* 舞台不再跟手旋转：整片云在指针底下漂移会让人“明明在云上却点不中” */
-.cat-stack__stage {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-}
-
-.cat-layer {
-  position: absolute;
-  inset: 0;
-  /* 整层不吃指针，只有当前层的云自己打开指针，点空白处能穿透到舞台 */
-  pointer-events: none;
-  transform-style: preserve-3d;
-  transition:
-    transform 640ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 420ms ease,
-    filter 420ms ease;
-}
-
-.cat-layer[data-depth='0'] {
-  opacity: 1;
-  z-index: 30;
-  transform: none;
-}
-
-.cat-layer[data-depth='1'] {
-  opacity: 0;
-  z-index: 40;
-  transform: translateZ(190px) rotateX(-10deg) scale(1.04);
-}
-
-.cat-layer[data-depth='-1'] {
-  opacity: 0.4;
-  z-index: 20;
-  filter: blur(3px) saturate(0.85);
-  transform: translateZ(-220px) rotateX(8deg) scale(0.94);
-}
-
-.cat-layer[data-depth='-2'] {
-  opacity: 0.16;
-  z-index: 10;
-  filter: blur(6px) saturate(0.7);
-  transform: translateZ(-420px) rotateX(14deg) scale(0.9);
-}
-
-/* ===== 云朵 ===== */
-.cat-cloud {
-  /* 云的三团轮廓由一条 SVG 路径并集而来，用蒙版上色，接缝处不会有色差 */
-  --cloud-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='6%202%20128%2050'%20preserveAspectRatio='none'%3E%3Cpath%20fill='%23000'%20d='M6%2032A18%2018%200%201%201%2042%2032A18%2018%200%201%201%206%2032ZM28%2026A24%2024%200%201%201%2076%2026A24%2024%200%201%201%2028%2026ZM64%2030A20%2020%200%201%201%20104%2030A20%2020%200%201%201%2064%2030ZM102%2034A16%2016%200%201%201%20134%2034A16%2016%200%201%201%20102%2034ZM6%2040H134V52H6Z'/%3E%3C/svg%3E");
-  --tone: 214, 232, 252;
-  --sc: 1;
-  /* 位置由脚本随机掷出来，「全部」会被钉在正中心 */
-  position: absolute;
-  left: var(--x, 50%);
-  top: var(--y, 50%);
-  display: inline-flex;
-  justify-content: center;
-  /*
-   * 内边距比云形（puff 的 inset）大一圈：命中框是按钮自己的盒子，
-   * 它不跟着 cloud-bob 晃，所以目标比看到的云稳、也略宽容一点。
-   */
-  padding: 18px 28px;
-  border: none;
-  background: none;
-  color: #2b3440;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.2;
-  cursor: pointer;
-  /* 默认不吃指针：只有当前这一层的云是活的，点空白能穿过整层 */
-  pointer-events: none;
-  transform-origin: 50% 50%;
-  transform: translate(-50%, -50%) scale(var(--sc));
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.cat-layer[data-depth='0'] .cat-cloud {
-  pointer-events: auto;
-}
-
-/*
- * 后退的那两层也能点：点哪朵云就回到那一层（同一层里换一朵就是改选择）。
- * 顺带避免「点在自己看得见的云上，却因为穿透到舞台把面板关掉」。
- */
-.cat-layer[data-depth='-1'] .cat-cloud,
-.cat-layer[data-depth='-2'] .cat-cloud {
-  pointer-events: auto;
-}
-
-.cat-cloud__float {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  filter: drop-shadow(0 16px 18px rgba(96, 128, 168, 0.22));
-  animation: cloud-bob var(--bob, 7s) ease-in-out infinite;
-  /* 负延迟：每朵云从不同相位起飘，避免整片云一起晃 */
-  animation-delay: calc(min(var(--i, 0), 18) * -0.7s);
-  transition: filter 320ms ease;
-}
-
-/* 位置小幅度晃动 */
-@keyframes cloud-bob {
-  0% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-
-  25% {
-    transform: translate3d(2px, -5px, 0) rotate(0.8deg);
-  }
-
-  50% {
-    transform: translate3d(-2px, 1px, 0) rotate(-0.6deg);
-  }
-
-  75% {
-    transform: translate3d(1px, -4px, 0) rotate(0.4deg);
-  }
-
-  100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-}
-
-.cat-cloud__puff {
-  position: absolute;
-  inset: -14px -22px;
-  background: linear-gradient(180deg, #ffffff 6%, rgb(var(--tone)) 172%);
-  -webkit-mask: var(--cloud-mask) center / 100% 100% no-repeat;
-  mask: var(--cloud-mask) center / 100% 100% no-repeat;
-  transition: background 320ms ease;
-}
-
-.cat-cloud__label,
-.cat-cloud__count {
-  position: relative;
-  z-index: 1;
-}
-
-.cat-cloud__label {
-  max-width: 11em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cat-cloud__count {
-  flex: none;
-  min-width: 22px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  color: #5b6d81;
-  font-size: 11px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  box-shadow: inset 0 0 0 1px rgba(150, 176, 205, 0.18);
-  transition:
-    background 260ms ease,
-    color 260ms ease;
-}
-
-.cat-cloud:nth-child(6n + 1) {
-  --tone: 255, 226, 152;
-}
-
-.cat-cloud:nth-child(6n + 2) {
-  --tone: 178, 216, 252;
-}
-
-.cat-cloud:nth-child(6n + 3) {
-  --tone: 255, 198, 214;
-}
-
-.cat-cloud:nth-child(6n + 4) {
-  --tone: 176, 232, 210;
-}
-
-.cat-cloud:nth-child(6n + 5) {
-  --tone: 206, 196, 252;
-}
-
-.cat-cloud:nth-child(6n + 6) {
-  --tone: 255, 214, 166;
-}
-
-/* 「全部」：正中心的一颗圆 */
-.cat-cloud.is-all {
-  --tone: 224, 233, 246;
-  font-size: 17px;
-}
-
-.cat-cloud.is-all .cat-cloud__puff {
-  inset: auto;
-  left: 50%;
-  top: 50%;
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  /* clip-path 同时管命中：圆外的四个角点不到，不会抢旁边云的点击 */
-  clip-path: circle(50% at 50% 50%);
-  background: radial-gradient(circle at 36% 30%, #ffffff 6%, rgb(var(--tone)) 96%);
-  -webkit-mask: none;
-  mask: none;
-  box-shadow:
-    0 20px 32px -20px rgba(96, 128, 168, 0.55),
-    inset 0 -12px 22px rgba(255, 255, 255, 0.75);
-  transform: translate(-50%, -50%);
-}
-
-/* 逐个飘入：云随 activeLevel 重挂载，落位后动画释放、交还给 hover 过渡 */
-.cat-layer[data-depth='0'] .cat-cloud {
-  animation: cat-cloud-in 620ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-  animation-delay: calc(min(var(--i), 18) * 36ms);
-}
-
-@keyframes cat-cloud-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(calc(var(--sc) * 0.7));
-  }
-}
-
-.cat-cloud:hover,
-.cat-cloud:focus-visible {
-  transform: translate(-50%, -50%) scale(calc(var(--sc) * 1.07)) translateY(-4px);
-}
-
-.cat-cloud:hover .cat-cloud__float {
-  filter: drop-shadow(0 22px 24px rgba(96, 128, 168, 0.3));
-}
-
-.cat-cloud.is-active .cat-cloud__puff {
-  background: linear-gradient(180deg, #ffffff 6%, rgb(var(--tone)) 104%);
-}
-
-.cat-cloud.is-active .cat-cloud__label {
-  color: #1e3146;
-}
-
-.cat-cloud.is-active .cat-cloud__float {
-  filter: drop-shadow(0 18px 20px rgba(96, 128, 168, 0.36));
-}
-
-.cat-cloud.is-active .cat-cloud__count {
-  background: rgba(255, 255, 255, 0.95);
-  color: #2b3440;
-}
-
-/* 焦点环走 drop-shadow，才能贴着云的轮廓而不是套一个方块 */
-.cat-cloud:focus-visible {
-  outline: none;
-}
-
-.cat-cloud:focus-visible .cat-cloud__float {
-  filter: drop-shadow(0 0 2px rgba(85, 200, 255, 0.95)) drop-shadow(0 0 12px rgba(85, 200, 255, 0.72));
-}
-
-/* ===== 类型筛选 ===== */
-.cat-type {
-  /* 钉在顶栏正中间：绝对定位相对胶囊，和两侧内容多少无关 */
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
-  padding: 4px;
-  border-radius: 16px;
-  background: rgba(43, 52, 64, 0.06);
-}
-
-.cat-type__pill {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  width: calc((100% - 8px - 8px) / 3);
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(255, 182, 201, 0.85), rgba(154, 215, 255, 0.85));
-  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.14);
-  transform: translateX(calc(var(--idx) * (100% + 4px)));
-  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.cat-type__btn {
-  position: relative;
-  z-index: 1;
-  padding: 9px 6px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: #4e5d6f;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: color 260ms ease;
-}
-
-.cat-type__btn.is-active {
-  color: #1e3146;
-}
-
-.cat-type__btn:focus-visible {
-  outline: 2px solid #55c8ff;
-  outline-offset: 2px;
 }
 
 /* ===== 卡片堆：固定窗口，选中那张永远在舞台正中 ===== */
@@ -1513,9 +911,10 @@ button.cat-crumb__item:hover {
 @keyframes cat-card-in {
   from {
     opacity: 0;
+    filter: blur(5px);
     transform:
       translate3d(calc(var(--d, 0) * var(--step-x) + var(--shift, 0) * var(--gap) * var(--slope)),
-        calc(var(--d, 0) * var(--step-y) + var(--shift, 0) * var(--gap) - 26px),
+        calc(var(--d, 0) * var(--step-y) + var(--shift, 0) * var(--gap) - 18px),
         0) skewY(var(--tilt));
   }
 }
@@ -1524,6 +923,7 @@ button.cat-crumb__item:hover {
 .cat-card__head {
   flex: none;
   height: var(--strip);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
 }
 
 .cat-card__toggle {
@@ -1532,7 +932,7 @@ button.cat-crumb__item:hover {
   gap: 12px;
   width: 100%;
   height: 100%;
-  padding: 0 22px;
+  padding: 0 24px;
   border: none;
   border-radius: 16px 16px 0 0;
   background: none;
@@ -1549,11 +949,29 @@ button.cat-crumb__item:hover {
 
 .cat-card__no {
   flex: none;
-  width: 22px;
-  color: rgba(23, 34, 47, 0.4);
-  font-size: 11.5px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--type-line, rgba(23, 34, 47, 0.12));
+  border-radius: 9px;
+  background: var(--type-soft, rgba(255, 255, 255, 0.34));
+  color: var(--type-ink, rgba(23, 34, 47, 0.46));
+  font-size: 10.5px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  transition:
+    background 260ms ease,
+    border-color 260ms ease,
+    color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+.cat-card.is-open .cat-card__no {
+  border-color: transparent;
+  background: var(--type-ink, #c84070);
+  box-shadow: 0 0 0 3px var(--type-soft, rgba(200, 64, 112, 0.2));
+  color: #fff;
 }
 
 .cat-card__title {
@@ -1562,7 +980,8 @@ button.cat-crumb__item:hover {
   overflow: hidden;
   color: #17222f;
   font-size: clamp(13.5px, 1.15vw, 15.5px);
-  font-weight: 800;
+  font-weight: 780;
+  letter-spacing: -0.012em;
   line-height: 1.3;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -1580,34 +999,34 @@ button.cat-crumb__item:hover {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  border-radius: 16px;
-  background:
-    linear-gradient(158deg, rgba(255, 253, 248, 0.96) 0%, rgba(253, 249, 242, 0.9) 58%, rgba(246, 238, 225, 0.82) 100%),
-    var(--type-soft, rgba(246, 238, 225, 0.4));
-  /*
-   * 阴影分三层：贴着纸边的接触影、中景的软影、远景的散影，
-   * 整体往左下压一点（光从右上打过来），堆叠的层次才立得住。
-   */
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 18px;
+  background-color: #f7fbff;
+  background-image:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.94) 0%, rgba(250, 253, 255, 0.86) 55%, var(--type-soft, rgba(23, 34, 47, 0.06)) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.98),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
-    inset 0 -20px 28px -24px rgba(23, 34, 47, 0.24),
-    -1px 2px 3px -1px rgba(23, 34, 47, 0.1),
-    -6px 12px 20px -14px rgba(23, 34, 47, 0.3),
-    -14px 30px 46px -26px rgba(23, 34, 47, 0.38);
-  transition: box-shadow 320ms ease;
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.32),
+    inset 0 -22px 34px -28px rgba(38, 62, 92, 0.24),
+    -1px 2px 3px -1px rgba(23, 34, 47, 0.08),
+    -8px 18px 30px -18px rgba(36, 58, 88, 0.3),
+    -20px 42px 64px -32px rgba(23, 34, 47, 0.4);
+  transition:
+    box-shadow 340ms var(--cat-ease),
+    border-color 340ms ease,
+    background 340ms ease;
 }
 
 /* 实体厚度：背面往下（并略往左）错开 --depth，露出来的那道就是板厚 */
 .cat-card__edge {
   position: absolute;
   inset: 0;
-  border-radius: 16px;
-  background: linear-gradient(158deg, #e8ddcf, #d4c7b7);
-  /* 厚度自己的落脚影，别用大模糊，不然会和板面的影糊成一片 */
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 18px;
+  background: linear-gradient(158deg, rgba(214, 228, 245, 0.62), rgba(170, 192, 217, 0.42));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    -6px 14px 18px -14px rgba(23, 34, 47, 0.42);
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    -8px 18px 22px -18px rgba(23, 34, 47, 0.38);
   transform: translate3d(calc(var(--depth) * -0.5), var(--depth), 0);
 }
 
@@ -1617,8 +1036,43 @@ button.cat-crumb__item:hover {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 5px;
+  z-index: 2;
+  width: 6px;
+  overflow: hidden;
   background: var(--type-bar, linear-gradient(180deg, #ffb6c9, #c7b6ff 52%, #a7f3d0));
+  box-shadow: 0 0 18px -4px var(--type-glow, rgba(160, 140, 255, 0.3));
+  transition: box-shadow 340ms ease;
+}
+
+.cat-card__spine::after {
+  content: '';
+  position: absolute;
+  inset: -20% 0 auto;
+  height: 45%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.62), transparent);
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.cat-card:hover .cat-card__spine::after,
+.cat-card.is-open .cat-card__spine::after {
+  animation: cat-spine-sweep 1.15s var(--cat-ease) 1;
+}
+
+@keyframes cat-spine-sweep {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  36% {
+    opacity: 0.72;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(310%);
+  }
 }
 
 .cat-card__sheen {
@@ -1638,26 +1092,52 @@ button.cat-crumb__item:hover {
   transform: rotate(18deg) translateX(420%);
 }
 
+.cat-card:hover .cat-card__title {
+  color: var(--type-ink, #17222f);
+}
+
 .cat-card:hover .cat-card__slab {
+  border-color: var(--type-line, rgba(255, 255, 255, 0.7));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.98),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.85),
-    inset 0 -20px 28px -24px rgba(23, 34, 47, 0.2),
-    -1px 2px 3px -1px rgba(23, 34, 47, 0.1),
-    -8px 16px 26px -14px rgba(23, 34, 47, 0.34),
-    -18px 38px 58px -28px rgba(23, 34, 47, 0.42);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.36),
+    inset 0 -22px 34px -28px rgba(38, 62, 92, 0.2),
+    -1px 2px 3px -1px rgba(23, 34, 47, 0.08),
+    -8px 18px 30px -16px rgba(36, 58, 88, 0.3),
+    -20px 42px 64px -30px rgba(23, 34, 47, 0.4),
+    0 0 26px -10px var(--type-glow, rgba(160, 140, 255, 0.2));
 }
 
 /* 正中间那张：正文整个露出来，边缘亮起来，影子也压得更实 */
 .cat-card.is-open .cat-card__slab {
+  border-color: var(--type-line, rgba(200, 64, 112, 0.35));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.99),
-    inset 0 -24px 32px -26px rgba(23, 34, 47, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.34),
+    inset 0 -24px 34px -28px rgba(38, 62, 92, 0.2),
     0 0 0 2px var(--type-line, rgba(200, 64, 112, 0.35)),
-    0 0 22px -6px var(--type-glow, rgba(200, 64, 112, 0.24)),
-    -2px 3px 4px -2px rgba(23, 34, 47, 0.12),
-    -10px 20px 30px -16px rgba(23, 34, 47, 0.36),
+    0 0 32px -8px var(--type-glow, rgba(200, 64, 112, 0.24)),
+    -2px 3px 4px -2px rgba(23, 34, 47, 0.1),
+    -10px 20px 30px -16px rgba(23, 34, 47, 0.34),
     -22px 46px 68px -30px rgba(23, 34, 47, 0.46);
+}
+
+.cat-card.is-open .cat-card__spine {
+  box-shadow:
+    0 0 14px -2px var(--type-glow, rgba(200, 64, 112, 0.24)),
+    0 0 26px -6px var(--type-glow, rgba(200, 64, 112, 0.24));
+  animation: cat-spine-breathe 4.2s ease-in-out infinite;
+}
+
+@keyframes cat-spine-breathe {
+  0%,
+  100% {
+    opacity: 0.86;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 /* 被盖住的正文：缩进到 step-x 之后，才整段落在下一张的盖板里 */
@@ -1699,15 +1179,18 @@ button.cat-crumb__item:hover {
 .cat-card__type {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 4px 11px;
   border: 1px solid var(--type-line, rgba(255, 210, 166, 0.42));
   border-radius: 999px;
   background: var(--type-soft, rgba(255, 210, 166, 0.42));
   color: var(--type-ink, #8a5a1f);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
-  font-style: italic;
-  letter-spacing: 0.4px;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .cat-card__type::before {
@@ -1735,31 +1218,37 @@ button.cat-crumb__item:hover {
 }
 
 .cat-card__tag {
-  padding: 3px 12px 3px 10px;
-  border: none;
-  border-radius: 999px 0 0 999px;
-  background: rgba(255, 182, 201, 0.38);
-  color: rgba(23, 34, 47, 0.7);
+  padding: 4px 12px 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.44);
+  color: rgba(23, 34, 47, 0.64);
   font-family: inherit;
   font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition:
     background 220ms ease,
-    color 220ms ease;
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease;
 }
 
-.cat-card__tag:nth-child(2) {
-  background: rgba(167, 243, 208, 0.48);
+.cat-card__tag:hover,
+.cat-card__tag:focus-visible {
+  border-color: var(--type-line, rgba(200, 64, 112, 0.4));
+  background: var(--type-soft, rgba(200, 64, 112, 0.16));
+  color: var(--type-ink, #c84070);
+  outline: none;
 }
 
-.cat-card__tag:nth-child(3) {
-  background: rgba(255, 210, 166, 0.48);
-}
-
-.cat-card__tag:hover {
-  background: rgba(255, 196, 212, 0.6);
-  color: #17222f;
+.cat-card__tag:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.9),
+    0 0 0 4px var(--type-line, rgba(200, 64, 112, 0.3));
 }
 
 /* 进博客只能走这个按钮：点卡片本身不跳转，只展开 */
@@ -1768,23 +1257,48 @@ button.cat-crumb__item:hover {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 16px;
+  gap: 9px;
+  padding: 9px 15px 9px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
-  background: linear-gradient(135deg, #c84070, #a08cff);
-  color: #fffaf4;
-  font-size: 12.5px;
+  background: linear-gradient(135deg, var(--type-ink, #35435a), #253447 72%);
+  color: #fbfdff;
+  font-size: 12px;
   font-weight: 800;
+  letter-spacing: 0.02em;
   text-decoration: none;
-  box-shadow: 0 10px 18px -12px rgba(23, 34, 47, 0.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 12px 22px -14px var(--type-glow, rgba(23, 34, 47, 0.6)),
+    0 3px 8px -4px rgba(23, 34, 47, 0.4);
   transition:
     transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 240ms ease;
+    box-shadow 240ms ease,
+    filter 240ms ease;
+}
+
+.cat-card__read i {
+  font-size: 10px;
+  opacity: 0.76;
+  transition: transform 240ms var(--cat-ease);
 }
 
 .cat-card__read:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 22px -12px rgba(23, 34, 47, 0.85);
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 18px 30px -14px var(--type-glow, rgba(23, 34, 47, 0.6)),
+    0 4px 10px -4px rgba(23, 34, 47, 0.4);
+}
+
+.cat-card__read:hover i {
+  transform: translateX(3px);
+}
+
+.cat-card__read:focus-visible {
+  outline: 2px solid var(--type-line, rgba(200, 64, 112, 0.35));
+  outline-offset: 3px;
 }
 
 .cat-card__read i {
@@ -1802,9 +1316,20 @@ button.cat-crumb__item:hover {
 }
 
 /* ===== 窄屏 ===== */
+@media (max-width: 1100px) {
+  .cat-crumb--float {
+    max-width: min(38%, 280px);
+  }
+}
+
 @media (max-width: 948px) {
   .categories-section {
     padding: 68px 16px 96px;
+  }
+
+  .cat-shell {
+    padding: 12px;
+    border-radius: 28px;
   }
 
   /* 左下路径：窄屏下贴着站点浮动按钮右边，能滚就滚 */
@@ -1851,23 +1376,22 @@ button.cat-crumb__item:hover {
   .cat-stack {
     perspective: 1100px;
   }
-
-  .cat-cloud {
-    padding: 22px 32px 20px;
-    font-size: 14px;
-  }
-
-  .cat-cloud.is-all .cat-cloud__puff {
-    width: 104px;
-    height: 104px;
-  }
 }
 
 /* 再窄就把顶栏折起来：标题 + 关闭一行，类型筛选与路径各占一行 */
 @media (max-width: 720px) {
+  .categories-section {
+    padding: 64px 10px 88px;
+  }
+
+  .cat-shell {
+    padding: 8px;
+    border-radius: 24px;
+  }
+
   .cat-masthead {
-    top: 78px;
-    left: 18px;
+    top: 76px;
+    left: 16px;
   }
 
   .cat-masthead__title {
@@ -1890,70 +1414,57 @@ button.cat-crumb__item:hover {
     --slope: 0.18;
   }
 
-  .cat-sheet__head {
-    padding: 10px 12px;
+  .cat-card__slab {
+    border-radius: 16px;
   }
 
-  .cat-sheet__bar {
-    flex-wrap: wrap;
-    gap: 8px 10px;
-    padding: 8px 10px;
-    border-radius: 22px;
+  .cat-card__edge {
+    border-radius: 16px;
   }
 
-  .cat-sheet__title {
-    order: 1;
+  .cat-card__body {
+    gap: 7px;
+    padding-right: 12px;
+    padding-bottom: 12px;
+    padding-left: calc(var(--step-x) + 12px);
   }
 
-  .cat-sheet__close {
-    order: 2;
-    margin-left: auto;
+  .cat-card__excerpt {
+    font-size: 12px;
+    line-height: 1.6;
   }
 
-  .cat-type {
-    order: 3;
-    position: static;
-    transform: none;
-    flex: 1 0 100%;
-    margin-left: 0;
+  .cat-card__foot {
+    gap: 6px;
   }
 
-  .cat-crumb--sheet {
-    order: 4;
-    flex: 1 0 100%;
-    max-width: none;
-    margin: 0;
+  .cat-card__type {
+    padding: 3px 8px;
+    font-size: 9.5px;
   }
-}
 
-@media (max-width: 420px) {
-  .cat-cloud__count {
-    display: none;
+  .cat-card__date {
+    font-size: 10.5px;
+  }
+
+  .cat-card__tag {
+    padding: 3px 9px;
+    font-size: 10.5px;
+  }
+
+  .cat-card__read {
+    gap: 7px;
+    padding: 8px 12px 8px 13px;
+    font-size: 11px;
   }
 }
 
 /* ===== 降低动态效果 ===== */
 @media (prefers-reduced-motion: reduce) {
-
   .cat-card,
-  .cat-cloud,
-  .cat-cloud__float,
-  .cat-layer,
-  .cat-stack__stage,
-  .cat-sheet,
-  .cat-veil,
-  .cat-type__pill {
+  .cat-stack__stage {
     animation: none !important;
     transition-duration: 1ms !important;
-  }
-
-  .cat-cloud:hover,
-  .cat-cloud:focus-visible {
-    transform: translate(-50%, -50%) scale(var(--sc));
-  }
-
-  .cat-sheet__close:hover {
-    transform: none;
   }
 
   .cat-card__read:hover,
@@ -1969,3 +1480,4 @@ body.cat-sheet-lock {
   overflow: hidden;
 }
 </style>
+
