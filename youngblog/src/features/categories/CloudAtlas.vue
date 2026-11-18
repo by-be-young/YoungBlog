@@ -882,8 +882,10 @@ onBeforeUnmount(() => {
   z-index: 1700;
   opacity: 0;
   visibility: hidden;
-  background: rgba(23, 39, 56, 0.18);
-  backdrop-filter: blur(4px);
+  background:
+    radial-gradient(70% 60% at 14% 8%, rgba(255, 203, 221, 0.14), transparent 66%),
+    rgba(239, 247, 253, 0.84);
+  backdrop-filter: blur(18px) saturate(1.08);
   transition:
     opacity 460ms ease,
     visibility 0s linear 460ms;
@@ -899,20 +901,15 @@ onBeforeUnmount(() => {
 
 .atlas-sheet {
   position: fixed;
-  inset: 12px;
+  inset: 0;
   z-index: 1750;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.74);
-  border-radius: 26px;
-  background:
-    radial-gradient(86% 78% at 8% 0%, rgba(255, 197, 217, 0.18), transparent 62%),
-    radial-gradient(74% 68% at 94% 100%, rgba(166, 210, 252, 0.2), transparent 66%),
-    linear-gradient(180deg, rgba(251, 254, 255, 0.88) 0%, rgba(241, 249, 255, 0.76) 50%, rgba(233, 244, 252, 0.7) 100%);
-  box-shadow:
-    0 36px 100px -36px rgba(43, 75, 110, 0.44),
-    0 1px 0 rgba(255, 255, 255, 0.84) inset;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: #21364b;
   opacity: 0;
   visibility: hidden;
@@ -939,12 +936,7 @@ onBeforeUnmount(() => {
 
 .atlas-sheet::before,
 .atlas-sheet::after {
-  content: '';
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  filter: blur(8px);
+  content: none;
 }
 
 .atlas-sheet::before {
@@ -973,7 +965,7 @@ onBeforeUnmount(() => {
   gap: 24px;
   padding: 20px 30px 16px;
   border-bottom: 1px solid rgba(67, 94, 120, 0.12);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent);
+  background: transparent;
 }
 
 .atlas-brand {
@@ -1141,9 +1133,7 @@ onBeforeUnmount(() => {
   min-height: 0;
   flex: 1 1 auto;
   overflow: hidden;
-  background:
-    radial-gradient(52% 60% at 50% 48%, rgba(255, 255, 255, 0.28), transparent 70%),
-    radial-gradient(34% 50% at 16% 84%, rgba(186, 219, 247, 0.16), transparent 70%);
+  background: transparent;
   touch-action: none;
 }
 
@@ -1311,7 +1301,7 @@ onBeforeUnmount(() => {
   padding: 13px 30px 18px;
   border-top: 1px solid rgba(67, 94, 120, 0.12);
   border-bottom: none;
-  background: linear-gradient(0deg, rgba(255, 255, 255, 0.22), transparent);
+  background: transparent;
 }
 
 .atlas-path {

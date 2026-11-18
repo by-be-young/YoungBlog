@@ -733,18 +733,19 @@ onUnmounted(() => {
   right: 24px;
   top: 84px;
   z-index: 80;
-  width: 58px;
-  height: 58px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 18px;
+  width: 76px;
+  height: 76px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: 22px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(238, 246, 255, 0.5));
-  color: #2b3440;
-  font-size: 21px;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(222, 240, 255, 0.72));
+  color: #21364b;
+  font-size: 30px;
   cursor: pointer;
   box-shadow:
-    0 16px 30px -18px rgba(38, 56, 86, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 22px 40px -20px rgba(38, 56, 86, 0.72),
+    0 0 30px -12px rgba(232, 93, 132, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(18px) saturate(1.16);
   -webkit-backdrop-filter: blur(18px) saturate(1.16);
   transition:
@@ -753,22 +754,48 @@ onUnmounted(() => {
     border-color 260ms ease;
 }
 
+.cat-fab i {
+  filter: drop-shadow(0 5px 10px rgba(88, 128, 165, 0.28));
+}
+
+.cat-fab::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border: 1px solid rgba(232, 93, 132, 0.28);
+  border-radius: 28px;
+  pointer-events: none;
+  animation: cat-fab-halo 3.4s ease-in-out infinite;
+}
+
+@keyframes cat-fab-halo {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
 .cat-fab::after {
   content: '';
   position: absolute;
-  inset: 7px;
-  border: 1px solid rgba(232, 93, 132, 0.14);
-  border-radius: 12px;
+  inset: 9px;
+  border: 1px solid rgba(232, 93, 132, 0.18);
+  border-radius: 16px;
   pointer-events: none;
 }
 
 .cat-fab:hover {
-  border-color: rgba(232, 93, 132, 0.28);
-  transform: translateY(-3px) rotate(-6deg);
+  border-color: rgba(232, 93, 132, 0.36);
+  transform: translateY(-3px) rotate(-4deg) scale(1.03);
   box-shadow:
-    0 22px 36px -18px rgba(38, 56, 86, 0.72),
-    0 0 24px -10px rgba(232, 93, 132, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 26px 44px -18px rgba(38, 56, 86, 0.78),
+    0 0 36px -8px rgba(232, 93, 132, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
 }
 
 .cat-fab:focus-visible {
@@ -1341,10 +1368,21 @@ onUnmounted(() => {
 
   .cat-fab {
     right: 16px;
-    top: 78px;
-    width: 50px;
-    height: 50px;
-    font-size: 18px;
+    top: 76px;
+    width: 62px;
+    height: 62px;
+    border-radius: 18px;
+    font-size: 24px;
+  }
+
+  .cat-fab::before {
+    inset: -5px;
+    border-radius: 23px;
+  }
+
+  .cat-fab::after {
+    inset: 7px;
+    border-radius: 13px;
   }
 
   /* 卡片窄一些、步长小一些，斜切角与「固定窗口」的规矩不变 */
@@ -1470,6 +1508,12 @@ onUnmounted(() => {
   .cat-card__read:hover,
   .cat-card__read:hover i {
     transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-fab::before {
+    animation: none;
   }
 }
 </style>
