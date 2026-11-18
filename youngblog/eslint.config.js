@@ -11,7 +11,8 @@ export default defineConfig([
     files: ['**/*.{vue,js,mjs,jsx}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  // blogs/ 是 Obsidian 内容库，包含第三方插件与主题脚本，不属于本站源码
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', 'blogs/**']),
 
   {
     languageOptions: {
