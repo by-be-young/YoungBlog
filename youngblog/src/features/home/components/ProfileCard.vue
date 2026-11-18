@@ -1,5 +1,5 @@
 <template>
-  <div class="profile-card" id="home-profile-card" @click="handleCardClick">
+  <div ref="rootEl" class="profile-card" id="home-profile-card" @click="handleCardClick">
     <div class="profile-art" aria-hidden="true"></div>
     <div class="profile-glow" aria-hidden="true"></div>
 
@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { useBlogStore } from '@/shared/stores/blogStore'
@@ -134,7 +134,33 @@ const router = useRouter()
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
 
-const profileArt = `url(${resolveUrl('/assets/images/information.webp')})`
+const rootEl = ref(null)
+const profileArt = ref('')
+let artObserver = null
+
+const loadProfileArt = () => {
+  if (!profileArt.value) {
+    profileArt.value = `url(${resolveUrl('/assets/images/information.webp')})`
+  }
+}
+
+onMounted(() => {
+  // 资料卡在首屏下方，等它接近视口再请求 155 KB 的背景图。
+  if (typeof window === 'undefined' || !('IntersectionObserver' in window) || !rootEl.value) {
+    loadProfileArt()
+    return
+  }
+  artObserver = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return
+      loadProfileArt()
+      artObserver?.disconnect()
+      artObserver = null
+    },
+    { rootMargin: '0px' },
+  )
+  artObserver.observe(rootEl.value)
+})
 
 /* ---------- 数字滚动 ---------- */
 const displayedPosts = ref(0)
@@ -226,6 +252,8 @@ onBeforeUnmount(() => {
   rafIds.forEach((id) => cancelAnimationFrame(id))
   rafIds.length = 0
   if (toastTimer) clearTimeout(toastTimer)
+  artObserver?.disconnect()
+  artObserver = null
 })
 
 /* ---------- 交互 ---------- */

@@ -5,7 +5,7 @@
  *   1. 渲染引擎初始化（Vue 挂载 + 两帧渲染）
  *   2. 字体与样式（最多等 300ms，字体继续在后台加载）
  *   3. 站点数据（blogs / announcements / series / quick-links / background-images）
- *   4. 首屏关键图像（只等背景首图、欢迎图、卡片图与头像，最多 1.6s）
+ *   4. 首屏关键图像（只等背景首图、欢迎图与头像，最多 1s）
  *   5. 首页视图构建（只等一帧，不再扫描全页所有图片）
  *   6. 收尾校准（保证最小展示时长，避免闪烁）
  *
@@ -146,7 +146,6 @@ export function resolveBackgroundImages(data) {
  */
 const HOME_IMAGE_PATHS = [
   '/assets/images/welcome.webp', // Hero 云朵主视觉
-  '/assets/images/lantern_festival.webp', // 博客卡片缩略图
   '/assets/avatar.webp', // 导航栏 / 资料卡头像
 ]
 
@@ -238,7 +237,7 @@ const waitForFonts = async () => {
 export function useEntryLoader(options = {}) {
   // maxDuration 仅作为防止永久卡死的安全绳，设置得很宽松：
   // 图片（尤以首屏大图为主）没真正加载完之前不应当揭幕
-  const { lang = () => 'zh', minDuration = 600, maxDuration = 6000 } = options
+  const { lang = () => 'zh', minDuration = 600, maxDuration = 2500 } = options
 
   const percent = ref(0)
   const stageIndex = ref(0)
@@ -303,6 +302,8 @@ export function useEntryLoader(options = {}) {
   const setStage = (index, ratio = 0) => {
     if (stopped || rawDone) return
     const safeIndex = Math.max(0, Math.min(index, ENTRY_STAGES.length - 1))
+    // 超时放行后，后台任务仍可能回调；不要让阶段回退。
+    if (safeIndex < stageIndex.value) return
     stageIndex.value = safeIndex
     const weighted =
       completedWeight + ENTRY_STAGES[safeIndex].weight * Math.max(0, Math.min(1, ratio))
@@ -385,18 +386,21 @@ export function useEntryLoader(options = {}) {
     setStage(2, 0.02)
     const blogStore = useBlogStore()
     let backgroundData = null
-    await runTasks(2, [
-      () => blogStore.fetchBlogs(),
-      () => fetchJSON('/data/announcements.json'),
-      () => fetchJSON('/data/series.json'),
-      () => fetchJSON('/data/quick-links.json'),
-      async () => {
-        backgroundData = await fetchJSON('/data/background-images.json')
-      },
+    await Promise.race([
+      runTasks(2, [
+        () => blogStore.fetchBlogs(),
+        () => fetchJSON('/data/announcements.json'),
+        () => fetchJSON('/data/series.json'),
+        () => fetchJSON('/data/quick-links.json'),
+        async () => {
+          backgroundData = await fetchJSON('/data/background-images.json')
+        },
+      ]),
+      wait(1000),
     ])
     await completeStage(2)
 
-    // 4. 首屏关键图像：只等真正会出现在第一屏的 4 张图，且最多等 1.6s。
+    // 4. 首屏关键图像：只等真正会出现在第一屏的 3 张图，且最多等 1s。
     //    背景轮播的第 2/3 张、资料卡背景等交给首页按需加载，
     //    不再让所有图片排队阻塞揭幕。
     setStage(3, 0.02)
@@ -406,7 +410,7 @@ export function useEntryLoader(options = {}) {
     ].filter(Boolean)
     await Promise.race([
       Promise.all(criticalImages.map((src) => preloadImage(src))),
-      wait(1600),
+      wait(1000),
     ])
     setStage(3, 1)
     await completeStage(3)
@@ -436,6 +440,15 @@ export function useEntryLoader(options = {}) {
     Promise.race([runPipeline(), wait(maxDuration)]).then(
       () => {
         rawDone = true
+        // 后台标签页或页面被遮挡时 rAF 可能被节流；
+        // 不能让加载屏因此永远停在半路，给一个定时兜底。
+        setTimeout(() => {
+          if (!isSettled.value) {
+            percent.value = 1
+            isSettled.value = true
+            stopLoop()
+          }
+        }, 120)
       },
       () => {
         rawDone = true
