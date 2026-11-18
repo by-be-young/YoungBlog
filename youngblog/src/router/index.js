@@ -4,49 +4,49 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/HomeView.vue'),
+    component: () => import('../features/home/HomeView.vue'),
     meta: { title: '首页' }
   },
   {
     path: '/archive',
     name: 'Archive',
-    component: () => import('../views/ArchiveView.vue'),
+    component: () => import('../features/archive/ArchiveView.vue'),
     meta: { title: '归档' }
   },
   {
     path: '/categories',
     name: 'Categories',
-    component: () => import('../views/CategoriesView.vue'),
+    component: () => import('../features/categories/CategoriesView.vue'),
     meta: { title: '分类' }
   },
   {
     path: '/quick-links',
     name: 'QuickLinks',
-    component: () => import('../views/QuickLinksView.vue'),
+    component: () => import('../features/quick-links/QuickLinksView.vue'),
     meta: { title: '快速链接' }
   },
   {
     path: '/series',
     name: 'Series',
-    component: () => import('../views/SeriesView.vue'),
+    component: () => import('../features/series/SeriesView.vue'),
     meta: { title: '系列' }
   },
   {
     path: '/about',
     name: 'About',
-    component: () => import('../views/AboutView.vue'),
+    component: () => import('../features/about/AboutView.vue'),
     meta: { title: '关于' }
   },
   {
     path: '/announcements',
     name: 'Announcements',
-    component: () => import('../views/AnnouncementsView.vue'),
+    component: () => import('../features/announcements/AnnouncementsView.vue'),
     meta: { title: '公告' }
   },
   {
     path: '/blog/:id',
     name: 'BlogDetail',
-    component: () => import('../views/BlogDetailView.vue'),
+    component: () => import('../features/blog-detail/BlogDetailView.vue'),
     meta: { title: '博客详情' }
   },
   // 兼容旧链接：/blog-detail.html?id=xxx → /blog/xxx

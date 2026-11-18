@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "optimize:images": "node scripts/optimize-images.mjs",
     "check:images": "node scripts/compare-image-quality.mjs",
+    "check:docs": "node scripts/check-docs.mjs",
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",

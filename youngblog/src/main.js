@@ -1,16 +1,16 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import App from './App.vue'
+import App from './app/App.vue'
 import router from './router'
-import './style.css'
+import './assets/styles/base.css'
 
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
-// 从 src/css/ 导入
-import './css/style.css'
-import './css/butterfly.css'
-import './css/responsive.css'
-import './css/search.css'
+// 从 src/assets/styles/ 导入
+import './assets/styles/global.css'
+import './assets/styles/butterfly.css'
+import './assets/styles/responsive.css'
+import './assets/styles/search.css'
 import 'highlight.js/styles/atom-one-dark.css'
 import 'katex/dist/katex.min.css'
 

@@ -1,0 +1,831 @@
+/* ==================================================
+   合并样式 – 全站共用基础样式
+   包含：全局变量、重置、字体、导航栏、页面过渡、滚动条、容器、浮动按钮
+   ================================================== */
+
+/* ========== 1. 全局变量 ========== */
+:root {
+    --webfont-name: '仓耳今楷01';
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --dark-color: #2c3e50;
+    --light-color: #ecf0f1;
+    --gray-color: #95a5a6;
+    --selection-bg-color: #bfe9ff;
+    --selection-text-color: #1f3b57;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+
+    /* 滚动条专用变量 */
+    --macaron-scroll-thumb-start: rgba(255, 182, 201, 0.95);
+    --macaron-scroll-thumb-mid: rgba(154, 215, 255, 0.90);
+    --macaron-scroll-thumb-end: rgba(167, 243, 208, 0.92);
+    --macaron-scroll-track: rgba(255, 255, 255, 0.35);
+    --macaron-scroll-thumb-border: rgba(255, 255, 255, 0.55);
+    --macaron-scroll-track-border: rgba(0, 0, 0, 0.06);
+}
+
+/* ========== 2. 重置 & 基础 ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: '仓耳今楷01', 'CangErJinKai01', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* ========== 2.1 粘性页脚布局 ==========
+   页面内容不足一屏时，页脚仍固定在视口底部，
+   保证各页面页脚高度一致 */
+#app {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-main {
+    flex: 1 0 auto;
+}
+
+::selection {
+    background: var(--selection-bg-color);
+    color: var(--selection-text-color);
+}
+
+::-moz-selection {
+    background: var(--selection-bg-color);
+    color: var(--selection-text-color);
+}
+
+/* ========== 3. 字体（@font-face） ========== */
+@font-face {
+    font-family: '仓耳今楷01';
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+    src: local('仓耳今楷01'),
+        url('../fonts/仓耳今楷01-W04.ttf') format('truetype');
+}
+
+/* ========== 4. 页面过渡 ========== */
+body.page-transition-enter {
+    opacity: 0;
+    will-change: opacity;
+}
+
+body.page-transition-enter.page-transition-ready {
+    opacity: 1;
+    transition: opacity 0.32s ease;
+}
+
+body.page-transition-leaving {
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    pointer-events: none;
+    will-change: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    body.page-transition-enter,
+    body.page-transition-enter.page-transition-ready,
+    body.page-transition-leaving {
+        opacity: 1;
+        transition: none;
+        pointer-events: auto;
+    }
+
+    .navbar::after {
+        animation: none !important;
+        opacity: 0 !important;
+        transform: scaleX(0) !important;
+    }
+}
+
+/* ========== 5. 导航栏 ========== */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: rgba(253, 249, 242, 0.9);
+    background-image: linear-gradient(90deg,
+            rgba(255, 182, 201, 0.12) 0%,
+            rgba(255, 246, 236, 0.1) 45%,
+            rgba(199, 182, 255, 0.12) 100%);
+    backdrop-filter: blur(22px) saturate(1.2);
+    border-bottom: 1px solid rgba(23, 34, 47, 0.06);
+    box-shadow: 0 8px 30px rgba(23, 34, 47, 0.05);
+    z-index: 1000;
+    height: 60px;
+}
+
+.navbar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 4px;
+    border-radius: 0 0 999px 999px;
+    background: linear-gradient(90deg,
+            #ffb6c9 0%,
+            #ffd2a6 22%,
+            #a7f3d0 46%,
+            #9ad7ff 70%,
+            #ffb6c9 100%);
+    background-size: 220% 100%;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: center;
+    pointer-events: none;
+}
+
+body.page-transition-enter:not(.page-transition-ready) .navbar::after,
+body.page-transition-leaving .navbar::after {
+    opacity: 1;
+    transform: scaleX(1);
+    animation: navbar-glow 5s linear infinite;
+}
+
+@keyframes navbar-glow {
+    0% {
+        background-position: 0 50%;
+    }
+
+    100% {
+        background-position: 220% 50%;
+    }
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    gap: 12px;
+}
+
+/* ===== 品牌 Logo ===== */
+/* 基础样式 - 作为回退 */
+.nav-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #55c8ff;
+    text-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.6),
+        0 6px 14px rgba(85, 200, 255, 0.22);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .nav-brand {
+        display: inline-block;
+        background: linear-gradient(90deg,
+                rgba(0, 172, 255, 1) 0%,
+                rgba(72, 219, 187, 0.98) 45%,
+                rgba(255, 110, 155, 0.98) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        text-shadow: none;
+        filter:
+            drop-shadow(0 1px 0 rgba(255, 255, 255, 0.60)) drop-shadow(0 10px 18px rgba(0, 172, 255, 0.16));
+    }
+}
+
+.nav-brand-link {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.nav-brand-link:hover {
+    color: var(--primary-color);
+}
+
+/* ===== 头像 ===== */
+.nav-avatar {
+    display: none;
+    align-items: center;
+}
+
+.nav-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+    display: block;
+}
+
+/* ===== 导航菜单 ===== */
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+    margin-left: auto;
+    height: 60px;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: #2d3748;
+    font-weight: 500;
+    padding: 1px 16px;
+    line-height: 60px;
+    border-radius: 4px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: inline-block;
+    height: 100%;
+    background: transparent;
+    border: none;
+}
+
+/* 悬停/激活背景光效 */
+.nav-menu a::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(90deg,
+            rgba(45, 212, 191, 0) 0%,
+            rgba(52, 211, 153, 0.22) 18%,
+            rgba(45, 212, 191, 0.30) 36%,
+            rgba(34, 211, 238, 0.36) 50%,
+            rgba(45, 212, 191, 0.30) 64%,
+            rgba(52, 211, 153, 0.22) 82%,
+            rgba(45, 212, 191, 0) 100%);
+    opacity: 0;
+    transform: scaleX(0.92);
+    transition: opacity 0.32s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.nav-menu a:hover::before,
+.nav-menu a.active::before {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-menu a::before {
+        transition: none;
+        transform: none;
+    }
+}
+
+/* 菜单文字颜色 - 非蓝色 */
+.nav-menu a:hover,
+.nav-menu a.active {
+    color: #1a1a2e;
+}
+
+/* 激活状态 - 使用原来的光效背景（由 ::before 控制） */
+.nav-menu a.active {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+}
+
+.nav-menu a.active:hover {
+    background: transparent;
+}
+
+.nav-menu a:hover:not(.active) {
+    background: transparent;
+}
+
+/* ===== 移动端切换按钮 ===== */
+.nav-toggle {
+    display: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* ===== 右侧操作区 ===== */
+.nav-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.search-panel {
+    z-index: 1305;
+}
+
+/* ========== 6. 全局滚动条（马卡龙风格） ========== */
+html,
+body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 182, 201, 0.85) var(--macaron-scroll-track);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+    background: var(--macaron-scroll-track);
+    border-radius: 999px;
+    border: 1px solid var(--macaron-scroll-track-border);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    border: 2px solid var(--macaron-scroll-thumb-border);
+    background-image: linear-gradient(135deg, var(--macaron-scroll-thumb-start), var(--macaron-scroll-thumb-mid), var(--macaron-scroll-thumb-end));
+    box-shadow: 0 10px 18px rgba(44, 62, 80, 0.14);
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+    background-image: linear-gradient(135deg, rgba(255, 182, 201, 1), rgba(154, 215, 255, 0.98), rgba(167, 243, 208, 1));
+}
+
+/* ========== 7. 容器 ========== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* ========== 8. 浮动控件 ========== */
+.floating-btn {
+    border: none;
+    cursor: pointer;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 22px rgba(44, 62, 80, 0.14);
+    color: #fff;
+    background: linear-gradient(135deg, rgba(0, 172, 255, 1), rgba(72, 219, 187, 0.98), rgba(255, 110, 155, 0.98));
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.floating-btn svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.floating-btn:active {
+    transform: translateY(1px);
+}
+
+.sub-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    padding: 0;
+    background: linear-gradient(135deg, rgba(0, 172, 255, 1), rgba(72, 219, 187, 0.98), rgba(255, 110, 155, 0.98));
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(44, 62, 80, 0.14);
+    transform: translateX(8px);
+    opacity: 0;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+    display: none;
+}
+
+.sub-btn.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ==================================================
+   轮播图样式
+   ================================================== */
+.slideshow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.slide.active {
+    opacity: 1;
+}
+
+/* ==================================================
+   归档/分类/链接页：毛玻璃效果
+   （由 App.vue 根据路由给 .slideshow 绑定 .is-frosted）
+   ================================================== */
+.slideshow.is-frosted {
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.slideshow.is-frosted .slide {
+    filter: blur(12px) saturate(1.08) brightness(0.9);
+    transform: scale(1.08);
+    transform-origin: center;
+    z-index: 1;
+}
+
+.slideshow.is-frosted::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.22), transparent 48%),
+        radial-gradient(circle at 82% 20%, rgba(255, 255, 255, 0.16), transparent 42%),
+        linear-gradient(120deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.16));
+    backdrop-filter: blur(3px) saturate(1.05);
+    -webkit-backdrop-filter: blur(3px) saturate(1.05);
+}
+
+/* ==================================================
+   系列页：强毛玻璃蒙版
+   （由 App.vue 根据路由给 .slideshow 绑定 .is-series）
+   ================================================== */
+.slideshow.is-series::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 182, 201, 0.12) 32%,
+            rgba(154, 215, 255, 0.14) 64%,
+            rgba(167, 243, 208, 0.12) 100%);
+    backdrop-filter: blur(14px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
+}
+
+/* ==================================================
+   萤火虫特效 (archive/categories/quick-links/series)
+   ================================================== */
+.archive-page .slideshow .fireflies-overlay,
+.categories-page .slideshow .fireflies-overlay,
+.quick-links-page .slideshow .fireflies-overlay,
+.series-page .slideshow .fireflies-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.archive-page .slideshow .firefly,
+.categories-page .slideshow .firefly,
+.quick-links-page .slideshow .firefly,
+.series-page .slideshow .firefly {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--size, 4px);
+    height: var(--size, 4px);
+    border-radius: 50%;
+    opacity: var(--alpha, 0.78);
+    background: radial-gradient(circle,
+            hsla(var(--hue, 56), 100%, 78%, 0.98) 0%,
+            hsla(var(--hue, 56), 100%, 64%, 0.82) 44%,
+            hsla(var(--hue, 56), 100%, 64%, 0) 72%);
+    filter: blur(0);
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+    animation:
+        firefly-float var(--float-duration, 24000ms) cubic-bezier(0.42, 0, 0.22, 1) infinite,
+        firefly-glow var(--glow-duration, 4200ms) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0ms), var(--glow-delay, 0ms);
+}
+
+@keyframes firefly-float {
+    0% {
+        transform: translate3d(var(--x0, 0vw), var(--y0, 0vh), 0) scale(0.8);
+    }
+
+    50% {
+        transform: translate3d(var(--x1, 40vw), var(--y1, 50vh), 0) scale(1.04);
+    }
+
+    100% {
+        transform: translate3d(var(--x2, 100vw), var(--y2, 100vh), 0) scale(0.84);
+    }
+}
+
+@keyframes firefly-glow {
+
+    0%,
+    100% {
+        opacity: 0.14;
+        box-shadow: 0 0 0 rgba(255, 241, 138, 0);
+    }
+
+    50% {
+        opacity: var(--alpha, 0.6);
+        box-shadow: 0 0 16px rgba(255, 241, 138, 0.74), 0 0 34px rgba(255, 241, 138, 0.42);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .archive-page .slideshow .fireflies-overlay,
+    .categories-page .slideshow .fireflies-overlay,
+    .quick-links-page .slideshow .fireflies-overlay,
+    .series-page .slideshow .fireflies-overlay {
+        display: none;
+    }
+}
+
+/* ==================================================
+   图片查看器（image-viewer-overlay）
+   ================================================== */
+.image-viewer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.86);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+}
+
+.image-viewer-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.image-viewer-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 40px 60px;
+}
+
+.image-viewer-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.2s ease;
+}
+
+.image-viewer-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.image-viewer-nav:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.image-viewer-nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+    transform: translateY(-50%) scale(1);
+}
+
+.image-viewer-prev {
+    left: 16px;
+}
+
+.image-viewer-next {
+    right: 16px;
+}
+
+.image-viewer-toolbar {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.image-viewer-counter {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.92rem;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+}
+
+.image-viewer-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background 0.18s ease;
+}
+
+.image-viewer-tool:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.image-viewer-tool-label {
+    font-size: 0.85rem;
+}
+
+.image-viewer-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.image-viewer-close:hover {
+    background: rgba(255, 80, 80, 0.5);
+    transform: scale(1.1);
+}
+
+body.image-viewer-open {
+    overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .image-viewer-stage {
+        padding: 16px;
+    }
+
+    .image-viewer-toolbar {
+        top: 12px;
+        padding: 6px 10px;
+        gap: 6px;
+    }
+
+    .image-viewer-tool .image-viewer-tool-label {
+        display: none;
+    }
+
+    .image-viewer-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+    }
+
+    .image-viewer-prev {
+        left: 8px;
+    }
+
+    .image-viewer-next {
+        right: 8px;
+    }
+}
+
+/* ==================================================
+   Mermaid 全屏查看器
+   ================================================== */
+.mermaid-viewer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+}
+
+.mermaid-viewer-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mermaid-viewer-stage {
+    position: relative;
+    width: 90%;
+    height: 90%;
+    display: flex;
+    padding: 20px;
+    overflow: auto;
+}
+
+.mermaid-viewer-toolbar {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+}
+
+.mermaid-viewer-close {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s ease;
+}
+
+.mermaid-viewer-close:hover {
+    background: rgba(255, 80, 80, 0.5);
+}
+
+.mermaid-viewer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 用 auto 外边距居中：内容比舞台大时仍可滚动到左上角 */
+    margin: auto;
+    max-width: none;
+    max-height: none;
+}
+
+.mermaid-viewer-content svg {
+    display: block;
+}
+
+body.mermaid-viewer-open {
+    overflow: hidden;
+}
