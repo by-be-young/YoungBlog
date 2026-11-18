@@ -35,34 +35,39 @@ const MANIFEST = [
     // ---------- 首页首屏（入场加载器会预载，直接决定加载时长） ----------
     {
         file: 'public/assets/images/welcome.png',
-        maxWidth: 2688,
-        note: 'Hero 云朵主视觉（原 4096×2048）',
+        maxWidth: 1920,
+        quality: 88,
+        note: 'Hero 云朵主视觉（首屏）',
     },
     {
         file: 'public/assets/images/lantern_festival.png',
-        maxWidth: 1200,
-        note: '博客卡片缩略图（原 2730×1535，PNG 照片）',
-    },
-    {
-        file: 'public/assets/images/background/bg2.png',
-        maxWidth: null,
-        note: '背景轮播图 2（PNG 照片）',
-    },
-    {
-        file: 'public/assets/images/background/bg3.png',
-        maxWidth: null,
-        note: '背景轮播图 3（PNG 照片）',
+        maxWidth: 960,
+        quality: 88,
+        note: '博客卡片缩略图（首屏）',
     },
     {
         file: 'public/assets/images/background/bg1.png',
-        maxWidth: null,
-        skip: true,
-        note: '背景轮播图 1 已是高效 PNG（0.12 B/px），转 WebP 反而增大 58%',
+        maxWidth: 1600,
+        quality: 82,
+        note: '背景轮播图 1（首屏，1600px 足够铺满常见屏幕）',
+    },
+    {
+        file: 'public/assets/images/background/bg2.png',
+        maxWidth: 1440,
+        quality: 85,
+        note: '背景轮播图 2（揭幕后加载）',
+    },
+    {
+        file: 'public/assets/images/background/bg3.png',
+        maxWidth: 1200,
+        quality: 85,
+        note: '背景轮播图 3（揭幕后加载）',
     },
     {
         file: 'public/assets/images/information.jpg',
-        maxWidth: 720,
-        note: '资料卡信息背景（原 1080×2100）',
+        maxWidth: 520,
+        quality: 88,
+        note: '资料卡信息背景（首屏后加载）',
     },
     { file: 'public/assets/avatar.png', maxWidth: null, note: '头像（导航栏 / 资料卡）' },
 

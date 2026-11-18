@@ -18,20 +18,13 @@
   <!--
       首屏图片预载
       ------------------------------------------------------------------
-      入场加载器需要「全部图片下载并解码完成」才揭幕，这些图片本来就是
-      必经之路。默认情况下浏览器要等 JS 下载、解析、Vue 挂载之后才开始
-      请求它们；在这里声明 preload，可以让它们与 JS 包并行下载，
-      提前数百毫秒开始，且不改变任何最终的视觉结果。
-
-      与 useEntryLoader.js 的 HOME_IMAGE_PATHS / DEFAULT_BACKGROUND_IMAGES 保持一致。
-      bg1 未转 WebP（原 PNG 已足够高效），因此这里仍是 .png。
+      只预载真正出现在第一屏的四张图：背景首图、Hero、博客卡片图、头像。
+      第 2/3 张背景图与资料卡大图交给首页空闲时加载，避免和字体、JS
+      抢带宽。图片均已转为 WebP 并限制宽度。
     -->
-  <link rel="preload" as="image" href="%BASE_URL%assets/images/background/bg1.png" />
-  <link rel="preload" as="image" href="%BASE_URL%assets/images/background/bg2.webp" />
-  <link rel="preload" as="image" href="%BASE_URL%assets/images/background/bg3.webp" />
-  <link rel="preload" as="image" href="%BASE_URL%assets/images/welcome.webp" />
+  <link rel="preload" as="image" href="%BASE_URL%assets/images/background/bg1.webp" fetchpriority="high" />
+  <link rel="preload" as="image" href="%BASE_URL%assets/images/welcome.webp" fetchpriority="high" />
   <link rel="preload" as="image" href="%BASE_URL%assets/images/lantern_festival.webp" />
-  <link rel="preload" as="image" href="%BASE_URL%assets/images/information.webp" />
   <link rel="preload" as="image" href="%BASE_URL%assets/avatar.webp" />
 </head>
 

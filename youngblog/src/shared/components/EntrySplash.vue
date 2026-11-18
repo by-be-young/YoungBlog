@@ -190,9 +190,9 @@ const {
   dispose,
 } = useEntryLoader({
   lang: () => i18n.getLang(),
-  // maxDuration 使用默认值（60s，仅作为防卡死安全绳）：
-  // 首页图片未完整下载并解码前不应该揭幕
-  minDuration: 1950,
+  // maxDuration 使用默认值（6s，仅作为防卡死安全绳）
+  // 字体只等 350ms、图片只等关键 4 张 2s，加载屏不会再把首屏拖到十几秒
+  minDuration: 500,
 })
 
 /* ---------- 环形进度几何 ---------- */
@@ -231,14 +231,14 @@ const ENTRY_TEXT = {
 const entryText = computed(() => ENTRY_TEXT[langCode.value] || ENTRY_TEXT.zh)
 
 /* ---------- 入场动画时间轴 ---------- */
-// boot → loading → ready（等待点击）→ entering → exiting → done
+// boot → loading → ready（短暂停留）→ entering → exiting → done
 const phase = ref('boot')
 let timers = []
 let cancelled = false
 let enterResolve = null
 
-const holdDuration = computed(() => (skipped.value ? 140 : 400))
-const exitDuration = computed(() => (skipped.value ? 480 : 840))
+const holdDuration = computed(() => (skipped.value ? 60 : 100))
+const exitDuration = computed(() => (skipped.value ? 320 : 380))
 
 /** 加载已完成（含等待点击 / 退场中） */
 const loaded = computed(() => ['ready', 'entering', 'exiting'].includes(phase.value))
@@ -297,10 +297,13 @@ const play = async () => {
   await delay(holdDuration.value)
   if (cancelled) return
 
-  // 停留等待用户点击屏幕后，才真正进入首页
+  // 停留一小会儿后自动进入，点击/按键可以提前
   const entered = waitForEnter()
   phase.value = 'ready'
+  const autoEnter = setTimeout(() => enter(), 260)
+  timers.push(autoEnter)
   await entered
+  clearTimeout(autoEnter)
   if (cancelled) return
 
   phase.value = 'exiting'
@@ -346,7 +349,7 @@ const seededRandom = (seed, salt) => {
   return value - Math.floor(value)
 }
 
-const particleCount = typeof window !== 'undefined' && window.innerWidth <= 760 ? 26 : 46
+const particleCount = typeof window !== 'undefined' && window.innerWidth <= 760 ? 16 : 32
 const huePalette = [48, 52, 340, 200, 160]
 
 const particles = Array.from({ length: particleCount }, (_, index) => {

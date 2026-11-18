@@ -67,10 +67,12 @@ const route = useRoute()
 const router = useRouter()
 const bgStore = useBackgroundStore()
 
-const backgroundImages = ref([])
+const backgroundImages = ref([DEFAULT_BACKGROUND_IMAGES[0]])
 const currentBgIndex = ref(0)
 const routeLoading = ref(false)
 let loadingTimer = null
+let backgroundTimer = null
+let backgroundLoadStarted = false
 
 /* ===== 入场加载屏 ===== */
 const showEntry = ref(!prefersReducedMotion())
@@ -81,6 +83,7 @@ const onEntryReveal = () => {
   document.documentElement.classList.remove('entry-loading')
   document.documentElement.classList.add('entry-revealed')
   window.scrollTo({ top: 0, behavior: 'auto' })
+  scheduleBackgroundLoad()
   clearTimeout(revealTimer)
   revealTimer = setTimeout(() => {
     document.documentElement.classList.remove('entry-revealed')
@@ -131,7 +134,8 @@ watch(
   { immediate: true },
 )
 
-// 加载背景图（默认列表与入场加载器共用，保证预载的图片与实际渲染一致）
+// 加载背景图。首屏只先挂第一张，等揭幕后空闲时再补第 2/3 张，
+// 避免入场阶段为了轮播把所有大图一起拉下来。
 const loadBackgrounds = async () => {
   try {
     const res = await fetch(resolveUrl('/data/background-images.json'))
@@ -143,6 +147,14 @@ const loadBackgrounds = async () => {
   bgStore.setImages(backgroundImages.value)
 }
 
+const scheduleBackgroundLoad = () => {
+  if (backgroundLoadStarted) return
+  backgroundLoadStarted = true
+  backgroundTimer = setTimeout(() => {
+    loadBackgrounds()
+  }, 1000)
+}
+
 // 轮播定时器
 let bgInterval = null
 
@@ -151,7 +163,8 @@ onMounted(() => {
     document.documentElement.classList.remove('entry-loading')
   }
 
-  loadBackgrounds()
+  bgStore.setImages(backgroundImages.value)
+  if (!showEntry.value) scheduleBackgroundLoad()
 
   bgInterval = setInterval(() => {
     if (backgroundImages.value.length > 1) {
@@ -172,6 +185,7 @@ onUnmounted(() => {
   if (bgInterval) clearInterval(bgInterval)
   clearTimeout(loadingTimer)
   clearTimeout(revealTimer)
+  clearTimeout(backgroundTimer)
   document.documentElement.classList.remove('entry-loading', 'entry-revealed')
 })
 </script>
