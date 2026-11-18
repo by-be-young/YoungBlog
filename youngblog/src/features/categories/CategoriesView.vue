@@ -21,11 +21,7 @@
           <article v-for="(blog, index) in filteredBlogs" :key="`${filterKey}-${blog.id}`" class="cat-card" :class="{
             'is-open': index === selectedIndex,
             'is-out': !inWindow(index),
-          }" :data-index="index" :style="{
-            '--d': index - selectedIndex,
-            '--ad': Math.abs(index - selectedIndex),
-            '--shift': index > selectedIndex ? 1 : 0,
-          }">
+          }" :data-index="index" :style="cardStyle(index, blog)">
             <!-- 实体厚度：背面往左下错开 --depth，露出来就是板厚 -->
             <span class="cat-card__edge" aria-hidden="true"></span>
             <div class="cat-card__slab">
@@ -183,6 +179,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { useBlogStore } from '@/shared/stores/blogStore'
+import { getBlogTypeStyle } from '@/shared/utils/blogTypeTone'
 
 const { t } = useI18nStore()
 const route = useRoute()
@@ -540,6 +537,17 @@ const selectedIndex = computed(() => {
   // 选中的那张被筛掉了就退回第一张：永远有一张被选中
   return found >= 0 ? found : 0
 })
+
+/** 卡堆定位变量 + 按 type 生成的类型色变量 */
+const cardStyle = (index, blog) => {
+  const d = index - selectedIndex.value
+  return {
+    '--d': d,
+    '--ad': Math.abs(d),
+    '--shift': d > 0 ? 1 : 0,
+    ...getBlogTypeStyle(blog.type),
+  }
+}
 
 const selectCard = (index) => {
   const blog = filteredBlogs.value[index]
@@ -1535,7 +1543,7 @@ button.cat-crumb__item:hover {
 }
 
 .cat-card__toggle:focus-visible {
-  outline: 2px solid rgba(200, 64, 112, 0.5);
+  outline: 2px solid var(--type-line, rgba(200, 64, 112, 0.5));
   outline-offset: -3px;
 }
 
@@ -1562,7 +1570,7 @@ button.cat-crumb__item:hover {
 }
 
 .cat-card.is-open .cat-card__title {
-  color: #c84070;
+  color: var(--type-ink, #c84070);
 }
 
 /* 板面 */
@@ -1573,7 +1581,9 @@ button.cat-crumb__item:hover {
   height: 100%;
   overflow: hidden;
   border-radius: 16px;
-  background: linear-gradient(158deg, #fffdf8 0%, #fdf9f2 58%, #f6eee1 100%);
+  background:
+    linear-gradient(158deg, rgba(255, 253, 248, 0.96) 0%, rgba(253, 249, 242, 0.9) 58%, rgba(246, 238, 225, 0.82) 100%),
+    var(--type-soft, rgba(246, 238, 225, 0.4));
   /*
    * 阴影分三层：贴着纸边的接触影、中景的软影、远景的散影，
    * 整体往左下压一点（光从右上打过来），堆叠的层次才立得住。
@@ -1601,35 +1611,14 @@ button.cat-crumb__item:hover {
   transform: translate3d(calc(var(--depth) * -0.5), var(--depth), 0);
 }
 
-/* 板子的书脊，顺着直线看过去就是一条彩色棱 */
+/* 板子的书脊，顺着直线看过去就是一条彩色棱；颜色跟着文章 type 走 */
 .cat-card__spine {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 5px;
-  background: linear-gradient(180deg, #ffb6c9, #c7b6ff 52%, #a7f3d0);
-}
-
-/* 每张板换个色：沿这条直线看过去是一道彩色棱 */
-.cat-card:nth-child(5n + 1) .cat-card__spine {
-  background: linear-gradient(180deg, #ffd2a6, #ffb6c9);
-}
-
-.cat-card:nth-child(5n + 2) .cat-card__spine {
-  background: linear-gradient(180deg, #c7b6ff, #a08cff);
-}
-
-.cat-card:nth-child(5n + 3) .cat-card__spine {
-  background: linear-gradient(180deg, #a7f3d0, #58d8b2);
-}
-
-.cat-card:nth-child(5n + 4) .cat-card__spine {
-  background: linear-gradient(180deg, #ffb6c9, #e86f93);
-}
-
-.cat-card:nth-child(5n + 5) .cat-card__spine {
-  background: linear-gradient(180deg, #c7b6ff, #a08cff);
+  background: var(--type-bar, linear-gradient(180deg, #ffb6c9, #c7b6ff 52%, #a7f3d0));
 }
 
 .cat-card__sheen {
@@ -1664,8 +1653,8 @@ button.cat-crumb__item:hover {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.99),
     inset 0 -24px 32px -26px rgba(23, 34, 47, 0.18),
-    0 0 0 2px rgba(200, 64, 112, 0.35),
-    0 0 22px -6px rgba(200, 64, 112, 0.24),
+    0 0 0 2px var(--type-line, rgba(200, 64, 112, 0.35)),
+    0 0 22px -6px var(--type-glow, rgba(200, 64, 112, 0.24)),
     -2px 3px 4px -2px rgba(23, 34, 47, 0.12),
     -10px 20px 30px -16px rgba(23, 34, 47, 0.36),
     -22px 46px 68px -30px rgba(23, 34, 47, 0.46);
@@ -1708,14 +1697,28 @@ button.cat-crumb__item:hover {
 }
 
 .cat-card__type {
+  display: inline-flex;
+  align-items: center;
   padding: 3px 10px;
+  border: 1px solid var(--type-line, rgba(255, 210, 166, 0.42));
   border-radius: 999px;
-  background: rgba(255, 210, 166, 0.42);
-  color: #8a5a1f;
+  background: var(--type-soft, rgba(255, 210, 166, 0.42));
+  color: var(--type-ink, #8a5a1f);
   font-size: 11px;
   font-weight: 800;
   font-style: italic;
   letter-spacing: 0.4px;
+}
+
+.cat-card__type::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--type-ink, #8a5a1f);
+  opacity: 0.8;
 }
 
 .cat-card__date {

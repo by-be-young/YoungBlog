@@ -72,7 +72,10 @@
                                     <a v-for="(item, index) in month.items" :key="item.blog.id"
                                         class="timeline-item arc-row" :class="{ 'timeline-item-enter': shouldAnimate }"
                                         :data-date="item.blog.date" :href="`#/blog/${item.blog.id}`"
-                                        :style="{ '--arc-delay': enterDelay(index), '--timeline-enter-delay': enterDelay(index) }">
+                                        :style="[
+                                            { '--arc-delay': enterDelay(index), '--timeline-enter-delay': enterDelay(index) },
+                                            getBlogTypeStyle(item.blog.type),
+                                        ]">
                                         <div class="timeline-content arc-row-inner">
                                             <div class="arc-row-date">
                                                 <span class="arc-row-day">{{ item.day }}</span>
@@ -192,6 +195,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { useBlogStore } from '@/shared/stores/blogStore'
+import { getBlogTypeStyle } from '@/shared/utils/blogTypeTone'
 
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
@@ -3134,9 +3138,9 @@ watch(filteredBlogs, () => {
     border: 1px solid rgba(23, 34, 47, 0.1);
     border-radius: 18px;
     background: linear-gradient(120deg,
-            rgba(255, 255, 255, 0.9),
+            rgba(255, 255, 255, 0.92),
             rgba(248, 251, 255, 0.84) 58%,
-            rgba(244, 248, 252, 0.8));
+            var(--type-soft, rgba(244, 248, 252, 0.8)));
     box-shadow: 0 7px 20px rgba(23, 34, 47, 0.05);
     transition: transform 0.34s var(--arc-ease), border-color 0.34s ease, box-shadow 0.34s ease;
 }
@@ -3150,8 +3154,8 @@ watch(filteredBlogs, () => {
     bottom: 18px;
     width: 3px;
     border-radius: 0 3px 3px 0;
-    background: linear-gradient(180deg, #e85d84, #a08cff 52%, #58d8b2);
-    opacity: 0.36;
+    background: var(--type-bar, linear-gradient(180deg, #e85d84, #a08cff 52%, #58d8b2));
+    opacity: 0.42;
     transition: opacity 0.34s ease, top 0.34s ease, bottom 0.34s ease;
 }
 
@@ -3163,14 +3167,14 @@ watch(filteredBlogs, () => {
     width: 190px;
     height: 190px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 182, 201, 0.2), transparent 66%);
+    background: radial-gradient(circle, var(--type-glow, rgba(255, 182, 201, 0.2)), transparent 66%);
     opacity: 0.35;
     pointer-events: none;
     transition: opacity 0.34s ease, transform 0.34s ease;
 }
 
 .archive-page .arc-row:hover .arc-row-inner {
-    border-color: rgba(232, 93, 132, 0.28);
+    border-color: var(--type-line, rgba(232, 93, 132, 0.28));
     box-shadow: 0 16px 36px rgba(23, 34, 47, 0.1);
     transform: translateX(6px);
 }
@@ -3187,8 +3191,8 @@ watch(filteredBlogs, () => {
 }
 
 .archive-page .arc-row:focus-visible .arc-row-inner {
-    border-color: rgba(232, 93, 132, 0.56);
-    box-shadow: 0 0 0 3px rgba(232, 93, 132, 0.18), 0 14px 32px rgba(23, 34, 47, 0.09);
+    border-color: var(--type-line, rgba(232, 93, 132, 0.56));
+    box-shadow: 0 0 0 3px var(--type-soft, rgba(232, 93, 132, 0.18)), 0 14px 32px rgba(23, 34, 47, 0.09);
 }
 
 /* 日期块 */
@@ -3223,7 +3227,7 @@ watch(filteredBlogs, () => {
 }
 
 .archive-page .arc-row:hover .arc-row-day {
-    color: #c84070;
+    color: var(--type-ink, #c84070);
 }
 
 /* 正文 */
@@ -3242,16 +3246,30 @@ watch(filteredBlogs, () => {
 }
 
 .archive-page .arc-row-type {
+    display: inline-flex;
+    align-items: center;
     flex: 0 0 auto;
     padding: 2px 7px;
-    border: 1px solid rgba(160, 140, 255, 0.22);
+    border: 1px solid var(--type-line, rgba(160, 140, 255, 0.22));
     border-radius: 4px;
-    background: rgba(199, 182, 255, 0.1);
-    color: #6d5cc9;
+    background: var(--type-soft, rgba(199, 182, 255, 0.1));
+    color: var(--type-ink, #6d5cc9);
     font-size: 0.6rem;
     font-weight: 600;
     letter-spacing: 0.03em;
     line-height: 1.4;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.archive-page .arc-row-type::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 5px;
+    height: 5px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: var(--type-ink, #6d5cc9);
+    opacity: 0.8;
 }
 
 .archive-page .arc-row-date-text {
