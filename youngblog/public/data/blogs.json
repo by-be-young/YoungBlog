@@ -1,5 +1,39 @@
 [
     {
+        "id": 1078166256,
+        "title": "未命名",
+        "excerpt": "",
+        "date": "2026-11-11",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [],
+        "category": "娱乐",
+        "type": null,
+        "series": null,
+        "order": null,
+        "chapter": null,
+        "contentFile": "blogs/未命名.md",
+        "recommended": false
+    },
+    {
+        "id": 894694935,
+        "title": "编译实验-语法分析",
+        "excerpt": "2421编译实验作业——语法分析实验心得：Token 分类匹配、递归子程序、错误恢复与输出顺序",
+        "date": "2026-10-31",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "编译",
+            "语法分析"
+        ],
+        "category": "学习",
+        "type": "系统笔记",
+        "series": "编译原理",
+        "order": 3,
+        "chapter": "2-实验",
+        "contentFile": "blogs/三上/编译/语法分析/编译实验-语法分析.md",
+        "recommended": false
+    },
+    {
         "id": 1727027237,
         "title": "编译实验-词法分析",
         "excerpt": "2421编译实验作业——词法分析实验心得",
