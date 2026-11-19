@@ -1,0 +1,58 @@
+---
+description: YoungBlog 项目规则（Vue 3 静态博客）
+globs:
+  - "src/**/*.{vue,js}"
+  - "scripts/**/*.{js,mjs}"
+  - "docs/**/*.md"
+alwaysApply: true
+---
+
+# YoungBlog 项目规则
+
+完整事实与约束见根目录 `AGENTS.md`；本规则只列执行要点。
+
+## 技术栈
+
+Vue 3 `<script setup>` + Vue Router（Hash）+ Pinia + Vite 8，纯静态，无后端。
+
+## 目录
+
+- `src/app/` 壳层（App.vue）。
+- `src/features/<feature>/` 视图与该页面私有组件。
+- `src/shared/{components,layout,composables,stores,utils}/` 跨页面复用。
+- `src/assets/{fonts,styles}/` 参与构建的静态资源。
+- `blogs/` 文章源；`public/data/` 站点数据（部分生成）。
+
+## 硬性约束
+
+- 不手工编辑 `public/data/blogs.json`、`series.json`（构建生成）。
+- 不移动/重命名 `blogs/` 已发布文章（ID 基于路径哈希）。
+- 不在 `blogs/` 根目录创建 `.md`（会被收录），草稿放 `blogs/模板/`。
+- 资源请求必须经 `resolveUrl`，保持子路径部署可用。
+- 保持 Hash 路由，不改 `src/main.js` 的 CSS 导入顺序。
+- 用户可见文案必须 `zh` / `en` / `ja` 三语齐全。
+- 只改任务相关文件，不做批量格式化。
+
+## 风格
+
+- 2 空格、单引号、无分号、行宽 100。
+- 导入用 `@/`；同级才用 `./`。
+- 组件样式 `scoped`，不新增全局选择器。
+- 组件卸载时清理定时器与监听器。
+- 错误要有回退，不静默吞掉（可选资源除外）。
+
+## 验证
+
+```bash
+npm run lint
+npm run build
+node scripts/check-docs.mjs
+```
+
+构建会重建 `public/data`，检查 diff 是否符合预期。涉及路径时追加 `npm run build:github`。
+
+## 文档
+
+- 任务对应文档见 `docs/智能协作/上下文地图.md`。
+- 已知陷阱见 `docs/运维/已知行为与陷阱.md`，改动前必读。
+- 结构变化同步 `docs/架构/模块地图.md` 与 `AGENTS.md`。

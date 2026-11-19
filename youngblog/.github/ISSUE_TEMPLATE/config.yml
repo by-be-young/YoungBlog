@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全问题
+    url: https://github.com/
+    about: 请勿在公开 Issue 中披露漏洞细节，改用仓库 Security 私密通道。
+  - name: 部署与使用文档
+    url: https://github.com/
+    about: 先查阅 docs/运维/ 与 docs/常见问题.md，再提交 Issue。

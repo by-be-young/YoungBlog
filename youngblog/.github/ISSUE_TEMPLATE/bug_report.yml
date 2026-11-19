@@ -1,0 +1,62 @@
+name: 问题反馈
+description: 报告站点或代码中的问题
+title: "[问题] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量提供可复现的信息；涉及安全漏洞请不要在此公开细节，改用 Security 私密通道。
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 现象
+      description: 发生了什么？期望是什么？
+      placeholder: 例如：在移动端打开详情页时，目录遮挡正文。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 尽量给出最小步骤
+      placeholder: |
+        1. 打开 /#/blog/123
+        2. 切换到 375px 宽度
+        3. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 环境
+      multiple: true
+      options:
+        - 开发服务器（npm run dev）
+        - 本地构建（npm run build）
+        - GitHub Pages
+        - 自建服务器
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器 / 设备
+      placeholder: Chrome 120 / Windows 11；iPhone 13 Safari
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 控制台或日志
+      description: 粘贴关键报错，注意去掉隐私信息
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图或录屏
+      description: 可直接拖拽图片到此处

@@ -1,0 +1,41 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      vue-stack:
+        patterns:
+          - "vue*"
+          - "pinia"
+      content-tools:
+        patterns:
+          - "marked"
+          - "gray-matter"
+          - "katex"
+          - "mermaid"
+          - "highlight.js"
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
+      - ci
