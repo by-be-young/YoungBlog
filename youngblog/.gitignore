@@ -41,3 +41,6 @@ __screenshots__/
 # 工具自检/临时产物（非项目内容）
 .dsh-acl-report/
 .dsh-write-test.txt
+
+# 本地备份
+*.bak
