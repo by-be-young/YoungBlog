@@ -101,7 +101,7 @@ export function useMarkdown() {
             blocks.push(m)
             return key
         })
-        const result = escaped.replace(/^[ \t]{1,3}(\d+[.\)])/gm, '$1')
+        const result = escaped.replace(/^[ \t]{1,3}(\d+[.)])/gm, '$1')
         return result.replace(/@@CODELIST_(\d+)@@/g, (_, n) => blocks[parseInt(n, 10)] || '')
     }
 
@@ -393,7 +393,7 @@ export function useMarkdown() {
         function extractAnswerKeys(rawText) {
             const raw = String(rawText || '').trim()
             if (!raw) return []
-            const compact = raw.replace(/[\s,，;；、/|·\-.\)）:]*/g, '')
+            const compact = raw.replace(/[\s,，;；、/|·\-.)）:]*/g, '')
             if (compact && /^[A-G]+$/i.test(compact)) {
                 return compact.toUpperCase().split('').filter((k, i, arr) => arr.indexOf(k) === i)
             }
@@ -405,7 +405,7 @@ export function useMarkdown() {
             const keys = extractAnswerKeys(raw)
             if (keys.length) return { keys, mode: keys.length > 1 ? 'multi' : 'single' }
             let letter = ''
-            const singleLetter = raw.trim().match(/^([A-Ga-g])\s*[)\.]?\s*$/)
+            const singleLetter = raw.trim().match(/^([A-Ga-g])\s*[).]?\s*$/)
             if (singleLetter) {
                 letter = singleLetter[1].toUpperCase()
             } else {
