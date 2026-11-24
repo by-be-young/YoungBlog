@@ -1,5 +1,24 @@
 [
     {
+        "id": 1311744054,
+        "title": "编译理论总复习",
+        "excerpt": "按编译流程串起概念、算法与题型，附 2018–2022 年期末真题的完整解析。",
+        "date": "2026-11-24",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "编译",
+            "工具与总结"
+        ],
+        "category": "学习",
+        "type": "概要笔记",
+        "series": "编译原理",
+        "order": 1,
+        "chapter": "3-总复习",
+        "contentFile": "blogs/三上/编译/工具与总结/编译理论总复习.md",
+        "recommended": false
+    },
+    {
         "id": 3091232049,
         "title": "深度学习应用",
         "excerpt": "生成模型、Transformer 与大模型三次课的知识梳理，附自测习题。",
