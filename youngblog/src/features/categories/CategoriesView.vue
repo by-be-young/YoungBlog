@@ -722,7 +722,7 @@ onUnmounted(() => {
   border-radius: 999px;
   background: rgba(154, 215, 255, 0.24);
   color: #3c5a78;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -740,7 +740,7 @@ onUnmounted(() => {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(222, 240, 255, 0.72));
   color: #21364b;
-  font-size: 30px;
+  font-size: 1.875rem;
   cursor: pointer;
   box-shadow:
     0 22px 40px -20px rgba(38, 56, 86, 0.72),
@@ -984,7 +984,7 @@ onUnmounted(() => {
   border-radius: 9px;
   background: var(--type-soft, rgba(255, 255, 255, 0.34));
   color: var(--type-ink, rgba(23, 34, 47, 0.46));
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   transition:
@@ -1006,7 +1006,7 @@ onUnmounted(() => {
   min-width: 0;
   overflow: hidden;
   color: #17222f;
-  font-size: clamp(13.5px, 1.15vw, 15.5px);
+  font-size: clamp(0.84375rem, 1.15vw, 0.96875rem);
   font-weight: 780;
   letter-spacing: -0.012em;
   line-height: 1.3;
@@ -1180,7 +1180,7 @@ onUnmounted(() => {
 .cat-card__excerpt {
   margin: 0;
   color: rgba(23, 34, 47, 0.62);
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   line-height: 1.7;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -1211,7 +1211,7 @@ onUnmounted(() => {
   border-radius: 999px;
   background: var(--type-soft, rgba(255, 210, 166, 0.42));
   color: var(--type-ink, #8a5a1f);
-  font-size: 10.5px;
+  font-size: 0.65625rem;
   font-weight: 800;
   font-style: normal;
   letter-spacing: 0.04em;
@@ -1233,7 +1233,7 @@ onUnmounted(() => {
 
 .cat-card__date {
   color: rgba(23, 34, 47, 0.46);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -1251,7 +1251,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.44);
   color: rgba(23, 34, 47, 0.64);
   font-family: inherit;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46);
@@ -1290,7 +1290,7 @@ onUnmounted(() => {
   border-radius: 999px;
   background: linear-gradient(135deg, var(--type-ink, #35435a), #253447 72%);
   color: #fbfdff;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   text-decoration: none;
@@ -1305,7 +1305,7 @@ onUnmounted(() => {
 }
 
 .cat-card__read i {
-  font-size: 10px;
+  font-size: 0.625rem;
   opacity: 0.76;
   transition: transform 240ms var(--cat-ease);
 }
@@ -1329,7 +1329,7 @@ onUnmounted(() => {
 }
 
 .cat-card__read i {
-  font-size: 11px;
+  font-size: 0.6875rem;
   transition: transform 240ms ease;
 }
 
@@ -1372,7 +1372,7 @@ onUnmounted(() => {
     width: 62px;
     height: 62px;
     border-radius: 18px;
-    font-size: 24px;
+    font-size: 1.5rem;
   }
 
   .cat-fab::before {
@@ -1468,7 +1468,7 @@ onUnmounted(() => {
   }
 
   .cat-card__excerpt {
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.6;
   }
 
@@ -1478,22 +1478,22 @@ onUnmounted(() => {
 
   .cat-card__type {
     padding: 3px 8px;
-    font-size: 9.5px;
+    font-size: 0.59375rem;
   }
 
   .cat-card__date {
-    font-size: 10.5px;
+    font-size: 0.65625rem;
   }
 
   .cat-card__tag {
     padding: 3px 9px;
-    font-size: 10.5px;
+    font-size: 0.65625rem;
   }
 
   .cat-card__read {
     gap: 7px;
     padding: 8px 12px 8px 13px;
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 }
 

@@ -25,6 +25,15 @@
     --macaron-scroll-track-border: rgba(0, 0, 0, 0.06);
 }
 
+/* ========== 1.1 根字号（全站等比缩放） ==========
+   全站字号只用 rem / em 表达，改这一处即可让文字、图标与 rem 间距同步缩放。
+   720px 及以下固定 13.5px 下限，向上连续增大，1280px 起恢复 16px。 */
+html {
+    font-size: clamp(13.5px, calc(0.443vw + 10.32px), 16px);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 /* ========== 2. 重置 & 基础 ========== */
 * {
     margin: 0;

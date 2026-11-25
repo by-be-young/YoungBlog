@@ -981,7 +981,7 @@ onBeforeUnmount(() => {
   width: 34px;
   height: 34px;
   color: #5a7b9f;
-  font-size: 15px;
+  font-size: 0.9375rem;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.38);
@@ -996,7 +996,7 @@ onBeforeUnmount(() => {
 
 .atlas-brand__copy small {
   color: #758ba1;
-  font-size: 9.5px;
+  font-size: 0.59375rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   white-space: nowrap;
@@ -1004,7 +1004,7 @@ onBeforeUnmount(() => {
 
 .atlas-brand__copy strong {
   color: #21364b;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   white-space: nowrap;
@@ -1024,7 +1024,7 @@ onBeforeUnmount(() => {
   align-items: baseline;
   gap: 7px;
   color: #9aabbc;
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   transition: color 300ms ease;
 }
 
@@ -1048,7 +1048,7 @@ onBeforeUnmount(() => {
 
 .atlas-step__no {
   font-family: 'SFMono-Regular', 'Cascadia Code', monospace;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.06em;
 }
@@ -1079,7 +1079,7 @@ onBeforeUnmount(() => {
   color: #70859a;
   background: transparent;
   font: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
   transition:
     color 220ms ease,
@@ -1163,7 +1163,7 @@ onBeforeUnmount(() => {
   justify-items: center;
   gap: 12px;
   color: #6d8397;
-  font-size: 12px;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   background: rgba(251, 254, 255, 0.56);
   backdrop-filter: blur(6px);
@@ -1202,7 +1202,7 @@ onBeforeUnmount(() => {
   align-items: baseline;
   gap: 9px;
   color: #647b90;
-  font-size: 11px;
+  font-size: 0.6875rem;
   pointer-events: none;
 }
 
@@ -1215,7 +1215,7 @@ onBeforeUnmount(() => {
 .atlas-stage__depth {
   font-family: 'SFMono-Regular', 'Cascadia Code', monospace;
   color: #88a0b4;
-  font-size: 10px;
+  font-size: 0.625rem;
   letter-spacing: 0.06em;
 }
 
@@ -1228,14 +1228,14 @@ onBeforeUnmount(() => {
   align-items: baseline;
   gap: 4px;
   color: #7b90a3;
-  font-size: 10px;
+  font-size: 0.625rem;
   pointer-events: none;
 }
 
 .atlas-stage__count strong {
   color: #3b5f80;
   font-family: 'SFMono-Regular', 'Cascadia Code', monospace;
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -1261,7 +1261,7 @@ onBeforeUnmount(() => {
 .atlas-fallback__title {
   margin: 0 0 18px;
   color: #5b7287;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .atlas-fallback__list {
@@ -1280,13 +1280,13 @@ onBeforeUnmount(() => {
   color: #2d4c67;
   background: rgba(255, 255, 255, 0.6);
   font: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 
 .atlas-fallback__item em {
   color: #7d93a6;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-style: normal;
 }
 
@@ -1311,7 +1311,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   overflow: hidden;
   color: #7d91a4;
-  font-size: 11px;
+  font-size: 0.6875rem;
   white-space: nowrap;
 }
 
@@ -1346,7 +1346,7 @@ onBeforeUnmount(() => {
 
 .atlas-path__sep {
   color: #abbdcc;
-  font-size: 8px;
+  font-size: 0.5rem;
 }
 
 .atlas-foot__hint {
@@ -1355,7 +1355,7 @@ onBeforeUnmount(() => {
   gap: 18px;
   flex: 0 0 auto;
   color: #8296a8;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .atlas-foot__hint span {
@@ -1375,7 +1375,7 @@ onBeforeUnmount(() => {
   color: #6d8498;
   background: rgba(255, 255, 255, 0.42);
   font-family: 'SFMono-Regular', 'Cascadia Code', monospace;
-  font-size: 9px;
+  font-size: 0.5625rem;
 }
 
 @media (max-width: 930px) {
@@ -1394,7 +1394,7 @@ onBeforeUnmount(() => {
   }
 
   .atlas-step__label {
-    font-size: 10px;
+    font-size: 0.625rem;
   }
 
   .atlas-tools {
@@ -1403,7 +1403,7 @@ onBeforeUnmount(() => {
 
   .atlas-type__btn {
     padding: 6px 7px;
-    font-size: 10px;
+    font-size: 0.625rem;
   }
 
   .atlas-step__no {
@@ -1435,7 +1435,7 @@ onBeforeUnmount(() => {
   }
 
   .atlas-brand__copy strong {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
 
   .atlas-steps {
@@ -1455,7 +1455,7 @@ onBeforeUnmount(() => {
 
   .atlas-type__btn {
     padding: 6px 6px;
-    font-size: 9.5px;
+    font-size: 0.59375rem;
   }
 
   .atlas-close {
@@ -1467,17 +1467,17 @@ onBeforeUnmount(() => {
     left: 16px;
     bottom: 13px;
     gap: 6px;
-    font-size: 10px;
+    font-size: 0.625rem;
   }
 
   .atlas-stage__count {
     right: 17px;
     bottom: 10px;
-    font-size: 9px;
+    font-size: 0.5625rem;
   }
 
   .atlas-stage__count strong {
-    font-size: 18px;
+    font-size: 1.125rem;
   }
 
   .atlas-foot {
@@ -1518,7 +1518,7 @@ onBeforeUnmount(() => {
   .atlas-brand__glyph {
     width: 30px;
     height: 30px;
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   .atlas-brand__copy small {
@@ -1526,12 +1526,12 @@ onBeforeUnmount(() => {
   }
 
   .atlas-brand__copy strong {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .atlas-type__btn {
     padding: 5px 4px;
-    font-size: 9px;
+    font-size: 0.5625rem;
   }
 
   .atlas-close {

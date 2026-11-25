@@ -960,7 +960,7 @@ watch(() => siteI18n.lang, (lang) => {
   z-index: 1600;
   border: none;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 /* 弹窗样式（scoped） */

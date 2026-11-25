@@ -454,7 +454,7 @@ onUnmounted(() => {
 
 .search-panel:not(.right-sidebar) .search-close-btn::before {
   content: '\00d7';
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: 1;
   font-weight: 600;
 }
@@ -777,7 +777,7 @@ onUnmounted(() => {
 
 .search-panel.right-sidebar .search-close-btn::after {
   content: '✕';
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 
 .search-panel.right-sidebar .search-results {

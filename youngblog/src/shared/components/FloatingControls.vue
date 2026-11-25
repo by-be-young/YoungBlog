@@ -117,7 +117,7 @@ onUnmounted(() => {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 20px !important;
+  font-size: 1.25rem !important;
   cursor: pointer !important;
   transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.18s ease, visibility 0.18s ease !important;
   box-shadow: 0 10px 24px rgba(23, 34, 47, 0.12) !important;
@@ -205,7 +205,7 @@ onUnmounted(() => {
   .floating-controls-container .fab-btn {
     width: 44px !important;
     height: 44px !important;
-    font-size: 17px !important;
+    font-size: 1.0625rem !important;
     border-width: 4px !important;
   }
 }
@@ -220,7 +220,7 @@ onUnmounted(() => {
   .floating-controls-container .fab-btn {
     width: 44px !important;
     height: 44px !important;
-    font-size: 17px !important;
+    font-size: 1.0625rem !important;
   }
 }
 
@@ -234,7 +234,7 @@ onUnmounted(() => {
   .floating-controls-container .fab-btn {
     width: 44px !important;
     height: 44px !important;
-    font-size: 17px !important;
+    font-size: 1.0625rem !important;
     border-width: 4px !important;
   }
 }
@@ -265,7 +265,7 @@ onUnmounted(() => {
     border-radius: 50% !important;
     background: transparent !important;
     box-shadow: none !important;
-    font-size: 14px !important;
+    font-size: 0.875rem !important;
   }
 
   .floating-controls-container .fab-btn:hover {

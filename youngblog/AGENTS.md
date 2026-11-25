@@ -119,6 +119,7 @@ blogs/**.md
 ## 9. 编码约定（摘要）
 
 - 2 空格、单引号、无分号、行宽 100。
+- 字号只用 `rem` / `em`，由 `html` 的流体根字号统一缩放；不新增 `px` 字号。
 - 视图 `XxxView.vue`；组件 PascalCase；composable `useXxx.js`；store `xxxStore.js`。
 - 导入统一 `@/`；同级才用 `./`。
 - 用户可见文案必须三语（`zh/en/ja`）。

@@ -163,11 +163,11 @@ const enableMusic = () => {
 
 // Transition 钩子 - 确保背景过渡正常工作
 const onEnter = (el) => {
-  el.offsetHeight
+  void el.offsetHeight
 }
 
 const onLeave = (el) => {
-  el.offsetHeight
+  void el.offsetHeight
 }
 
 onMounted(() => {
@@ -361,7 +361,7 @@ onUnmounted(() => {
   border: 1px dashed rgba(181, 123, 0, 0.35);
   background: rgba(255, 255, 255, 0.22);
   color: rgba(76, 57, 0, 0.92);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 
@@ -421,7 +421,7 @@ onUnmounted(() => {
   border: 1px dashed rgba(181, 123, 0, 0.35);
   background: rgba(255, 255, 255, 0.22);
   color: rgba(76, 57, 0, 0.92);
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.6;
 }
 
@@ -432,7 +432,7 @@ onUnmounted(() => {
   border: 1px solid rgba(181, 123, 0, 0.45);
   background: linear-gradient(135deg, rgba(255, 237, 171, 0.56), rgba(255, 221, 144, 0.46));
   color: #7b5b00;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
@@ -465,7 +465,7 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.88);
   color: #3a3a3a;
-  font-size: 14px;
+  font-size: 0.875rem;
   cursor: pointer;
   font-family: inherit;
 }

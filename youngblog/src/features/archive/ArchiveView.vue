@@ -1933,7 +1933,7 @@ watch(filteredBlogs, () => {
 .archive-page .calendar-fab i {
     position: relative;
     z-index: 1;
-    font-size: 20px;
+    font-size: 1.25rem;
 }
 
 @keyframes arc-fab-flow {
@@ -2074,7 +2074,7 @@ watch(filteredBlogs, () => {
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.72);
     color: var(--arc-ink);
-    font-size: 15px;
+    font-size: 0.9375rem;
     cursor: pointer;
     transition: transform 0.3s var(--arc-ease), background 0.3s ease, border-color 0.3s ease;
 }

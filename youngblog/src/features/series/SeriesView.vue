@@ -1083,7 +1083,7 @@ onUnmounted(() => {
 
 .series-panel__code {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.22em;
@@ -1097,7 +1097,7 @@ onUnmounted(() => {
 }
 
 .series-panel__num {
-  font-size: clamp(40px, 4vw, 64px);
+  font-size: clamp(2.5rem, 4vw, 4rem);
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -1399,7 +1399,7 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 30px;
+  font-size: 1.875rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -1409,7 +1409,7 @@ onUnmounted(() => {
 }
 
 .series-node.is-active .series-node__num {
-  font-size: 40px;
+  font-size: 2.5rem;
 }
 
 .series-node__star {
@@ -1431,7 +1431,7 @@ onUnmounted(() => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
   line-height: 1.3;
   letter-spacing: 0.02em;
@@ -1440,11 +1440,11 @@ onUnmounted(() => {
 }
 
 .series-node.is-active .series-node__title {
-  font-size: 22px;
+  font-size: 1.375rem;
 }
 
 .series-node__code {
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.16em;
@@ -1501,7 +1501,7 @@ onUnmounted(() => {
 
 .series-node__date {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
   color: #5b6d81;
   white-space: nowrap;
@@ -1613,19 +1613,19 @@ onUnmounted(() => {
   }
 
   .series-node__num {
-    font-size: 22px;
+    font-size: 1.375rem;
   }
 
   .series-node.is-active .series-node__num {
-    font-size: 26px;
+    font-size: 1.625rem;
   }
 
   .series-node__title {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
 
   .series-node.is-active .series-node__title {
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
 
   .series-node__rule {
