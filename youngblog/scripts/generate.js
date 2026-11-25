@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import matter from 'gray-matter';
+import { countReadableChars } from '../src/shared/utils/textStats.js';
 
 // 定义项目根目录及关键路径常量
 const ROOT = path.resolve(process.cwd());
@@ -465,6 +466,10 @@ async function main() {
         while (seenIds.has(id)) id++;
         seenIds.add(id);
 
+        // 构建期预算文章字数：前端详情页、资料卡和页脚直接复用，
+        // 避免运行时为 100+ 篇文章重复 fetch 全文。
+        const wordCount = countReadableChars(parsed.content);
+
         // 构建博客文章数据对象
         const blogItem = {
             id,
@@ -479,7 +484,8 @@ async function main() {
             order,
             chapter: chapter || null,
             contentFile: relFromRoot,
-            recommended
+            recommended,
+            wordCount
         };
 
         // 如果文件在上次生成后被修改，记录最后编辑日期

@@ -61,7 +61,11 @@
         <span class="stat-label">{{ i18n.currentTranslations.posts }}</span>
       </router-link>
       <router-link class="stat" to="/archive">
-        <span class="stat-num">{{ formattedWords }}</span>
+        <span v-if="siteStats.isReady" class="stat-num">{{ formattedWords }}</span>
+        <span v-else-if="siteStats.status === 'error'" class="stat-num stat-num--error">—</span>
+        <span v-else class="stat-num stat-num--loading">
+          <LoadingDots :label="i18n.currentTranslations.word_count_loading" />
+        </span>
         <span class="stat-label">{{ i18n.currentTranslations.total_words }}</span>
       </router-link>
       <router-link class="stat" to="/categories">
@@ -127,12 +131,15 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { useBlogStore } from '@/shared/stores/blogStore'
+import { useSiteStatsStore } from '@/shared/stores/siteStatsStore'
+import LoadingDots from '@/shared/components/LoadingDots.vue'
 import { resolveUrl } from '@/shared/utils/url'
 import { prefersReducedMotion } from '@/shared/composables/useEntryLoader'
 
 const router = useRouter()
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
+const siteStats = useSiteStatsStore()
 
 const rootEl = ref(null)
 const profileArt = ref('')
@@ -145,6 +152,8 @@ const loadProfileArt = () => {
 }
 
 onMounted(() => {
+  siteStats.ensureLoaded()
+
   // 资料卡在首屏下方，等它接近视口再请求 155 KB 的背景图。
   if (typeof window === 'undefined' || !('IntersectionObserver' in window) || !rootEl.value) {
     loadProfileArt()
@@ -166,7 +175,6 @@ onMounted(() => {
 const displayedPosts = ref(0)
 const displayedTags = ref(0)
 const displayedWords = ref(0)
-const wordTotal = ref(0)
 const rafIds = []
 
 const animatedValues = new Map()
@@ -176,6 +184,7 @@ const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
 const animateTo = (key, target, setter) => {
   if (prefersReducedMotion()) {
     setter(target)
+    animatedValues.set(key, target)
     return
   }
 
@@ -207,29 +216,21 @@ const formattedWords = computed(() => {
   return `${value.toFixed(1)}${lang === 'zh' ? 'w' : 'k'}`
 })
 
-const calculateWordCount = async () => {
-  try {
-    const files = blogStore.blogs.map((b) => b.contentFile).filter(Boolean)
-    let total = 0
-    for (const file of files) {
-      const res = await fetch(resolveUrl(file))
-      const text = await res.text()
-      const clean = text
-        .replace(/```[\s\S]*?```/g, ' ')
-        .replace(/[#>*~-]/g, ' ')
-        .replace(/\s+/g, '')
-      total += clean.length
+watch(
+  () => siteStats.totalChars,
+  (target) => {
+    if (siteStats.status === 'ready') {
+      animateTo('words', target, (v) => (displayedWords.value = v))
     }
-    wordTotal.value = total
-  } catch {
-    wordTotal.value = 0
-  }
-}
+  },
+)
 
 watch(
-  () => blogStore.blogs.length,
-  (len) => {
-    if (len > 0) calculateWordCount()
+  () => siteStats.status,
+  (state) => {
+    if (state === 'ready') {
+      animateTo('words', siteStats.totalChars, (v) => (displayedWords.value = v))
+    }
   },
   { immediate: true },
 )
@@ -245,8 +246,6 @@ watch(
   (target) => animateTo('tags', target, (v) => (displayedTags.value = v)),
   { immediate: true },
 )
-
-watch(wordTotal, (target) => animateTo('words', target, (v) => (displayedWords.value = v)))
 
 onBeforeUnmount(() => {
   rafIds.forEach((id) => cancelAnimationFrame(id))
@@ -634,6 +633,23 @@ const handleContactClick = async (type) => {
 
 .stat:nth-child(2) .stat-num {
   color: #9c3460;
+}
+
+.stat-num--loading,
+.stat-num--error {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2em;
+  min-height: 1.05em;
+}
+
+.stat-num--loading {
+  opacity: 0.72;
+}
+
+.stat-num--error {
+  opacity: 0.6;
 }
 
 .stat:nth-child(3) .stat-num {

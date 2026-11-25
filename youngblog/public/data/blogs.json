@@ -17,7 +17,7 @@
         "chapter": "3-总复习",
         "contentFile": "blogs/三上/编译/工具与总结/编译理论总复习.md",
         "recommended": false,
-        "lastEditedDate": "2026-11-24"
+        "wordCount": 57186
     },
     {
         "id": 3091232049,
@@ -35,7 +35,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/智能计算系统/深度学习应用.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 5972
     },
     {
         "id": 894694935,
@@ -54,7 +55,8 @@
         "order": 3,
         "chapter": "2-实验",
         "contentFile": "blogs/三上/编译/语法分析/编译实验-语法分析.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 8312
     },
     {
         "id": 1727027237,
@@ -73,7 +75,8 @@
         "order": 2,
         "chapter": "2-实验",
         "contentFile": "blogs/三上/编译/文法与词法/编译实验-词法分析.md",
-        "recommended": true
+        "recommended": true,
+        "wordCount": 1873
     },
     {
         "id": 4227364283,
@@ -92,7 +95,8 @@
         "order": 1,
         "chapter": "2-实验",
         "contentFile": "blogs/三上/编译/文法与词法/编译实验-文法解读.md",
-        "recommended": true
+        "recommended": true,
+        "wordCount": 5993
     },
     {
         "id": 2536514388,
@@ -111,7 +115,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语法分析/第06讲-语法分析.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 7526
     },
     {
         "id": 3796104188,
@@ -130,7 +135,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/计网/概论/计网导论.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2946
     },
     {
         "id": 3594122478,
@@ -149,7 +155,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/计网/物理层/物理层.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 8430
     },
     {
         "id": 3670854306,
@@ -168,7 +175,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/形式语言与自动机/概论/形式语言与自动机概论.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 6460
     },
     {
         "id": 953349015,
@@ -187,7 +195,8 @@
         "order": 3,
         "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/文法与词法/词法分析.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 6251
     },
     {
         "id": 2725175255,
@@ -206,7 +215,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/代码生成与优化/第15讲-代码优化.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1014
     },
     {
         "id": 2731968104,
@@ -225,7 +235,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/代码生成与优化/第16讲-代码优化.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1155
     },
     {
         "id": 4256443841,
@@ -244,7 +255,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/代码生成与优化/第17讲-代码优化.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1391
     },
     {
         "id": 296550023,
@@ -263,7 +275,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/代码生成与优化/第18讲-目标代码优化.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1699
     },
     {
         "id": 3247705201,
@@ -282,7 +295,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/代码生成与优化/第19讲-目标代码生成.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1387
     },
     {
         "id": 2180658354,
@@ -301,7 +315,8 @@
         "order": 1,
         "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/概论/编译概论.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 7263
     },
     {
         "id": 2620711677,
@@ -320,7 +335,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/工具与总结/参考资料-SysY语言定义简介.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2682
     },
     {
         "id": 3638018901,
@@ -339,7 +355,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/工具与总结/第14讲-习题课.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1170
     },
     {
         "id": 1955353859,
@@ -358,7 +375,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/工具与总结/第23讲-编译生成方法与工具.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2489
     },
     {
         "id": 1581920128,
@@ -377,7 +395,8 @@
         "order": 2,
         "chapter": "1-知识点",
         "contentFile": "blogs/三上/编译/文法与词法/文法和语言.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 6757
     },
     {
         "id": 1040867593,
@@ -396,7 +415,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语法分析/第20讲-算符优先分析.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1015
     },
     {
         "id": 1168164597,
@@ -415,7 +435,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语法分析/第21讲-LR0分析.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1087
     },
     {
         "id": 2465951072,
@@ -434,7 +455,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语法分析/第22讲-LR1和SLR分析.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1035
     },
     {
         "id": 1676033913,
@@ -453,7 +475,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语义分析与中间代码/第08讲-语义分析.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1276
     },
     {
         "id": 2545759087,
@@ -472,7 +495,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语义分析与中间代码/第10讲-源程序中间表示.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1448
     },
     {
         "id": 1875333451,
@@ -491,7 +515,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语义分析与中间代码/第11讲-语法制导翻译.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1357
     },
     {
         "id": 679290538,
@@ -510,7 +535,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语义分析与中间代码/第12讲-中间代码生成.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1857
     },
     {
         "id": 3335727270,
@@ -529,7 +555,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/语义分析与中间代码/第13讲-语义分析与代码生成.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1833
     },
     {
         "id": 518191886,
@@ -548,7 +575,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/三上/编译/运行时存储管理/第09讲-运行时存储组织及管理.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1365
     },
     {
         "id": 3296026673,
@@ -567,7 +595,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/二下总结/考试总结/二上考试情况总结.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1429
     },
     {
         "id": 24465226,
@@ -586,7 +615,8 @@
         "order": 8,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/文件管理/挑战性任务-文件管理-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2206
     },
     {
         "id": 2408489894,
@@ -605,7 +635,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/军事理论/总复习/军事理论重点.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4079
     },
     {
         "id": 359085758,
@@ -624,7 +655,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/人工智能/总复习/人工智能总复习.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 31486
     },
     {
         "id": 3561676072,
@@ -643,7 +675,8 @@
         "order": 1,
         "chapter": "3-总复习",
         "contentFile": "blogs/二下/数据库/总复习/数据库选择、简答题速成.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 5466
     },
     {
         "id": 931232330,
@@ -662,7 +695,8 @@
         "order": 10,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/并发控制.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4712
     },
     {
         "id": 4273152219,
@@ -681,7 +715,8 @@
         "order": 9,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/数据库安全性.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1718
     },
     {
         "id": 1346946396,
@@ -700,7 +735,8 @@
         "order": 6,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/数据库编程.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3052
     },
     {
         "id": 2884984423,
@@ -719,7 +755,8 @@
         "order": 1,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/数据库概述.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1267
     },
     {
         "id": 108113389,
@@ -738,7 +775,8 @@
         "order": 11,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/数据库恢复技术.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4203
     },
     {
         "id": 958481110,
@@ -757,7 +795,8 @@
         "order": 13,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/数据库设计.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 6043
     },
     {
         "id": 2940351753,
@@ -776,7 +815,8 @@
         "order": 7,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/索引.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3722
     },
     {
         "id": 3415476682,
@@ -795,7 +835,8 @@
         "order": 8,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/概念/完整性约束.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4305
     },
     {
         "id": 2487883457,
@@ -814,7 +855,8 @@
         "order": 12,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/规范化理论/规范化理论.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3351
     },
     {
         "id": 371986926,
@@ -833,7 +875,8 @@
         "order": 2,
         "chapter": "2-专题",
         "contentFile": "blogs/二下/数据库/规范化理论/规范化理论题型.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 6368
     },
     {
         "id": 3790911186,
@@ -852,7 +895,8 @@
         "order": 2,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/数据模型/概念模型.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3638
     },
     {
         "id": 689308970,
@@ -871,7 +915,8 @@
         "order": 4,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/数据模型/关系代数.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1981
     },
     {
         "id": 712846297,
@@ -890,7 +935,8 @@
         "order": 3,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/数据模型/逻辑模型.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2173
     },
     {
         "id": 3650314132,
@@ -909,7 +955,8 @@
         "order": 1,
         "chapter": "2-专题",
         "contentFile": "blogs/二下/数据库/SQL/关系运算转SQL.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2163
     },
     {
         "id": 3971314386,
@@ -928,7 +975,8 @@
         "order": 5,
         "chapter": "1-知识点",
         "contentFile": "blogs/二下/数据库/SQL/SQL语言.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3143
     },
     {
         "id": 2348406839,
@@ -947,7 +995,8 @@
         "order": 6,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/设备管理/磁盘管理.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3907
     },
     {
         "id": 2362776188,
@@ -966,7 +1015,8 @@
         "order": 5,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/设备管理/IO管理.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3664
     },
     {
         "id": 3016619292,
@@ -985,7 +1035,8 @@
         "order": 0,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/概述/操作系统概述.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4949
     },
     {
         "id": 2460752249,
@@ -1004,7 +1055,8 @@
         "order": 7,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/设备管理/OS-Lab6-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3139
     },
     {
         "id": 2542583234,
@@ -1023,7 +1075,8 @@
         "order": 6,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/文件管理/OS-Lab5-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2517
     },
     {
         "id": 3639231539,
@@ -1042,7 +1095,8 @@
         "order": 5,
         "chapter": "3-实验",
         "contentFile": "blogs/二下/操作系统/文件管理/文件管理-MOS实验.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 7894
     },
     {
         "id": 3091347152,
@@ -1061,7 +1115,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/操作系统/文件管理/Lab5 梳理总结.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 43
     },
     {
         "id": 603333991,
@@ -1080,7 +1135,8 @@
         "order": 3,
         "chapter": "3-实验",
         "contentFile": "blogs/二下/操作系统/内存管理/内存管理-MOS实验.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2347
     },
     {
         "id": 717874525,
@@ -1099,7 +1155,8 @@
         "order": 7,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/文件管理/文件管理.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3860
     },
     {
         "id": 3061188461,
@@ -1118,7 +1175,8 @@
         "order": 4,
         "chapter": "3-实验",
         "contentFile": "blogs/二下/操作系统/系统调用/系统调用-MOS实验.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 19051
     },
     {
         "id": 650786542,
@@ -1137,7 +1195,8 @@
         "order": 5,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/系统调用/OS-Lab4-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4090
     },
     {
         "id": 2929353253,
@@ -1156,7 +1215,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/语言/日语/文法/活用形.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 802
     },
     {
         "id": 2586613327,
@@ -1175,7 +1235,8 @@
         "order": 4,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/进程管理/OS-Lab3-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1193
     },
     {
         "id": 38830959,
@@ -1194,7 +1255,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/语言/日语/文法/接续词.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1150
     },
     {
         "id": 3553447011,
@@ -1213,7 +1275,8 @@
         "order": 4,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/进程管理/进程管理.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 11347
     },
     {
         "id": 3111316559,
@@ -1232,7 +1295,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/操作系统/进程管理/Lab3 梳理总结.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 39
     },
     {
         "id": 1476750254,
@@ -1251,7 +1315,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/文学/诗词/词/如梦令·国家植物园.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1007
     },
     {
         "id": 3181173193,
@@ -1270,7 +1335,8 @@
         "order": 3,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/内存管理/内存管理.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 16252
     },
     {
         "id": 3927684149,
@@ -1289,7 +1355,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/操作系统/内存管理/Lab2 梳理总结.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1942
     },
     {
         "id": 2424337759,
@@ -1308,7 +1375,8 @@
         "order": 3,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/内存管理/OS-Lab2-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2336
     },
     {
         "id": 1701666555,
@@ -1327,7 +1395,8 @@
         "order": 2,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/启动/OS-Lab1-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2881
     },
     {
         "id": 3948969099,
@@ -1346,7 +1415,8 @@
         "order": 1,
         "chapter": "4-实验报告",
         "contentFile": "blogs/二下/操作系统/Shell/OS-Lab0-实验报告.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3803
     },
     {
         "id": 2659015209,
@@ -1365,7 +1435,8 @@
         "order": 2,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/启动/ELF文件结构.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 5374
     },
     {
         "id": 3791533123,
@@ -1384,7 +1455,8 @@
         "order": 1,
         "chapter": "2-理论",
         "contentFile": "blogs/二下/操作系统/启动/计算机的启动过程.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 5655
     },
     {
         "id": 2069020613,
@@ -1403,7 +1475,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/操作系统/MOS/Lab1 复习.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3248
     },
     {
         "id": 1493245956,
@@ -1422,7 +1495,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/明日方舟/卫戍协议/阿戈尔/阿戈尔盟约底层逻辑及运营思路.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2224
     },
     {
         "id": 553436030,
@@ -1441,7 +1515,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/文学/诗词/词/江城子·樱.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 589
     },
     {
         "id": 3125593710,
@@ -1460,7 +1535,8 @@
         "order": null,
         "chapter": "1-预备知识",
         "contentFile": "blogs/二下/操作系统/Makefile/Makefile基础速成.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 813
     },
     {
         "id": 1566786778,
@@ -1479,7 +1555,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二下/操作系统/Shell/Lab0 Pre-Exam复习.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1580
     },
     {
         "id": 3721673332,
@@ -1498,7 +1575,8 @@
         "order": null,
         "chapter": "1-预备知识",
         "contentFile": "blogs/二下/操作系统/gcc/gcc语法速成.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1476
     },
     {
         "id": 642086862,
@@ -1517,7 +1595,8 @@
         "order": null,
         "chapter": "1-预备知识",
         "contentFile": "blogs/二下/操作系统/Linux/Linux 命令指南.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3837
     },
     {
         "id": 2993316592,
@@ -1536,7 +1615,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/语言/意大利语/发音规则/意大利语自然拼读攻略.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1498
     },
     {
         "id": 1857093037,
@@ -1555,7 +1635,8 @@
         "order": null,
         "chapter": "1-预备知识",
         "contentFile": "blogs/二下/操作系统/Shell/C语言无痛转型Shell脚本.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2109
     },
     {
         "id": 3406903262,
@@ -1574,7 +1655,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/终末地/游戏工具/基质/基质刷取指南.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3840
     },
     {
         "id": 1407902224,
@@ -1593,7 +1675,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/终末地/游戏机制/数值计算/终末地数值计算方法.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2178
     },
     {
         "id": 652769467,
@@ -1612,7 +1695,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/音乐/J-POP/ヨルシカ/千鳥.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1328
     },
     {
         "id": 1838053265,
@@ -1631,7 +1715,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/终末地/游戏工具/装备/装备精锻较好适配速查.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 349
     },
     {
         "id": 3827618110,
@@ -1650,7 +1735,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/明日方舟/干员杂谈/干员测评/望.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2691
     },
     {
         "id": 464226462,
@@ -1669,7 +1755,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/计组/链接/链接与运行.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4690
     },
     {
         "id": 1786809215,
@@ -1688,7 +1775,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/计组/总复习/计组总复习.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2690
     },
     {
         "id": 4003313883,
@@ -1707,7 +1795,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/二上总结/考试总结/二上考试情况总结.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3614
     },
     {
         "id": 1050316623,
@@ -1726,7 +1815,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/明日方舟/干员杂谈/元素体系/元素体系——朝阳or败笔？.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3903
     },
     {
         "id": 3187203597,
@@ -1745,7 +1835,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/计组/MIPS/指令系统与MIPS汇编语言.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1456
     },
     {
         "id": 1743834547,
@@ -1764,7 +1855,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/基物实验/总复习/基物实验.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 8301
     },
     {
         "id": 419066647,
@@ -1783,7 +1875,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/计组/存储系统/虚拟存储器.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 3139
     },
     {
         "id": 4102387947,
@@ -1802,7 +1895,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/计组/存储系统/主存储器.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 6413
     },
     {
         "id": 3693402797,
@@ -1821,7 +1915,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/Java/总复习/Java总复习.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 10070
     },
     {
         "id": 3461312274,
@@ -1840,7 +1935,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/离散二/总复习/离散数学题型总复习.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 8223
     },
     {
         "id": 1143004445,
@@ -1859,7 +1955,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/离散二/图论/穿程问题.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1685
     },
     {
         "id": 2082246713,
@@ -1878,7 +1975,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/离散二/图论/二分图的匹配问题.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1752
     },
     {
         "id": 1960569028,
@@ -1897,7 +1995,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/离散二/图论/树.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4062
     },
     {
         "id": 3621324038,
@@ -1916,7 +2015,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/离散二/图论/通路问题.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2159
     },
     {
         "id": 3054130231,
@@ -1935,7 +2035,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/离散二/图论/图的矩阵表示.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 4046
     },
     {
         "id": 415427056,
@@ -1954,7 +2055,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/离散二/图论/图论基本概念.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 9100
     },
     {
         "id": 3047011469,
@@ -1973,7 +2075,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/Java/总复习/Java串讲.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2366
     },
     {
         "id": 909662699,
@@ -1992,7 +2095,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/概率统计/总复习/概率统计必背公式.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 7683
     },
     {
         "id": 3372524656,
@@ -2011,7 +2115,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/算法/图/并查集.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 2814
     },
     {
         "id": 3876937160,
@@ -2030,7 +2135,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/文学/诗词/词/卜算子·元旦晚会.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 1172
     },
     {
         "id": 420747978,
@@ -2049,7 +2155,8 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/二上/计组/存储系统/Cache.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 5555
     },
     {
         "id": 3054643240,
@@ -2068,6 +2175,7 @@
         "order": null,
         "chapter": null,
         "contentFile": "blogs/文学/诗词/词/行香子·初雪.md",
-        "recommended": false
+        "recommended": false,
+        "wordCount": 915
     }
 ]

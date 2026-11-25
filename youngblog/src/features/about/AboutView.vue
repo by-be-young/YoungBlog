@@ -48,7 +48,11 @@
               </div>
               <div class="stat">
                 <router-link class="stat-link" to="/archive">
-                  <span class="count">{{ wordCount }}</span>
+                  <span v-if="siteStats.isReady" class="count">{{ wordCount }}</span>
+                  <span v-else-if="siteStats.status === 'error'" class="count count--loading">—</span>
+                  <span v-else class="count count--loading">
+                    <LoadingDots :label="i18n.get('word_count_loading')" />
+                  </span>
                   <span class="label">{{ i18n.t('total_words') }}</span>
                 </router-link>
               </div>
@@ -81,21 +85,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { useBlogStore } from '@/shared/stores/blogStore'
+import { useSiteStatsStore } from '@/shared/stores/siteStatsStore'
 import { useMarkdown } from '@/shared/composables/useMarkdown'
 import BlogContent from '@/features/blog-detail/components/BlogContent.vue'
+import LoadingDots from '@/shared/components/LoadingDots.vue'
 import { resolveUrl } from '@/shared/utils/url'
+import { formatWordCount } from '@/shared/utils/textStats'
 
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
+const siteStats = useSiteStatsStore()
 const { renderMarkdown, stripFrontMatter } = useMarkdown()
 
 const detailBgImg = `url(${resolveUrl('/assets/detail_bg.webp')})`
 
 const renderedHtml = ref('')
-const wordCount = ref('0.0w')
+const wordCount = computed(() => formatWordCount(siteStats.totalChars, i18n.lang))
 
 // 加载 About 内容
 const loadAbout = async () => {
@@ -124,37 +132,15 @@ const loadAbout = async () => {
   renderedHtml.value = '<p>内容加载失败，请稍后重试。</p>'
 }
 
-// 计算字数
-const calculateWordCount = async () => {
-  try {
-    const files = blogStore.blogs.map(b => b.contentFile).filter(Boolean)
-    let total = 0
-    for (const file of files) {
-      const res = await fetch(resolveUrl(file))
-      const text = await res.text()
-      const clean = text.replace(/```[\s\S]*?```/g, ' ')
-        .replace(/[#>*~-]/g, ' ')
-        .replace(/\s+/g, '')
-      total += clean.length
-    }
-    const lang = i18n.getLang()
-    wordCount.value = lang === 'zh' ? (total / 10000).toFixed(1) + 'w' : Math.round(total / 1000) + 'k'
-  } catch {
-    wordCount.value = '0.0w'
-  }
-}
-
 onMounted(() => {
   loadAbout()
-  if (!blogStore.blogs.length) {
-    blogStore.fetchBlogs().then(() => calculateWordCount())
-  } else {
-    calculateWordCount()
-  }
+  siteStats.ensureLoaded()
+  window.addEventListener('site:languageChanged', loadAbout)
 })
 
-// 语言切换时重新加载
-window.addEventListener('site:languageChanged', loadAbout)
+onUnmounted(() => {
+  window.removeEventListener('site:languageChanged', loadAbout)
+})
 </script>
 
 <style scoped>
@@ -394,6 +380,17 @@ window.addEventListener('site:languageChanged', loadAbout)
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+}
+
+.stat .count--loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2em;
+  min-height: 1.15em;
+  background: none;
+  color: #9c3460;
+  -webkit-text-fill-color: #9c3460;
 }
 
 .stat .label {

@@ -8,7 +8,11 @@
       </span>
       <span class="footer-stat-item">
         <span>{{ i18n.currentTranslations.footer_total_words }}</span>
-        <span class="footer-stat-number">{{ wordCount }}</span>
+        <span v-if="siteStats.isReady" class="footer-stat-number">{{ formattedWords }}</span>
+        <span v-else-if="siteStats.status === 'error'" class="footer-stat-number footer-stat-error">—</span>
+        <span v-else class="footer-stat-number footer-stat-loading">
+          <LoadingDots :label="i18n.currentTranslations.word_count_loading" />
+        </span>
       </span>
     </div>
 
@@ -30,48 +34,26 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { useBlogStore } from '@/shared/stores/blogStore'
+import { useSiteStatsStore } from '@/shared/stores/siteStatsStore'
+import LoadingDots from '@/shared/components/LoadingDots.vue'
 import { resolveUrl } from '@/shared/utils/url'
+import { formatWordCount } from '@/shared/utils/textStats'
 
 const i18n = useI18nStore()
 const blogStore = useBlogStore()
-const wordCount = ref('0')
+const siteStats = useSiteStatsStore()
 
-// 计算总字数
-const calculateWordCount = async () => {
-  try {
-    const files = blogStore.blogs.map(b => b.contentFile).filter(Boolean)
-    if (!files.length) {
-      wordCount.value = '0'
-      return
-    }
-    let total = 0
-    for (const file of files) {
-      const res = await fetch(resolveUrl(file))
-      const text = await res.text()
-      // 简单统计字数（去除 Markdown 标记）
-      const clean = text.replace(/```[\s\S]*?```/g, ' ')
-        .replace(/[#>*~-]/g, ' ')
-        .replace(/\s+/g, '')
-      total += clean.length
-    }
-    wordCount.value = total.toLocaleString('zh-CN')
-  } catch {
-    wordCount.value = '0'
-  }
-}
-
-// 监听博客数据变化，加载完成后自动计算
-watch(() => blogStore.blogs.length, (len) => {
-  if (len > 0) calculateWordCount()
-})
+const formattedWords = computed(() => formatWordCount(siteStats.totalChars, i18n.getLang()))
 
 // 访问量统计：读取服务器 nginx 日志生成的 stats.json（服务器每 5 分钟自动更新）。
 // 没有该文件（如 GitHub Pages 部署）时静默隐藏，不影响其他功能。
 const pv = ref('')
 onMounted(async () => {
+  siteStats.ensureLoaded()
+
   try {
     const res = await fetch(resolveUrl('stats.json'), { cache: 'no-store' })
     if (!res.ok) return
@@ -140,6 +122,17 @@ onMounted(async () => {
   font-weight: 600;
   color: #17222f;
   margin-left: 2px;
+}
+
+.site-footer .footer-stat-loading {
+  display: inline-flex;
+  align-items: center;
+  min-width: 3.2em;
+  color: rgba(23, 34, 47, 0.55);
+}
+
+.site-footer .footer-stat-error {
+  opacity: 0.55;
 }
 
 /* 页脚中心（备案号） */

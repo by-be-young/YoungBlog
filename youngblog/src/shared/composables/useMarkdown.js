@@ -42,7 +42,7 @@ export function useMarkdown() {
                 await navigator.clipboard.writeText(t)
                 return true
             }
-        } catch (_) { }
+        } catch (_) { /* 剪贴板不可用时回退到 execCommand */ }
         try {
             const ta = document.createElement('textarea')
             ta.value = t
@@ -140,7 +140,7 @@ export function useMarkdown() {
                     return
                 }
                 img.setAttribute('src', new URL(src, mdBase).href)
-            } catch (_) { }
+            } catch (_) { /* 资源路径非法时保留原始 src */ }
         })
     }
 
@@ -159,7 +159,7 @@ export function useMarkdown() {
         if (!rootEl) return
         const STAR_SUFFIX_RE = /(?:【\s*[!！]\s*】|\[\s*[!！]\s*\]|［\s*[!！]\s*］)\s*$/
         const map = new Map()
-        const used = new Map()
+        const usedIds = new Set()
         rootEl.querySelectorAll('h1, h2, h3').forEach(h => {
             const rawText = (h.textContent || '').trim()
             if (!rawText) return
@@ -177,14 +177,16 @@ export function useMarkdown() {
                     h.dataset.starMarked = '1'
                 }
             }
-            let id = h.id?.trim() || cleanText.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'heading'
-            const base = id
-            let c = used.get(base) || 0
-            while (document.getElementById(id)) {
+            const base = h.id?.trim() || cleanText.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'heading'
+            let id = base
+            let c = 0
+            // 渲染阶段 container 尚未挂载到 document，不能依赖 document.getElementById 去重；
+            // 只用本次渲染的局部 Set，既保证同一篇文章内 id 唯一，也避免旧文章 DOM 影响新文章 id。
+            while (usedIds.has(id)) {
                 c += 1
                 id = base + '-' + c
             }
-            used.set(base, c)
+            usedIds.add(id)
             h.id = id
             map.set(rawText, id)
             map.set(cleanText, id)
@@ -480,16 +482,20 @@ export function useMarkdown() {
             </button>
           </div>
           <button class="answer-toggle" type="button" aria-expanded="false" aria-controls="${contentId}">
+            <span class="answer-toggle-label answer-toggle-label--closed" data-i18n="view_answer">查看答案</span>
             <svg class="answer-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
+            <span class="answer-toggle-label answer-toggle-label--open" data-i18n="hide_answer">收起答案</span>
           </button>
         </div>
       ` : `
         <button class="answer-toggle" type="button" aria-expanded="false" aria-controls="${contentId}">
+          <span class="answer-toggle-label answer-toggle-label--closed" data-i18n="view_answer">查看答案</span>
           <svg class="answer-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
+          <span class="answer-toggle-label answer-toggle-label--open" data-i18n="hide_answer">收起答案</span>
         </button>
       `
 
@@ -516,7 +522,18 @@ export function useMarkdown() {
             return optionsHtml[i] || ''
         })
 
-        return html
+        return wrapTables(html)
+    }
+
+    // ==================== 表格滚动容器 ====================
+    // table 自身不适合同时承担圆角、阴影和横向滚动；
+    // 统一包一层 .md-table-wrap，滚动发生在容器上，表格本体只负责排版。
+    function wrapTables(html) {
+        if (typeof html !== 'string' || !html) return html || ''
+        return html.replace(
+            /<table([^>]*)>([\s\S]*?)<\/table>/gi,
+            (_, attrs, body) => `<div class="md-table-wrap"><table${attrs}>${body}</table></div>`
+        )
     }
 
     // ==================== 任务标签标注 ====================
@@ -715,7 +732,6 @@ export function useMarkdown() {
             if (children.length === 1 && children[0].nodeType === 1 && children[0].tagName === 'STRONG') {
                 p.style.textAlign = 'center'
                 p.style.textIndent = '0'
-                p.style.color = '#b57b00'
             }
         })
 
