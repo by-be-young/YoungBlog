@@ -5,7 +5,6 @@
 | 文件 | 职责 | 副作用 |
 | --- | --- | --- |
 | `useMarkdown.js` | Markdown 预处理、渲染、资源重写、内部引用 | 创建临时 DOM；动态导入 marked / katex |
-| `useToc.js` | 目录构建、滚动高亮、自动居中、进度 | 监听滚动与 resize |
 | `useCodeBlock.js` | 行号、复制、折叠 / 展开 | 绑定按钮事件 |
 | `useAnswer.js` | 选项选择、提交、对错反馈、统计 | 绑定点击与键盘事件 |
 | `useChecklist.js` | 任务清单交互、进度条、localStorage 持久化 | 读写 `yb-checklist:*` |

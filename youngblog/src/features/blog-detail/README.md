@@ -2,7 +2,7 @@
 
 - 路由：`/blog/:id`（name `BlogDetail`）
 - 入口：`BlogDetailView.vue`
-- 依赖：`blogStore`、`settingsStore`、`useMarkdown`、`useToc` 等
+- 依赖：`blogStore`、`settingsStore`、`useMarkdown`、`useBlogToc` 等
 
 ## 数据加载
 
@@ -19,7 +19,8 @@ id → blogStore.getBlogById → fetch(resolveUrl(blog.contentFile))
 | 组件 | 作用 |
 | --- | --- |
 | `BlogContent.vue` | 渲染 HTML 并绑定代码块 / Mermaid / 图片 / 习题 / 清单增强 |
-| `TOC.vue` | 目录生成、滚动高亮、自动居中、进度条 |
+| `TOC.vue` | 目录视图：树渲染、滚动高亮、自动居中、进度条、移动端弹层 |
+| `composables/useBlogToc.js` | 目录数据、章节状态、滚动追踪与短文章布局 |
 | `PostNav.vue` | 上一篇 / 下一篇 / 相似文章 |
 | `FloatingControls.vue` | 详情页浮动控制（沉浸、字号、导出等） |
 | `ExportModal.vue` | 导出 Markdown / 文本 |

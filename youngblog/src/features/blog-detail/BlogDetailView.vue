@@ -789,6 +789,10 @@ onUnmounted(() => {
   justify-content: center;
 }
 
+.blog-detail-page.immersive-reading-active :deep(.toc-rail) {
+  display: none;
+}
+
 .blog-detail-page.immersive-reading-active :deep(.blog-toc) {
   display: none;
 }

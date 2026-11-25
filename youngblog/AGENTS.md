@@ -97,7 +97,7 @@ blogs/**.md
 | `scripts/postbuild.js` | 复制 `blogs/`，漏掉会导致详情页 404 |
 | `src/shared/stores/blogStore.js` | 站点唯一数据入口 |
 | `src/shared/composables/useMarkdown.js` | Markdown 扩展语法唯一入口 |
-| `src/shared/composables/useToc.js` | 目录与滚动同步 |
+| `src/features/blog-detail/composables/useBlogToc.js` | 目录树、滚动高亮、进度与短文章布局 |
 | `src/app/App.vue` | 背景、路由类名、音频初始化 |
 | `src/shared/utils/url.js` | base 前缀拼接 |
 | `vite.config.js` | `base` 与分包 |
