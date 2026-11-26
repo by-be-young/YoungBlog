@@ -364,8 +364,16 @@ export function useMarkdown() {
         let transformed = processInnerForQuestionsAndOptions(markdownText)
 
         // 处理 task
+        // 题头在 HTML 阶段就落地，编号 / 题型由 annotateTaskLabels 与 useAnswer 回填，
+        // 这样视觉上不再依赖 ::before 的绝对定位拼接。
         transformed = transformed.replace(/\[task\]([\s\S]*?)\[\\task\]/g, (_, inner) => {
-            return '\n<div class="md-task">' + inner + '</div>\n'
+            return '\n<div class="md-task">'
+                + '<div class="md-task-head">'
+                + '<span class="md-task-tag" data-i18n="task_label">例题</span>'
+                + '<span class="md-task-index"></span>'
+                + '<span class="md-task-type"></span>'
+                + '</div>'
+                + inner + '</div>\n'
         })
 
         // 处理 answer/analysis
@@ -475,7 +483,6 @@ export function useMarkdown() {
             const actionHtml = isMultiChoice ? `
         <div class="answer-actions">
           <div class="answer-actions-row">
-            <span class="answer-type-badge" data-i18n="multi_choice_label" aria-hidden="true">多选题</span>
             <button id="${submitId}" class="answer-submit" type="button" aria-expanded="false" aria-controls="${contentId}">
               <span class="answer-submit-label" data-i18n="submit_answer">提交答案</span>
               <span class="answer-submit-icon" aria-hidden="true">√</span>
@@ -490,13 +497,15 @@ export function useMarkdown() {
           </button>
         </div>
       ` : `
-        <button class="answer-toggle" type="button" aria-expanded="false" aria-controls="${contentId}">
-          <span class="answer-toggle-label answer-toggle-label--closed" data-i18n="view_answer">查看答案</span>
-          <svg class="answer-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="answer-toggle-label answer-toggle-label--open" data-i18n="hide_answer">收起答案</span>
-        </button>
+        <div class="answer-actions">
+          <button class="answer-toggle" type="button" aria-expanded="false" aria-controls="${contentId}">
+            <span class="answer-toggle-label answer-toggle-label--closed" data-i18n="view_answer">查看答案</span>
+            <svg class="answer-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="answer-toggle-label answer-toggle-label--open" data-i18n="hide_answer">收起答案</span>
+          </button>
+        </div>
       `
 
             return `
@@ -593,10 +602,14 @@ export function useMarkdown() {
 
         displayKeyGroups.forEach((group, key) => {
             group.forEach((info, index) => {
+                const suffix = group.length > 1 ? `（${index + 1}）` : ''
                 info.element.dataset.taskLabel = key
-                info.element.dataset.taskSuffix = group.length > 1 ? ` （${index + 1}）` : ''
+                info.element.dataset.taskSuffix = suffix ? ` ${suffix}` : ''
                 info.element.dataset.taskIndex = String(index + 1)
                 info.element.dataset.taskTotal = String(group.length)
+                // 题头里的编号（形如 #2-1-1）；同号多题追加（1）（2）区分
+                const indexEl = info.element.querySelector('.md-task-index')
+                if (indexEl) indexEl.textContent = `${key}${suffix}`
             })
         })
     }

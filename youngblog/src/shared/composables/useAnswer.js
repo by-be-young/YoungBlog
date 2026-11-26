@@ -103,6 +103,54 @@ export function useAnswer(rootRef) {
     }
 
     /**
+     * 合并同一道题里被拆散的选项组。
+     * 文章里常见的写法是一行一个 [options]…[\options]，渲染后每行都会变成一个
+     * 独立的 .md-options 容器（各自带边框），视觉上像四张卡片而不是一道题的选项表。
+     * 这里把后续容器的选项节点搬进第一个容器，并清理只起占位作用的空段落。
+     * @param {HTMLElement} task - .md-task 元素
+     */
+    function mergeOptionGroups(task) {
+        const groups = Array.from(task.querySelectorAll('.md-options'))
+        if (groups.length < 2) return
+        const primary = groups[0]
+        groups.slice(1).forEach(group => {
+            while (group.firstElementChild) primary.appendChild(group.firstElementChild)
+            let prev = group.previousElementSibling
+            group.remove()
+            // 清掉选项组之间的空段落（marked 会把空行渲染成 <p>），避免留下多余间距
+            while (prev && prev.tagName === 'P' && !prev.textContent.trim() && !prev.querySelector('img, table, code')) {
+                const before = prev.previousElementSibling
+                prev.remove()
+                prev = before
+            }
+        })
+    }
+
+    /**
+     * 同步题头信息：题型标签 + 选项组形态（单选用圆键、多选用方键）
+     * 在绑定事件时执行，保证读者在作答前就知道这题能选几项。
+     * @param {HTMLElement} task - .md-task 元素
+     */
+    function syncTaskMeta(task) {
+        if (!task) return
+        mergeOptionGroups(task)
+        const block = task.querySelector('.answer-block')
+        const isMulti = block?.getAttribute('data-answer-mode') === 'multi'
+        task.classList.toggle('is-multiple-choice', isMulti)
+        task.querySelectorAll('.md-options').forEach(group => {
+            group.classList.toggle('is-multi-choice', isMulti)
+        })
+
+        const typeEl = task.querySelector('.md-task-type')
+        if (typeEl) {
+            const labelKey = isMulti ? 'multi_choice_label' : 'single_choice_label'
+            typeEl.setAttribute('data-i18n', labelKey)
+            typeEl.textContent = i18n.get(labelKey)
+            typeEl.classList.toggle('is-multi', isMulti)
+        }
+    }
+
+    /**
      * 处理选项点击（单/多选题逻辑）
      * @param {HTMLElement} btn - .md-option 元素
      */
@@ -222,7 +270,9 @@ export function useAnswer(rootRef) {
         submitBtn.classList.add('is-submitted')
         submitBtn.setAttribute('aria-disabled', 'true')
         submitBtn.disabled = true
-        submitBtn.textContent = i18n.get('submit_answer', '已提交')
+        const submitLabel = submitBtn.querySelector('.answer-submit-label')
+        if (submitLabel) submitLabel.textContent = i18n.get('submit_done', '已提交')
+        else submitBtn.textContent = i18n.get('submit_done', '已提交')
         updateTaskStats(task?.closest('.article-content') || document)
     }
 
@@ -252,7 +302,10 @@ export function useAnswer(rootRef) {
             if (!statsEl) {
                 statsEl = document.createElement('div')
                 statsEl.className = 'md-task-stats'
-                task.appendChild(statsEl)
+                // 统计放进题头右侧；旧结构（无题头）仍回退到卡片尾部
+                const head = task.querySelector('.md-task-head')
+                if (head) head.appendChild(statsEl)
+                else task.appendChild(statsEl)
             }
             statsEl.innerHTML = `
         <span class="md-task-stats-main">
@@ -281,6 +334,8 @@ export function useAnswer(rootRef) {
      */
     function bindAll(rootEl) {
         if (!rootEl) return
+        // 先同步题头（题型、选项形态），再做点击绑定
+        rootEl.querySelectorAll('.md-task').forEach(task => syncTaskMeta(task))
         // 绑定选项点击
         rootEl.querySelectorAll('.md-option').forEach(btn => {
             if (btn.dataset.bound) return
