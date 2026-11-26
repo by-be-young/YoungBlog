@@ -8,6 +8,8 @@
       }"
     >
       <nav
+        id="blog-toc-panel"
+        ref="navRef"
         class="blog-toc"
         :class="{
           'toc-collapsed': collapsed,
@@ -16,17 +18,23 @@
           'is-open': overlayOpen,
         }"
         :aria-label="i18n.get('toc')"
+        :role="isCompact && overlayOpen ? 'dialog' : undefined"
+        :aria-modal="isCompact && overlayOpen ? 'true' : undefined"
+        :aria-hidden="isCompact && !overlayOpen ? 'true' : undefined"
+        :inert="isCompact && !overlayOpen ? true : null"
       >
         <div class="toc-header">
           <div class="toc-title">{{ i18n.currentTranslations.toc }}</div>
           <div class="toc-header-right">
-            <div class="toc-progress">{{ Math.round(progress) }}%</div>
+            <div class="toc-progress" :title="`${Math.round(progress)}%`">
+              {{ Math.round(progress) }}%
+            </div>
             <button
               v-if="isCompact"
               type="button"
               class="toc-inline-close"
               :aria-label="i18n.get('toc_close')"
-              @click="closeOverlay"
+              @click="closeOverlay()"
             >
               <i class="fas fa-times" aria-hidden="true"></i>
             </button>
@@ -35,84 +43,97 @@
 
         <div ref="listWrapRef" class="toc-list-wrap">
           <div ref="indicatorRef" class="toc-h2-active-indicator"></div>
-          <div ref="bugRef" class="toc-bug" :class="{ idle: !activeH3Id }">
+          <div ref="bugRef" class="toc-bug" :class="{ idle: !activeLeafId }">
             <img :src="resolveUrl('/assets/images/task/correct.png')" alt="" />
           </div>
 
-          <ul ref="tocListRef" class="toc-list">
+          <p v-if="showEmpty" class="toc-empty">{{ i18n.get('toc_empty') }}</p>
+
+          <ul v-else ref="tocListRef" class="toc-list">
             <li
-              v-for="h1 in tree"
-              :key="h1.id"
-              class="toc-h1"
-              :data-node-id="h1.id"
+              v-for="root in tree"
+              :key="root.id"
+              class="toc-section"
+              :class="{ 'is-section': activeRootId === root.id }"
+              :data-node-id="root.id"
             >
-              <div class="toc-h1-row">
+              <div class="toc-root-row">
                 <button
-                  v-if="h1.children.length"
+                  v-if="root.children.length"
                   type="button"
                   class="toc-toggle"
-                  :aria-expanded="openH1Id === h1.id ? 'true' : 'false'"
-                  @click.stop="toggleH1(h1)"
-                >{{ openH1Id === h1.id ? '▼' : '▶' }}</button>
+                  :aria-expanded="openRootId === root.id ? 'true' : 'false'"
+                  :aria-controls="branchId(root.id)"
+                  :aria-label="toggleLabel(root)"
+                  @click.stop="toggleRoot(root)"
+                >{{ openRootId === root.id ? '▼' : '▶' }}</button>
                 <span v-else class="toc-toggle-spacer" aria-hidden="true"></span>
 
                 <a
-                  :href="`#${h1.id}`"
-                  :class="{ 'has-star-marker': h1.star }"
-                  :aria-current="
-                    activeH1Id === h1.id && !activeH2Id ? 'location' : undefined
-                  "
-                  @click.prevent="selectNode(h1)"
+                  :href="sectionHref(root)"
+                  class="toc-link toc-link--root"
+                  :class="{ 'has-star-marker': root.star }"
+                  :aria-current="activeNodeId === root.id ? 'location' : undefined"
+                  @click="selectNode($event, root)"
                 >
-                  <span class="toc-item-label">{{ h1.text }}</span>
-                  <span v-if="h1.star" class="toc-star-marker" aria-hidden="true">★</span>
+                  <span class="toc-item-label">{{ root.text }}</span>
+                  <span v-if="root.star" class="toc-star-marker" aria-hidden="true">★</span>
                 </a>
               </div>
 
               <div
-                v-if="h1.children.length"
+                v-if="root.children.length"
+                :id="branchId(root.id)"
                 class="toc-children"
-                :class="{ 'is-open': openH1Id === h1.id }"
+                :class="{ 'is-open': openRootId === root.id }"
+                :aria-hidden="openRootId === root.id ? undefined : 'true'"
+                :inert="openRootId === root.id ? null : true"
               >
                 <ul class="toc-sub-list">
                   <li
-                    v-for="h2 in h1.children"
-                    :key="h2.id"
-                    class="toc-h2"
-                    :class="{ 'is-active': activeH2Id === h2.id }"
-                    :data-node-id="h2.id"
+                    v-for="child in root.children"
+                    :key="child.id"
+                    class="toc-node"
+                    :class="{
+                      'is-active': activeChildId === child.id,
+                      'is-current': activeNodeId === child.id,
+                      'is-h3': child.level > 2,
+                    }"
+                    :data-node-id="child.id"
                   >
                     <a
-                      :href="`#${h2.id}`"
-                      :class="{ 'has-star-marker': h2.star }"
-                      :aria-current="activeH2Id === h2.id ? 'location' : undefined"
-                      @click.prevent="selectNode(h2)"
+                      :href="sectionHref(child)"
+                      class="toc-link toc-link--child"
+                      :class="{ 'has-star-marker': child.star }"
+                      :aria-current="activeNodeId === child.id ? 'location' : undefined"
+                      @click="selectNode($event, child)"
                     >
-                      <span class="toc-item-label">{{ h2.text }}</span>
-                      <span v-if="h2.star" class="toc-star-marker" aria-hidden="true">★</span>
+                      <span class="toc-item-label">{{ child.text }}</span>
+                      <span v-if="child.star" class="toc-star-marker" aria-hidden="true">★</span>
                     </a>
 
                     <div
-                      v-if="activeH2Id === h2.id && h2.children.length"
-                      class="toc-h3-box"
+                      v-if="activeChildId === child.id && child.children.length"
+                      class="toc-leaf-box"
                     >
-                      <ul class="toc-sub-list toc-h3-sub-list">
+                      <ul class="toc-sub-list toc-leaf-list">
                         <li
-                          v-for="h3 in h2.children"
-                          :key="h3.id"
-                          class="toc-h3"
-                          :class="{ 'is-active': activeH3Id === h3.id }"
-                          :data-node-id="h3.id"
+                          v-for="leaf in child.children"
+                          :key="leaf.id"
+                          class="toc-leaf"
+                          :class="{ 'is-current': activeNodeId === leaf.id }"
+                          :data-node-id="leaf.id"
                         >
                           <a
-                            :href="`#${h3.id}`"
-                            :class="{ 'has-star-marker': h3.star }"
-                            :aria-current="activeH3Id === h3.id ? 'location' : undefined"
-                            @click.prevent="selectNode(h3)"
+                            :href="sectionHref(leaf)"
+                            class="toc-link toc-link--leaf"
+                            :class="{ 'has-star-marker': leaf.star }"
+                            :aria-current="activeNodeId === leaf.id ? 'location' : undefined"
+                            @click="selectNode($event, leaf)"
                           >
-                            <span class="toc-item-label">{{ h3.text }}</span>
+                            <span class="toc-item-label">{{ leaf.text }}</span>
                             <span
-                              v-if="h3.star"
+                              v-if="leaf.star"
                               class="toc-star-marker"
                               aria-hidden="true"
                             >★</span>
@@ -137,7 +158,7 @@
       v-if="isCompact"
       class="toc-overlay"
       :class="{ 'is-active': overlayOpen }"
-      @click.self="closeOverlay"
+      @click.self="closeOverlay()"
     ></div>
 
     <Teleport v-if="isCompact && teleportTarget" :to="teleportTarget">
@@ -145,9 +166,10 @@
         type="button"
         class="toc-fab floating-btn"
         :title="i18n.get(overlayOpen ? 'toc_close' : 'toc_open')"
+        aria-controls="blog-toc-panel"
         :aria-expanded="overlayOpen ? 'true' : 'false'"
         :aria-label="i18n.get(overlayOpen ? 'toc_close' : 'toc_open')"
-        @click="toggleOverlay"
+        @click="toggleOverlay($event)"
       >
         <i :class="overlayOpen ? 'fas fa-times' : 'fas fa-list-ul'" aria-hidden="true"></i>
       </button>
@@ -159,11 +181,11 @@
 /**
  * 博客目录视图
  *
- * 目录的数据、滚动追踪、短文章布局都交给 useBlogToc；
- * 本组件只负责渲染、紧凑弹层和悬浮球位置。
+ * 数据、滚动追踪、短文章布局交给 useBlogToc；
+ * 本组件只负责渲染、移动端弹层、焦点管理与悬浮球位置。
  */
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useBlogToc } from '@/features/blog-detail/composables/useBlogToc'
 import { useI18nStore } from '@/shared/stores/i18nStore'
 import { resolveUrl } from '@/shared/utils/url'
@@ -181,28 +203,37 @@ const props = defineProps({
 
 const i18n = useI18nStore()
 const route = useRoute()
+const router = useRouter()
 
 const COMPACT_QUERY = '(max-width: 1024px)'
+const initialCompact =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia(COMPACT_QUERY).matches
+    : false
 
-const isCompact = ref(false)
+const isCompact = ref(initialCompact)
 const overlayOpen = ref(false)
 const fallbackFabTarget = ref(null)
+const hydrated = ref(false)
+const navRef = ref(null)
 
 const {
   tree,
   progress,
-  openH1Id,
-  activeH1Id,
-  activeH2Id,
-  activeH3Id,
+  openRootId,
+  activeNodeId,
+  activeRootId,
+  activeChildId,
+  activeLeafId,
   isShortArticle,
   listWrapRef,
   tocListRef,
   indicatorRef,
   bugRef,
-  toggleH1,
+  toggleRoot,
   scrollToNode,
   refresh,
+  findNode,
 } = useBlogToc({
   contentHtml: () => props.contentHtml,
   contentId: () => props.contentId,
@@ -210,19 +241,114 @@ const {
 })
 
 const teleportTarget = computed(() => props.fabTarget || fallbackFabTarget.value)
+const showEmpty = computed(() => hydrated.value && tree.value.length === 0)
 
-let compactQuery = null
-let bodyOverflowBeforeLock = ''
-let bodyOverflowLocked = false
+const branchId = (id) => `toc-branch-${id}`
+const hrefCache = new Map()
 
-function selectNode(node) {
+function sectionHref(node) {
+  const key = `${route.fullPath}\u0000${node.id}`
+  if (hrefCache.has(key)) return hrefCache.get(key)
+
+  try {
+    const href = router.resolve({
+      path: route.path,
+      query: { ...route.query, section: node.id },
+    }).href
+    hrefCache.set(key, href)
+    return href
+  } catch {
+    return `#/blog/${route.params.id || ''}`
+  }
+}
+
+function toggleLabel(node) {
+  const key = openRootId.value === node.id ? 'toc_collapse' : 'toc_expand'
+  return `${i18n.get(key)} · ${node.text}`
+}
+
+function selectNode(event, node) {
+  // 允许 Ctrl / Cmd / Shift / 中键走浏览器原生行为（新标签打开深链）。
+  if (
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey ||
+    event.button !== 0
+  ) {
+    return
+  }
+
+  event.preventDefault()
   scrollToNode(node)
   closeOverlay()
 }
 
-function openOverlay() {
+let compactQuery = null
+let bodyOverflowBeforeLock = ''
+let bodyOverflowLocked = false
+let previousFocus = null
+let lastSectionKey = ''
+
+function focusableItems() {
+  const nav = navRef.value
+  if (!nav) return []
+  return Array.from(nav.querySelectorAll('a[href], button:not([disabled])')).filter(
+    (el) =>
+      el.getClientRects().length > 0 &&
+      el.tabIndex !== -1 &&
+      !el.closest('[inert]'),
+  )
+}
+
+function focusInitialItem() {
+  const nav = navRef.value
+  if (!nav) return
+  const current =
+    nav.querySelector('a[aria-current="location"]') || nav.querySelector('.toc-link')
+  current?.focus({ preventScroll: true })
+}
+
+function trapFocus(event) {
+  const items = focusableItems()
+  if (!items.length) return
+
+  const first = items[0]
+  const last = items[items.length - 1]
+  const active = document.activeElement
+
+  if (!active || !items.includes(active)) {
+    event.preventDefault()
+    first.focus({ preventScroll: true })
+    return
+  }
+
+  if (event.shiftKey && active === first) {
+    event.preventDefault()
+    last.focus({ preventScroll: true })
+    return
+  }
+
+  if (!event.shiftKey && active === last) {
+    event.preventDefault()
+    first.focus({ preventScroll: true })
+  }
+}
+
+function onOverlayKeyDown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    closeOverlay()
+    return
+  }
+
+  if (event.key === 'Tab') trapFocus(event)
+}
+
+function openOverlay(trigger = null) {
   if (overlayOpen.value) return
 
+  previousFocus = trigger || document.activeElement
   overlayOpen.value = true
   bodyOverflowBeforeLock = document.body.style.overflow
   bodyOverflowLocked = true
@@ -230,10 +356,14 @@ function openOverlay() {
   document.body.classList.add('toc-overlay-open')
   window.addEventListener('keydown', onOverlayKeyDown)
 
-  nextTick(() => refresh())
+  nextTick(() => {
+    refresh()
+    focusInitialItem()
+  })
 }
 
-function closeOverlay() {
+function closeOverlay({ restoreFocus = true } = {}) {
+  const wasOpen = overlayOpen.value
   overlayOpen.value = false
 
   if (bodyOverflowLocked) {
@@ -244,20 +374,28 @@ function closeOverlay() {
 
   document.body.classList.remove('toc-overlay-open')
   window.removeEventListener('keydown', onOverlayKeyDown)
+
+  const trigger =
+    previousFocus?.closest?.('.toc-fab') ||
+    document.querySelector('.toc-fab') ||
+    previousFocus
+  previousFocus = null
+
+  if (wasOpen && restoreFocus && trigger?.focus) {
+    nextTick(() => {
+      if (trigger.isConnected) trigger.focus({ preventScroll: true })
+    })
+  }
 }
 
-function toggleOverlay() {
+function toggleOverlay(event) {
   if (overlayOpen.value) closeOverlay()
-  else openOverlay()
-}
-
-function onOverlayKeyDown(event) {
-  if (event.key === 'Escape') closeOverlay()
+  else openOverlay(event?.currentTarget || null)
 }
 
 function onCompactMediaChange(event) {
   isCompact.value = event.matches
-  if (!event.matches) closeOverlay()
+  if (!event.matches) closeOverlay({ restoreFocus: false })
 }
 
 function placeFab() {
@@ -266,11 +404,48 @@ function placeFab() {
 
   const fab = group.querySelector('.toc-fab')
   const control = group.querySelector('.control-btn')
-  if (!fab || !control) return
-  if (fab.nextElementSibling !== control) group.insertBefore(fab, control)
+  if (!fab) return
+
+  if (control) {
+    if (fab.nextElementSibling !== control) group.insertBefore(fab, control)
+    return
+  }
+
+  if (fab.parentElement !== group) group.appendChild(fab)
 }
 
-watch(() => route.fullPath, closeOverlay)
+function applySectionFromRoute() {
+  const section = typeof route.query.section === 'string' ? route.query.section : ''
+  if (!section) {
+    lastSectionKey = ''
+    return
+  }
+
+  const key = `${route.fullPath}|${section}`
+  if (key === lastSectionKey) return
+
+  const node = findNode(section)
+  if (!node) return
+
+  lastSectionKey = key
+  nextTick(() => scrollToNode(node, { instant: true }))
+}
+
+watch(
+  () => route.fullPath,
+  async () => {
+    closeOverlay({ restoreFocus: false })
+    lastSectionKey = ''
+    await nextTick()
+    applySectionFromRoute()
+  },
+)
+
+watch(tree, async () => {
+  await nextTick()
+  hydrated.value = true
+  applySectionFromRoute()
+})
 
 watch([isCompact, teleportTarget], async () => {
   await nextTick()
@@ -289,13 +464,15 @@ onMounted(async () => {
   }
 
   await nextTick()
+  hydrated.value = true
   placeFab()
+  applySectionFromRoute()
 })
 
 onUnmounted(() => {
   compactQuery?.removeEventListener('change', onCompactMediaChange)
   compactQuery = null
-  closeOverlay()
+  closeOverlay({ restoreFocus: false })
   window.removeEventListener('keydown', onOverlayKeyDown)
 })
 </script>
@@ -444,6 +621,12 @@ onUnmounted(() => {
   margin-bottom: 7px;
 }
 
+.toc-empty {
+  margin: 14px 0 0;
+  color: rgba(23, 34, 47, 0.45);
+  font-size: 0.92rem;
+}
+
 /* ==================== 底部 ==================== */
 .toc-footer {
   flex: 0 0 auto;
@@ -452,22 +635,26 @@ onUnmounted(() => {
   border-top: 1px solid rgba(23, 34, 47, 0.08);
 }
 
-/* ==================== H1 ==================== */
-.toc-h1 {
+/* ==================== 根节点 ==================== */
+.toc-section {
   position: relative;
 }
 
-.toc-h1-row {
+.toc-root-row {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.toc-h1-row > a {
+.toc-root-row .toc-link {
   min-width: 0;
   font-weight: bold;
   font-size: 1.08rem;
   color: rgba(23, 34, 47, 0.82);
+}
+
+.toc-section.is-section .toc-link {
+  color: #376657;
 }
 
 /* ==================== 展开 / 折叠 ==================== */
@@ -525,20 +712,20 @@ onUnmounted(() => {
   margin: 0;
 }
 
-.toc-h3-box {
+.toc-leaf-box {
   overflow: hidden;
 }
 
-.toc-h3-sub-list {
+.toc-leaf-list {
   padding-left: 18px;
 }
 
-/* ==================== H2 ==================== */
-.toc-h2 {
+/* ==================== 二级节点 ==================== */
+.toc-node {
   position: relative;
 }
 
-.toc-h2 > a {
+.toc-node .toc-link {
   position: relative;
   z-index: 1;
   display: inline-block;
@@ -547,17 +734,28 @@ onUnmounted(() => {
   color: rgba(23, 34, 47, 0.56);
 }
 
-.toc-h2.is-active > a {
+.toc-node.is-h3 .toc-link {
+  font-size: 0.95rem;
+  color: rgba(124, 90, 41, 0.78);
+}
+
+.toc-node.is-active .toc-link,
+.toc-node.is-current .toc-link {
   color: #376657;
   font-weight: 600;
 }
 
-/* ==================== H3 ==================== */
-.toc-h3 {
+.toc-node.is-h3.is-active .toc-link,
+.toc-node.is-h3.is-current .toc-link {
+  color: #7c5a29;
+}
+
+/* ==================== 三级节点 ==================== */
+.toc-leaf {
   position: relative;
 }
 
-.toc-h3 > a {
+.toc-leaf .toc-link {
   position: relative;
   z-index: 1;
   display: inline-block;
@@ -566,17 +764,18 @@ onUnmounted(() => {
   color: rgba(124, 90, 41, 0.78);
 }
 
-.toc-h3 > a:hover {
+.toc-leaf .toc-link:hover {
   color: #7c5a29;
 }
 
-.toc-h3.is-active > a {
+.toc-leaf.is-current .toc-link {
   color: #7c5a29;
   font-weight: 600;
 }
 
 /* ==================== 链接通用 ==================== */
-.toc-list a {
+.toc-link {
+  position: relative;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -585,8 +784,10 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
-.toc-list .toc-h3 > a:hover {
-  color: #7c5a29;
+.toc-link:focus-visible {
+  outline: 2px solid rgba(0, 172, 255, 0.45);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* ==================== 星标 ==================== */
@@ -611,7 +812,7 @@ onUnmounted(() => {
   text-shadow: 0 0 8px rgba(201, 163, 90, 0.18);
 }
 
-/* ==================== H2 活动指示器 ==================== */
+/* ==================== 二级活动指示器 ==================== */
 .toc-h2-active-indicator {
   position: absolute;
   left: 0;
@@ -632,7 +833,7 @@ onUnmounted(() => {
     opacity 0.16s ease;
 }
 
-/* ==================== H3 小虫 ==================== */
+/* ==================== 三级小虫 ==================== */
 .toc-bug {
   position: absolute;
   left: 0;
@@ -706,7 +907,13 @@ onUnmounted(() => {
 /* 弹层打开时隐藏右侧悬浮工具组，避免按钮压住底部分页 */
 :global(body.toc-overlay-open #floating-controls) {
   opacity: 0 !important;
-  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(18px) scale(0.96) !important;
+}
+
+/* App.vue 里还有一组全局快捷控制，弹层打开时同样隐藏，避免压住目录 */
+:global(body.toc-overlay-open .floating-controls-container) {
+  opacity: 0 !important;
   pointer-events: none !important;
   transform: translateY(18px) scale(0.96) !important;
 }
@@ -732,7 +939,7 @@ onUnmounted(() => {
     position: fixed;
     top: auto;
     left: 50%;
-    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     width: min(92vw, 420px);
     max-width: 92vw;
     height: auto;
@@ -808,21 +1015,21 @@ onUnmounted(() => {
     transform: translate(-50%, -50%) scale(1);
   }
 
-  .blog-toc.in-overlay .toc-h1-row > a {
+  .blog-toc.in-overlay .toc-root-row .toc-link {
     font-size: 1.16rem;
   }
 
-  .blog-toc.in-overlay .toc-h2 > a {
+  .blog-toc.in-overlay .toc-node .toc-link {
     font-size: 1.08rem;
   }
 
-  .blog-toc.in-overlay .toc-h3 > a {
+  .blog-toc.in-overlay .toc-leaf .toc-link {
     font-size: 1.02rem;
   }
 
-  .blog-toc.in-overlay .toc-h1-row > a,
-  .blog-toc.in-overlay .toc-h2 > a,
-  .blog-toc.in-overlay .toc-h3 > a {
+  .blog-toc.in-overlay .toc-root-row .toc-link,
+  .blog-toc.in-overlay .toc-node .toc-link,
+  .blog-toc.in-overlay .toc-leaf .toc-link {
     line-height: 40px;
   }
 
@@ -856,7 +1063,7 @@ onUnmounted(() => {
   }
 
   .toc-bug.idle {
-    animation: none;
+    animation: none !important;
   }
 }
 </style>

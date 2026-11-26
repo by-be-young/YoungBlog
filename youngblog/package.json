@@ -11,6 +11,8 @@
     "optimize:images": "node scripts/optimize-images.mjs",
     "check:images": "node scripts/compare-image-quality.mjs",
     "check:docs": "node scripts/check-docs.mjs",
+    "test:toc": "node scripts/test-toc.mjs",
+    "test:toc:e2e": "node scripts/e2e-toc.mjs",
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",

@@ -1,30 +1,28 @@
 /**
  * 博客详情页目录导航
  *
- * 目录的职责被拆成三层：
- * 1. 数据层：只负责把正文标题整理成 H1 → H2 → H3 的树；
- * 2. 状态层：只维护展开项、当前章节、阅读进度；
- * 3. 视图层：只在 DOM 变化后把 H2 指示器 / H3 小虫放到对应位置。
+ * 职责分层：
+ * 1. `tocModel.js`：纯函数，负责建树、位置判定、进度计算（可单测）；
+ * 2. 本文件：读取 DOM、缓存标题坐标、维护展开 / 当前节点 / 阅读进度；
+ * 3. `TOC.vue`：只负责渲染、移动端弹层与悬浮球。
  *
- * 滚动高亮不依赖标题文本或 CSS 选择器拼接，统一使用标题 id。
+ * 滚动高亮统一使用标题 id，不拼接标题文字；标题坐标按文档绝对位置缓存，
+ * 滚动时每个方向只读一次 scrollY，避免每帧对几十个标题调用布局测量。
  */
 import { nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
+import {
+  computeReadingProgress,
+  createTocModel,
+  pickActiveNode,
+  resolveActivePath,
+} from './tocModel'
 
-const STAR_MARKER_RE = /(?:【\s*[!！]\s*】|\[\s*[!！]\s*\]|［\s*[!！]\s*］)\s*$/
-const SCROLL_LOCK_MIN_MS = 650
-const SCROLL_LOCK_MAX_MS = 2200
+const ACTIVE_LINE_OFFSET = 28
+const SCROLL_TOP_OFFSET = 10
 const SHORT_ARTICLE_GAP = 60
-
-function parseHeadingText(element) {
-  const raw = String(
-    element.dataset.headingPlainText || element.textContent || '',
-  ).trim()
-  const marked = element.dataset.starMarked === '1'
-  return {
-    text: raw.replace(STAR_MARKER_RE, '').trim(),
-    star: marked || STAR_MARKER_RE.test(raw),
-  }
-}
+const GEOMETRY_REFRESH_DELAY = 180
+const SCROLL_TARGET_TIMEOUT = 2600
+const FALLBACK_NAV_HEIGHT = 60
 
 function cssEscape(value) {
   if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
@@ -33,49 +31,86 @@ function cssEscape(value) {
   return String(value).replace(/["\\]/g, '\\$&')
 }
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value))
-}
-
-function navbarHeight() {
-  return document.querySelector('.navbar')?.offsetHeight || 60
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
 }
 
 export function useBlogToc(options) {
-  const {
-    contentHtml,
-    contentId,
-    isCompact,
-  } = options
+  const { contentHtml, contentId, isCompact } = options
 
   const tree = shallowRef([])
   const progress = ref(0)
-  const openH1Id = ref('')
-  const activeH1Id = ref('')
-  const activeH2Id = ref('')
-  const activeH3Id = ref('')
+  const openRootId = ref('')
+  const activeNodeId = ref('')
+  const activeRootId = ref('')
+  const activeChildId = ref('')
+  const activeLeafId = ref('')
   const isShortArticle = ref(false)
+  const hasHeadings = ref(false)
 
   const listWrapRef = ref(null)
   const tocListRef = ref(null)
   const indicatorRef = ref(null)
   const bugRef = ref(null)
 
-  let flatNodes = []
-  let nodeById = new Map()
-  let highlightedH2 = null
-  let highlightedH3 = null
-  let activeLockUntil = 0
+  /** @type {{ tree: object[], flat: object[], byId: Map<string, object>, skipped: number }} */
+  let model = { tree: [], flat: [], byId: new Map(), skipped: 0 }
+  let elToNode = new WeakMap()
+  let measurements = []
+  let rootDocTop = 0
+  let rootHeight = 0
+  let navHeightCache = FALLBACK_NAV_HEIGHT
+
+  let highlightedChild = null
+  let highlightedLeaf = null
+  let manualClosedRootId = ''
+  let scrollTarget = null
+
   let scrollRaf = 0
   let centerRaf = 0
   let layoutRaf = 0
-  let rebuildTimer = null
-  let layoutTimer = null
+  let rebuildToken = 0
+  let geometryTimer = null
+  let resizeTimer = null
   let resizeObserver = null
+  let bodyObserver = null
+  let mounted = false
 
   function contentRoot() {
     const id = contentId()
     return (id ? document.getElementById(id) : null) || document.querySelector('.article-content')
+  }
+
+  function articleRoot() {
+    return contentRoot()?.closest('.blog-article') || null
+  }
+
+  function measureNavHeight() {
+    const nav = document.querySelector('.navbar')
+    // 沉浸阅读用 transform 把导航栏移出视口，元素仍有布局尺寸，
+    // 只看 getClientRects 会把 60px 的空白当成遮挡，必须识别 body 状态。
+    const immersive = document.body?.classList.contains('immersive-reading-active')
+
+    if (immersive) {
+      navHeightCache = 0
+    } else if (!nav) {
+      navHeightCache = FALLBACK_NAV_HEIGHT
+    } else {
+      navHeightCache = nav.getClientRects().length ? nav.offsetHeight : 0
+    }
+    return navHeightCache
+  }
+
+  function scrollTopNow() {
+    return window.scrollY || window.pageYOffset || 0
+  }
+
+  function activeLine() {
+    return scrollTopNow() + navHeightCache + ACTIVE_LINE_OFFSET
   }
 
   function hidePieces() {
@@ -83,239 +118,246 @@ export function useBlogToc(options) {
     if (bugRef.value) bugRef.value.style.opacity = '0'
   }
 
-  function clearHeadingHighlight() {
-    highlightedH2?.classList.remove('is-toc-active')
-    highlightedH3?.classList.remove('is-toc-active')
-    highlightedH2 = null
-    highlightedH3 = null
+  function replaceContentHighlight(previous, next, className) {
+    if (previous === next) return previous || null
+    previous?.classList.remove(className)
+    next?.classList.add(className)
+    return next || null
   }
 
-  function syncHeadingHighlight(h2Node, h3Node) {
-    const nextH2 = h2Node?.el || null
-    const nextH3 = h3Node?.el || null
+  function syncContentHighlight(path) {
+    const child = path?.childId ? model.byId.get(path.childId) : null
+    const leaf = path?.leafId ? model.byId.get(path.leafId) : null
+    highlightedChild = replaceContentHighlight(
+      highlightedChild,
+      child?.el || null,
+      'is-toc-active',
+    )
+    highlightedLeaf = replaceContentHighlight(
+      highlightedLeaf,
+      leaf?.el || null,
+      'is-toc-active',
+    )
+  }
 
-    if (highlightedH2 !== nextH2) {
-      highlightedH2?.classList.remove('is-toc-active')
-      nextH2?.classList.add('is-toc-active')
-      highlightedH2 = nextH2
-    }
-
-    if (highlightedH3 !== nextH3) {
-      highlightedH3?.classList.remove('is-toc-active')
-      nextH3?.classList.add('is-toc-active')
-      highlightedH3 = nextH3
-    }
+  function clearContentHighlight() {
+    highlightedChild?.classList.remove('is-toc-active')
+    highlightedLeaf?.classList.remove('is-toc-active')
+    highlightedChild = null
+    highlightedLeaf = null
   }
 
   function clearActive() {
-    if (!activeH1Id.value && !activeH2Id.value && !activeH3Id.value) return
-    activeH1Id.value = ''
-    activeH2Id.value = ''
-    activeH3Id.value = ''
-    clearHeadingHighlight()
+    if (!activeNodeId.value) return
+    activeNodeId.value = ''
+    activeRootId.value = ''
+    activeChildId.value = ''
+    activeLeafId.value = ''
+    clearContentHighlight()
     hidePieces()
   }
 
-  function applyActive({ h1 = null, h2 = null, h3 = null }, forceCenter = false) {
-    const nextH1Id = h1?.id || ''
-    const nextH2Id = h2?.id || ''
-    const nextH3Id = h3?.id || ''
-    const h1Changed = nextH1Id !== activeH1Id.value
-    const h2Changed = nextH2Id !== activeH2Id.value
-    const h3Changed = nextH3Id !== activeH3Id.value
-
-    if (h1 && openH1Id.value !== h1.id) openH1Id.value = h1.id
-    activeH1Id.value = nextH1Id
-    activeH2Id.value = nextH2Id
-    activeH3Id.value = nextH3Id
-
-    if (h2Changed || h3Changed) syncHeadingHighlight(h2, h3)
-    if (!h1Changed && !h2Changed && !h3Changed && !forceCenter) return
-
-    nextTick(() => {
-      syncPieces()
-      if (forceCenter || h2Changed || h3Changed) {
-        scheduleCenter(h2?.id || h3?.id || '')
-      }
-    })
+  function pathChanged(path) {
+    return (
+      path.nodeId !== activeNodeId.value ||
+      path.rootId !== activeRootId.value ||
+      path.childId !== activeChildId.value ||
+      path.leafId !== activeLeafId.value
+    )
   }
 
-  function applyNode(node, forceCenter = false) {
-    if (!node) return
-
-    if (node.level === 1) {
-      applyActive({ h1: node }, forceCenter)
-      return
-    }
-
-    if (node.level === 2) {
-      applyActive({ h1: nodeById.get(node.parentId), h2: node }, forceCenter)
-      return
-    }
-
-    const h2 = nodeById.get(node.parentId)
-    applyActive({ h1: h2 ? nodeById.get(h2.parentId) : null, h2, h3: node }, forceCenter)
-  }
-
-  function buildTree() {
-    const root = contentRoot()
-    const roots = []
-    const flat = []
-    const counters = { 1: 0, 2: 0, 3: 0 }
-    const ids = new Set()
-    let currentH1 = null
-    let currentH2 = null
-
-    nodeById = new Map()
-    if (!root) {
-      tree.value = []
-      flatNodes = []
-      return
-    }
-
-    root.querySelectorAll('h1, h2, h3').forEach((element) => {
-      const textContent = String(element.textContent || '').trim()
-      if (!textContent) return
-
-      const level = Number(element.tagName.slice(1))
-      const { text, star } = parseHeadingText(element)
-      counters[level] += 1
-
-      let id = String(element.id || '').trim()
-      if (!id || ids.has(id)) {
-        id = `toc-auto-h${level}-${counters[level]}`
-        while (ids.has(id)) id = `${id}-x`
-        element.id = id
-      }
-      ids.add(id)
-
-      const node = {
-        id,
-        level,
-        text: text || textContent,
-        star,
-        el: element,
-        parentId: '',
-        children: [],
-      }
-      nodeById.set(id, node)
-      flat.push(node)
-
-      if (level === 1) {
-        currentH1 = node
-        currentH2 = null
-        roots.push(node)
-        return
-      }
-
-      if (level === 2) {
-        if (!currentH1) return
-        node.parentId = currentH1.id
-        currentH2 = node
-        currentH1.children.push(node)
-        return
-      }
-
-      if (!currentH2) return
-      node.parentId = currentH2.id
-      currentH2.children.push(node)
-    })
-
-    tree.value = roots
-    flatNodes = flat
-  }
-
-  function resetState() {
-    openH1Id.value = ''
-    activeH1Id.value = ''
-    activeH2Id.value = ''
-    activeH3Id.value = ''
-    progress.value = 0
-    clearHeadingHighlight()
-    hidePieces()
-  }
-
-  function scheduleRebuild() {
-    clearTimeout(rebuildTimer)
-    rebuildTimer = setTimeout(async () => {
-      rebuildTimer = null
-      await nextTick()
-      buildTree()
-      resetState()
-      observeLayout()
-      updateProgress()
-      updateActiveFromScroll(true)
-
-      if (location.hash) {
-        const id = decodeURIComponent(location.hash.slice(1))
-        const node = nodeById.get(id)
-        if (node) applyNode(node, true)
-      }
-
-      measureLayout()
-      syncPieces()
-    }, 0)
-  }
-
-  function updateProgress() {
-    const root = contentRoot()
-    if (!root) return
-
-    const navHeight = navbarHeight()
-    const offset = navHeight + 20
-    const viewport = Math.max(window.innerHeight - offset, 1)
-    const rect = root.getBoundingClientRect()
-
-    if (rect.height <= viewport) {
-      progress.value = rect.top < window.innerHeight ? 100 : 0
-      return
-    }
-
-    const passed = Math.max(0, offset - rect.top)
-    const total = Math.max(rect.height - viewport, 1)
-    progress.value = clamp((passed / total) * 100, 0, 100)
-  }
-
-  function currentHeading() {
-    const line = navbarHeight() + 28
-    let current = null
-
-    for (const node of flatNodes) {
-      const rect = node.el.getBoundingClientRect()
-      if (!node.el.getClientRects().length) continue
-      if (rect.top <= line) current = node
-    }
-
-    return current
-  }
-
-  function updateActiveFromScroll(force = false) {
-    if (!force && Date.now() < activeLockUntil) return
-
-    const node = currentHeading()
+  function applyActiveNode(node, { forceCenter = false } = {}) {
     if (!node) {
       clearActive()
       return
     }
-    applyNode(node)
+
+    const path = resolveActivePath(node)
+    const changed = pathChanged(path)
+    const previousRootId = activeRootId.value
+
+    // 换到新的根章节时，解除上一次的手动折叠锁定
+    if (path.rootId !== previousRootId) manualClosedRootId = ''
+
+    const rootNode = model.byId.get(path.rootId)
+    const canAutoOpen = Boolean(rootNode?.children?.length)
+    if (
+      canAutoOpen &&
+      manualClosedRootId !== rootNode.id &&
+      openRootId.value !== rootNode.id
+    ) {
+      openRootId.value = rootNode.id
+    }
+
+    activeNodeId.value = path.nodeId
+    activeRootId.value = path.rootId
+    activeChildId.value = path.childId
+    activeLeafId.value = path.leafId
+
+    if (changed) syncContentHighlight(path)
+    if (!changed && !forceCenter) return
+
+    nextTick(() => {
+      syncPieces()
+      if (forceCenter || changed) scheduleCenter(path.nodeId)
+    })
+  }
+
+  function buildModel() {
+    const root = contentRoot()
+    if (!root) {
+      model = { tree: [], flat: [], byId: new Map(), skipped: 0 }
+      tree.value = []
+      hasHeadings.value = false
+      measurements = []
+      return
+    }
+
+    const raw = []
+    root.querySelectorAll('h1, h2, h3').forEach((el) => {
+      if (el.hasAttribute('data-toc-skip')) return
+      if (el.getAttribute('aria-hidden') === 'true') return
+      raw.push({
+        id: el.id,
+        level: Number(el.tagName.charAt(1)),
+        text: el.dataset.headingPlainText ?? el.textContent ?? '',
+        star: el.dataset.starMarked === '1',
+        el,
+      })
+    })
+
+    model = createTocModel(raw)
+    elToNode = new WeakMap()
+
+    model.flat.forEach((node) => {
+      if (!node.el) return
+      if (node.el.id !== node.id) node.el.id = node.id
+      elToNode.set(node.el, node)
+    })
+
+    tree.value = model.tree
+    hasHeadings.value = model.flat.length > 0
+  }
+
+  function resetState() {
+    openRootId.value = ''
+    manualClosedRootId = ''
+    activeNodeId.value = ''
+    activeRootId.value = ''
+    activeChildId.value = ''
+    activeLeafId.value = ''
+    progress.value = 0
+    scrollTarget = null
+    clearContentHighlight()
+    hidePieces()
+  }
+
+  /**
+   * 缓存标题与正文的文档绝对位置。
+   * 只在重建、尺寸变化、内容布局变化（习题展开、图片加载等）时调用。
+   */
+  function measureGeometry() {
+    const root = contentRoot()
+    if (!root) {
+      measurements = []
+      rootDocTop = 0
+      rootHeight = 0
+      return
+    }
+
+    const scrollTop = scrollTopNow()
+    const rootRect = root.getBoundingClientRect()
+    rootDocTop = rootRect.top + scrollTop
+    rootHeight = rootRect.height
+
+    const next = []
+    model.flat.forEach((node) => {
+      const el = node.el
+      if (!el || !el.isConnected || !el.getClientRects().length) return
+      next.push({ node, top: el.getBoundingClientRect().top + scrollTop })
+    })
+    measurements = next
+  }
+
+  function updateProgress() {
+    progress.value = computeReadingProgress({
+      rootTop: rootDocTop - scrollTopNow(),
+      rootHeight,
+      viewportHeight: window.innerHeight,
+      navHeight: navHeightCache,
+    })
+  }
+
+  function measureShortArticle() {
+    if (isCompact.value) {
+      isShortArticle.value = false
+      return
+    }
+
+    const article = articleRoot()
+    const root = contentRoot()
+    if (!article || !root) {
+      isShortArticle.value = false
+      return
+    }
+
+    const rect = article.getBoundingClientRect()
+    const available = window.innerHeight - navHeightCache
+    isShortArticle.value =
+      model.flat.length > 0 &&
+      rect.height > 0 &&
+      rect.height + SHORT_ARTICLE_GAP <= available
+  }
+
+  /**
+   * 页面刚打开、还没有任何标题越过判定线时，先把第一个可展开章节打开，
+   * 避免移动端目录只剩一排折叠的根节点。
+   */
+  function ensureDefaultOpen() {
+    if (activeNodeId.value || openRootId.value || manualClosedRootId) return
+    const first = model.tree.find((node) => node.children?.length)
+    if (first) openRootId.value = first.id
+  }
+
+  function updateActiveFromScroll(force = false) {
+    if (!force && scrollTarget) {
+      if (Date.now() > scrollTarget.until) {
+        scrollTarget = null
+      } else {
+        const top = scrollTopNow()
+        if (Math.abs(top - scrollTarget.top) <= 2) scrollTarget = null
+        else {
+          applyActiveNode(scrollTarget.node)
+          return
+        }
+      }
+    }
+
+    applyActiveNode(pickActiveNode(measurements, activeLine()))
+    ensureDefaultOpen()
+  }
+
+  function rowElement(nodeId, selector = '.toc-link') {
+    const list = tocListRef.value
+    if (!list) return null
+    return list.querySelector(`li[data-node-id="${cssEscape(nodeId)}"] ${selector}`)
   }
 
   function syncPieces() {
     const wrap = listWrapRef.value
-    const list = tocListRef.value
-    if (!wrap || !list) {
+    if (!wrap) {
       hidePieces()
       return
     }
 
-    const h2Node = activeH2Id.value ? nodeById.get(activeH2Id.value) : null
-    const h3Node = activeH3Id.value ? nodeById.get(activeH3Id.value) : null
-    const h2Visible = Boolean(h2Node && openH1Id.value === h2Node.parentId)
+    const childNode = activeChildId.value ? model.byId.get(activeChildId.value) : null
+    const leafNode = activeLeafId.value ? model.byId.get(activeLeafId.value) : null
+    const branchVisible = Boolean(
+      childNode && openRootId.value === activeRootId.value,
+    )
 
-    if (h2Node && h2Visible && indicatorRef.value) {
-      const anchor = list.querySelector(
-        `li[data-node-id="${cssEscape(h2Node.id)}"] > a`,
-      )
+    if (childNode && branchVisible && indicatorRef.value) {
+      const anchor = rowElement(childNode.id)
       const anchorRect = anchor?.getBoundingClientRect()
       const wrapRect = wrap.getBoundingClientRect()
       if (anchorRect && wrapRect) {
@@ -323,37 +365,33 @@ export function useBlogToc(options) {
         const top = Math.round(anchorRect.top - wrapRect.top + wrap.scrollTop - 4)
         const width = Math.max(0, Math.round(wrapRect.width - left - 6))
         const height = Math.round(anchorRect.height + 8)
-        if ([left, top, width, height].every(Number.isFinite)) {
-          Object.assign(indicatorRef.value.style, {
-            left: `${left}px`,
-            top: `${top}px`,
-            width: `${width}px`,
-            height: `${height}px`,
-            opacity: '1',
-          })
-        }
-      } else if (indicatorRef.value) {
+        Object.assign(indicatorRef.value.style, {
+          left: `${left}px`,
+          top: `${top}px`,
+          width: `${width}px`,
+          height: `${height}px`,
+          opacity: '1',
+        })
+      } else {
         indicatorRef.value.style.opacity = '0'
       }
     } else if (indicatorRef.value) {
       indicatorRef.value.style.opacity = '0'
     }
 
-    if (h3Node && h2Visible && bugRef.value) {
-      const anchor = list.querySelector(
-        `li[data-node-id="${cssEscape(h3Node.id)}"] > a`,
-      )
+    if (leafNode && branchVisible && bugRef.value) {
+      const anchor = rowElement(leafNode.id)
       const anchorRect = anchor?.getBoundingClientRect()
       const wrapRect = wrap.getBoundingClientRect()
       if (anchorRect && wrapRect) {
         Object.assign(bugRef.value.style, {
-          left: `${Math.round(anchorRect.left - wrapRect.left - 26)}px`,
+          left: `${Math.max(0, Math.round(anchorRect.left - wrapRect.left - 20))}px`,
           top: `${Math.round(
             anchorRect.top - wrapRect.top + wrap.scrollTop + (anchorRect.height - 18) / 2,
           )}px`,
           opacity: '1',
         })
-      } else if (bugRef.value) {
+      } else {
         bugRef.value.style.opacity = '0'
       }
     } else if (bugRef.value) {
@@ -361,18 +399,16 @@ export function useBlogToc(options) {
     }
   }
 
-  function scheduleCenter(id) {
-    if (!id) return
+  function scheduleCenter(nodeId) {
+    if (!nodeId) return
     if (centerRaf) cancelAnimationFrame(centerRaf)
 
     centerRaf = requestAnimationFrame(() => {
       centerRaf = 0
       const wrap = listWrapRef.value
-      const list = tocListRef.value
-      if (!wrap || !list) return
-      if (wrap.scrollHeight <= wrap.clientHeight + 2) return
+      if (!wrap || wrap.scrollHeight <= wrap.clientHeight + 2) return
 
-      const anchor = list.querySelector(`li[data-node-id="${cssEscape(id)}"] > a`)
+      const anchor = rowElement(nodeId)
       if (!anchor || !anchor.getClientRects().length) return
 
       const wrapRect = wrap.getBoundingClientRect()
@@ -380,81 +416,96 @@ export function useBlogToc(options) {
       const itemTop = anchorRect.top - wrapRect.top + wrap.scrollTop
       const desired = itemTop - (wrap.clientHeight - anchorRect.height) / 2
       const max = Math.max(0, wrap.scrollHeight - wrap.clientHeight)
-      const next = clamp(desired, 0, max)
+      const next = Math.max(0, Math.min(desired, max))
       if (Math.abs(wrap.scrollTop - next) < 2) return
-      wrap.scrollTo({ top: next, behavior: 'smooth' })
+      wrap.scrollTo({
+        top: next,
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      })
     })
   }
 
-  function toggleH1(node) {
-    const closing = openH1Id.value === node.id
-    openH1Id.value = closing ? '' : node.id
+  function toggleRoot(node) {
+    if (!node?.children?.length) return
 
-    if (closing && activeH2Id.value) {
-      const h2 = nodeById.get(activeH2Id.value)
-      if (h2?.parentId === node.id) {
-        activeH2Id.value = ''
-        activeH3Id.value = ''
-        syncHeadingHighlight(null, null)
-      }
+    if (openRootId.value === node.id) {
+      openRootId.value = ''
+      manualClosedRootId = node.id
+    } else {
+      openRootId.value = node.id
+      manualClosedRootId = ''
     }
 
     nextTick(() => {
       syncPieces()
-      if (!closing) scheduleCenter(node.id)
+      if (openRootId.value === node.id) scheduleCenter(node.id)
     })
   }
 
-  function scrollToNode(node) {
-    if (!node?.el) return
-
-    const offset = navbarHeight() + 10
-    const top = node.el.getBoundingClientRect().top + window.scrollY - offset
-    const distance = Math.abs(top - window.scrollY)
-    activeLockUntil =
-      Date.now() +
-      Math.max(
-        SCROLL_LOCK_MIN_MS,
-        Math.min(Math.round(distance * 0.9), SCROLL_LOCK_MAX_MS),
-      )
-
-    applyNode(node, true)
-    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
-
-    try {
-      history.replaceState(null, '', `#${node.id}`)
-    } catch {
-      // 静态托管或受限环境忽略即可
-    }
+  function cancelProgrammaticScroll() {
+    scrollTarget = null
   }
 
-  function measureLayout() {
-    if (isCompact.value) {
-      isShortArticle.value = false
-      return
+  function scrollToNode(node, { instant = false } = {}) {
+    if (!node?.el) return
+
+    const top = Math.max(
+      0,
+      node.el.getBoundingClientRect().top + scrollTopNow() - navHeightCache - SCROLL_TOP_OFFSET,
+    )
+
+    scrollTarget = {
+      node,
+      top,
+      until: Date.now() + SCROLL_TARGET_TIMEOUT,
     }
 
-    const root = contentRoot()
-    const article = root?.closest('.blog-article')
-    if (!article) {
-      isShortArticle.value = false
-      return
+    // 主动跳转时展开目标所在章节，并清掉手动折叠状态
+    const rootId = resolveActivePath(node).rootId
+    if (rootId) {
+      openRootId.value = rootId
+      manualClosedRootId = ''
     }
 
-    const rect = article.getBoundingClientRect()
-    const available = window.innerHeight - navbarHeight()
-    isShortArticle.value =
-      flatNodes.length > 0 &&
-      rect.height > 0 &&
-      rect.height + SHORT_ARTICLE_GAP <= available
+    applyActiveNode(node, { forceCenter: true })
+
+    window.scrollTo({
+      top,
+      behavior: instant || prefersReducedMotion() ? 'auto' : 'smooth',
+    })
+  }
+
+  function refresh() {
+    if (!mounted) return
+    measureNavHeight()
+    measureGeometry()
+    measureShortArticle()
+    updateProgress()
+    updateActiveFromScroll(true)
+    syncPieces()
+    scheduleCenter(activeLeafId.value || activeChildId.value || activeRootId.value)
+  }
+
+  function scheduleGeometryRefresh() {
+    clearTimeout(geometryTimer)
+    geometryTimer = setTimeout(() => {
+      geometryTimer = null
+      measureGeometry()
+      updateProgress()
+      updateActiveFromScroll()
+      syncPieces()
+    }, GEOMETRY_REFRESH_DELAY)
   }
 
   function scheduleLayout() {
     if (layoutRaf) return
     layoutRaf = requestAnimationFrame(() => {
       layoutRaf = 0
-      measureLayout()
+      measureNavHeight()
+      measureGeometry()
+      measureShortArticle()
       updateProgress()
+      updateActiveFromScroll(true)
       syncPieces()
     })
   }
@@ -465,12 +516,30 @@ export function useBlogToc(options) {
     if (typeof ResizeObserver === 'undefined') return
 
     const root = contentRoot()
-    const article = root?.closest('.blog-article')
+    const article = articleRoot()
     if (!root && !article) return
 
-    resizeObserver = new ResizeObserver(scheduleLayout)
+    resizeObserver = new ResizeObserver(() => scheduleLayout())
     if (root) resizeObserver.observe(root)
     if (article) resizeObserver.observe(article)
+  }
+
+  /**
+   * 沉浸阅读 / 主题切换只改 body class，不触发 resize，
+   * 这里补一个轻量观察器，保证导航高度和判定线能及时更新。
+   */
+  function observeBodyState() {
+    bodyObserver?.disconnect()
+    bodyObserver = null
+    if (typeof MutationObserver === 'undefined') return
+
+    bodyObserver = new MutationObserver(() => {
+      if (mounted) scheduleLayout()
+    })
+    bodyObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
   }
 
   function onScroll() {
@@ -479,90 +548,131 @@ export function useBlogToc(options) {
       scrollRaf = 0
       updateProgress()
       updateActiveFromScroll()
+      scheduleGeometryRefresh()
     })
   }
 
   function onResize() {
+    scrollTarget = null
     scheduleLayout()
-    clearTimeout(layoutTimer)
-    layoutTimer = setTimeout(() => {
-      layoutTimer = null
-      measureLayout()
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => {
+      resizeTimer = null
+      measureNavHeight()
+      measureShortArticle()
       syncPieces()
-    }, 260)
+    }, 240)
   }
 
-  function onHashChange() {
-    if (!location.hash) return
-    let id
-    try {
-      id = decodeURIComponent(location.hash.slice(1))
-    } catch {
+  function onUserScrollIntent(event) {
+    if (!scrollTarget) return
+    if (event?.type === 'keydown') {
+      const key = event.key
+      if (
+        key === 'ArrowUp' ||
+        key === 'ArrowDown' ||
+        key === 'PageUp' ||
+        key === 'PageDown' ||
+        key === 'Home' ||
+        key === 'End' ||
+        key === ' '
+      ) {
+        cancelProgrammaticScroll()
+      }
       return
     }
-    const node = nodeById.get(id)
-    if (node) applyNode(node, true)
+    cancelProgrammaticScroll()
   }
 
-  function refresh() {
-    measureLayout()
-    updateProgress()
-    syncPieces()
-    scheduleCenter(activeH2Id.value || activeH3Id.value)
+  function rebuild() {
+    const token = ++rebuildToken
+    nextTick(() => {
+      if (token !== rebuildToken || !mounted) return
+      buildModel()
+      resetState()
+      observeLayout()
+      measureNavHeight()
+      measureGeometry()
+      measureShortArticle()
+      updateProgress()
+      updateActiveFromScroll(true)
+      syncPieces()
+    })
   }
 
-  watch(() => [contentHtml(), contentId()], scheduleRebuild, { flush: 'post' })
+  watch(() => [contentHtml(), contentId()], rebuild, { flush: 'post' })
+
   watch(isCompact, () => {
-    measureLayout()
+    if (!mounted) return
+    measureShortArticle()
     syncPieces()
   })
 
-  onMounted(async () => {
+  onMounted(() => {
+    mounted = true
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize)
-    window.addEventListener('hashchange', onHashChange)
+    window.addEventListener('wheel', onUserScrollIntent, { passive: true })
+    window.addEventListener('touchstart', onUserScrollIntent, { passive: true })
+    window.addEventListener('keydown', onUserScrollIntent)
+    observeBodyState()
 
-    await nextTick()
-    buildTree()
-    resetState()
-    observeLayout()
-    updateProgress()
-    updateActiveFromScroll(true)
-    measureLayout()
-    syncPieces()
+    nextTick(() => {
+      buildModel()
+      resetState()
+      observeLayout()
+      measureNavHeight()
+      measureGeometry()
+      measureShortArticle()
+      updateProgress()
+      updateActiveFromScroll(true)
+      syncPieces()
+    })
   })
 
   onUnmounted(() => {
+    mounted = false
+    rebuildToken += 1
     window.removeEventListener('scroll', onScroll)
     window.removeEventListener('resize', onResize)
-    window.removeEventListener('hashchange', onHashChange)
-    clearTimeout(rebuildTimer)
-    clearTimeout(layoutTimer)
+    window.removeEventListener('wheel', onUserScrollIntent)
+    window.removeEventListener('touchstart', onUserScrollIntent)
+    window.removeEventListener('keydown', onUserScrollIntent)
+    clearTimeout(geometryTimer)
+    geometryTimer = null
+    clearTimeout(resizeTimer)
+    resizeTimer = null
     resizeObserver?.disconnect()
     resizeObserver = null
+    bodyObserver?.disconnect()
+    bodyObserver = null
     if (scrollRaf) cancelAnimationFrame(scrollRaf)
     if (centerRaf) cancelAnimationFrame(centerRaf)
     if (layoutRaf) cancelAnimationFrame(layoutRaf)
     scrollRaf = 0
     centerRaf = 0
     layoutRaf = 0
-    clearHeadingHighlight()
+    scrollTarget = null
+    clearContentHighlight()
   })
 
   return {
     tree,
     progress,
-    openH1Id,
-    activeH1Id,
-    activeH2Id,
-    activeH3Id,
+    openRootId,
+    activeNodeId,
+    activeRootId,
+    activeChildId,
+    activeLeafId,
     isShortArticle,
+    hasHeadings,
     listWrapRef,
     tocListRef,
     indicatorRef,
     bugRef,
-    toggleH1,
+    toggleRoot,
     scrollToNode,
     refresh,
+    findNode: (id) => model.byId.get(String(id)) || null,
   }
 }
