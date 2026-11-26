@@ -7,7 +7,8 @@
 | `EntrySplash.vue` | 入场加载屏，阶段权重进度、揭幕与退场 | `App.vue`（Teleport 到 body） |
 | `SearchPanel.vue` | 全站搜索：标题 / 正文、键盘导航、高亮 | `App.vue` |
 | `SettingsModal.vue` | 语言、音乐、习题模式、代码块模式 | `App.vue` |
-| `AnnouncementModal.vue` | 首次进入的公告弹窗 | `App.vue` |
+| `AnnouncementModal.vue` | 首次进入的公告弹窗（结构化阅读 + 章节索引 + 底部入口） | `App.vue` |
+| `AnnouncementContent.vue` | 公告结构化渲染（标题 / 章节 / 分组 / 列表 / 寄语），`variant="modal"` 或 `"card"` | `AnnouncementModal.vue`、`AnnouncementsView.vue` |
 | `FloatingControls.vue` | 全局浮动按钮（设置 / 公告 / 音乐） | `App.vue` |
 | `Fireflies.vue` | 归档 / 分类 / 系列 / 快捷链接页的萤火虫装饰 | `App.vue` |
 | `LicenseNotice.vue` | 文章底部版权说明 | `BlogDetailView.vue` |

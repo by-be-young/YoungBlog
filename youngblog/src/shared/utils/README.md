@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | `url.js` | `resolveUrl(path)` | 拼接 `BASE_URL`，跳过外链 / data / blob |
 | `highlight.js` | 默认导出 hljs | 配置 highlight.js 的语言与别名 |
+| `announcement.js` | `parseAnnouncement(message)`、`isRecentAnnouncement(dateStr, days)` | 把公告纯文本按既有书写习惯还原为标题 / 章节 / 分组 / 列表 / 寄语结构 |
 
 ## `resolveUrl` 规则
 

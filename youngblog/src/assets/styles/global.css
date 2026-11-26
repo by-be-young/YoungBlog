@@ -23,6 +23,36 @@
     --macaron-scroll-track: rgba(255, 255, 255, 0.35);
     --macaron-scroll-thumb-border: rgba(255, 255, 255, 0.55);
     --macaron-scroll-track-border: rgba(0, 0, 0, 0.06);
+
+    /* ========== 黄绿主题：公告 / 设置 / 悬浮组件 ==========
+       组件内只引用这些变量，不写死色号；调整主题只改这一组。
+       取自站点的暖纸底（#fdf9f2）与墨色（#17222f），
+       主色为低饱和黄绿，配一点暖黄做层次。 */
+    --notice-accent-100: #f5f8e1;
+    --notice-accent-200: #e9f0c2;
+    --notice-accent-300: #d8e49a;
+    --notice-accent-400: #c3d36c;
+    --notice-accent: #adc357;
+    --notice-accent-strong: #82962c;
+    --notice-accent-deep: #5c6c1e;
+    --notice-gold: #ecd583;
+    --notice-gold-soft: #f7ecc4;
+    --notice-accent-wash: rgba(173, 195, 87, 0.14);
+    --notice-accent-veil: rgba(173, 195, 87, 0.32);
+    --notice-glow: rgba(124, 145, 45, 0.26);
+    --notice-paper: rgba(253, 251, 241, 0.9);
+    --notice-paper-solid: #fdfbf1;
+    --notice-paper-muted: rgba(247, 248, 231, 0.62);
+    --notice-ink: #1e2818;
+    --notice-ink-soft: rgba(30, 40, 24, 0.68);
+    --notice-ink-faint: rgba(30, 40, 24, 0.44);
+    --notice-line: rgba(30, 40, 24, 0.1);
+    --notice-line-strong: rgba(30, 40, 24, 0.18);
+    --notice-on-accent: #2c3410;
+    --notice-scrim: rgba(20, 26, 14, 0.42);
+    --notice-inset: rgba(255, 255, 255, 0.62);
+    --notice-shadow: 0 18px 44px rgba(23, 34, 47, 0.16);
+    --notice-shadow-soft: 0 8px 20px rgba(23, 34, 47, 0.1);
 }
 
 /* ========== 1.1 根字号（全站等比缩放） ==========
@@ -442,7 +472,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 /* ========== 8. 浮动控件 ========== */
 .floating-btn {
-    border: none;
+    border: 1px solid var(--notice-accent-veil);
     cursor: pointer;
     width: 48px;
     height: 48px;
@@ -450,10 +480,14 @@ body::-webkit-scrollbar-thumb:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 22px rgba(44, 62, 80, 0.14);
-    color: #fff;
-    background: linear-gradient(135deg, rgba(0, 172, 255, 1), rgba(72, 219, 187, 0.98), rgba(255, 110, 155, 0.98));
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: var(--notice-shadow-soft);
+    color: var(--notice-accent-deep);
+    background:
+        radial-gradient(120% 120% at 30% 18%, var(--notice-inset), transparent 58%),
+        var(--notice-paper);
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
 }
 
 .floating-btn svg {
@@ -471,9 +505,10 @@ body::-webkit-scrollbar-thumb:hover {
     height: 48px;
     border-radius: 50%;
     padding: 0;
-    background: linear-gradient(135deg, rgba(0, 172, 255, 1), rgba(72, 219, 187, 0.98), rgba(255, 110, 155, 0.98));
-    color: #fff;
-    box-shadow: 0 10px 22px rgba(44, 62, 80, 0.14);
+    border: 1px solid var(--notice-accent-veil);
+    background: var(--notice-paper);
+    color: var(--notice-accent-deep);
+    box-shadow: var(--notice-shadow-soft);
     transform: translateX(8px);
     opacity: 0;
     transition: transform 0.18s ease, opacity 0.18s ease;

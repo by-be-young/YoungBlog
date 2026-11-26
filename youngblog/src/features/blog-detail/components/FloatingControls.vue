@@ -238,16 +238,25 @@ onUnmounted(() => {
   min-width: 44px;
   min-height: 44px;
   border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #00acff, #48dbbb, #ff6e9b);
-  color: #fff;
+  border: 1px solid var(--notice-accent-veil);
+  background:
+    radial-gradient(120% 120% at 30% 18%, var(--notice-inset), transparent 58%),
+    var(--notice-paper);
+  color: var(--notice-accent-deep);
   font-size: var(--fab-icon-size);
-  box-shadow: 0 2px 12px rgba(52, 152, 219, 0.25);
+  box-shadow: var(--notice-shadow-soft);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
   flex-shrink: 0;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -256,7 +265,9 @@ onUnmounted(() => {
 
 .floating-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.35);
+  color: var(--notice-accent-strong);
+  border-color: var(--notice-accent);
+  box-shadow: 0 10px 24px var(--notice-glow);
 }
 
 .floating-btn:active {
@@ -264,7 +275,7 @@ onUnmounted(() => {
 }
 
 .floating-btn:focus-visible {
-  outline: 3px solid rgba(0, 172, 255, 0.9);
+  outline: 3px solid var(--notice-accent-strong);
   outline-offset: 2px;
 }
 
@@ -324,8 +335,8 @@ onUnmounted(() => {
 
 @media (hover: none), (pointer: coarse) {
   .sub-btn {
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    box-shadow: 0 4px 16px rgba(52, 152, 219, 0.3);
+    border: 1px solid var(--notice-accent-veil);
+    box-shadow: 0 6px 18px var(--notice-glow);
   }
 }
 
@@ -349,11 +360,8 @@ onUnmounted(() => {
     display: none !important;
   }
 
-  :global(#floating-controls:not(.is-open) > .toc-fab) {
-    display: none !important;
-  }
-
-  #floating-controls.is-open > .toc-fab {
+  /* 目录球是独立入口，不能跟设置菜单一起折叠，否则移动端无法打开目录 */
+  :global(#floating-controls .toc-fab) {
     display: inline-flex !important;
   }
 }

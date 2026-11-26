@@ -103,10 +103,10 @@ const showFireflies = computed(() => {
   return pages.includes(route.name?.toLowerCase())
 })
 
-// 背景蒙版：分类/链接页毛玻璃，系列页强蒙版；归档页保留首页的清晰照片
+// 背景蒙版：分类/链接/公告页毛玻璃，系列页强蒙版；归档页保留首页的清晰照片
 const slideshowClass = computed(() => {
   const name = route.name?.toLowerCase()
-  if (name === 'categories' || name === 'quicklinks') return 'is-frosted'
+  if (name === 'categories' || name === 'quicklinks' || name === 'announcements') return 'is-frosted'
   if (name === 'series') return 'is-series'
   return ''
 })

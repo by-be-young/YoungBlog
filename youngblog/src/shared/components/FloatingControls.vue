@@ -1,23 +1,52 @@
-<!-- FloatingControls.vue - 完整修复 -->
+<!-- FloatingControls.vue - 左下角快捷控制坞（公告 / 设置 / 音乐） -->
 <template>
   <div class="floating-controls-container" :class="{ 'is-open': mobileOpen }">
-    <button class="fab-btn fab-toggle" :class="{ 'has-unread': hasUnread }" type="button" @click="mobileOpen = !mobileOpen" aria-label="展开快捷控制">
-      <i class="fas fa-sliders"></i>
+    <button
+      class="fab-btn fab-toggle"
+      :class="{ 'has-unread': hasUnread }"
+      type="button"
+      :aria-label="i18n.currentTranslations.control_controls"
+      :aria-expanded="mobileOpen"
+      @click="mobileOpen = !mobileOpen"
+    >
+      <i class="fas fa-sliders" aria-hidden="true"></i>
+      <span v-if="hasUnread" class="fab-dot" aria-hidden="true"></span>
     </button>
 
     <!-- 公告悬浮球 -->
-    <button class="fab-btn fab-announcement" :class="{ 'has-unread': hasUnread }" @click="openAnnouncement" aria-label="打开公告">
-      <i class="fas fa-bullhorn"></i>
+    <button
+      class="fab-btn fab-announcement"
+      :class="{ 'has-unread': hasUnread }"
+      type="button"
+      :aria-label="i18n.currentTranslations.control_announcement"
+      @click="openAnnouncement"
+    >
+      <i class="fas fa-bullhorn" aria-hidden="true"></i>
+      <span v-if="hasUnread" class="fab-dot" aria-hidden="true"></span>
+      <span class="fab-tooltip">{{ i18n.currentTranslations.control_announcement }}</span>
     </button>
 
     <!-- 设置悬浮球 -->
-    <button class="fab-btn fab-settings" @click="openSettings" aria-label="打开设置">
-      <i class="fas fa-cog"></i>
+    <button
+      class="fab-btn fab-settings"
+      type="button"
+      :aria-label="i18n.currentTranslations.control_settings"
+      @click="openSettings"
+    >
+      <i class="fas fa-sliders" aria-hidden="true"></i>
+      <span class="fab-tooltip">{{ i18n.currentTranslations.control_settings }}</span>
     </button>
 
     <!-- 音乐悬浮球 — 从 store 读取播放状态 -->
-    <button class="fab-btn fab-music" :class="{ 'is-visible': showMusicFab, 'is-paused': !musicStore.isPlaying }" @click="toggleMusic" aria-label="音乐控制">
-      <i :class="musicStore.isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+    <button
+      class="fab-btn fab-music"
+      :class="{ 'is-visible': showMusicFab, 'is-paused': !musicStore.isPlaying }"
+      type="button"
+      :aria-label="i18n.currentTranslations.control_music"
+      @click="toggleMusic"
+    >
+      <i :class="musicStore.isPlaying ? 'fas fa-pause' : 'fas fa-play'" aria-hidden="true"></i>
+      <span class="fab-tooltip">{{ i18n.currentTranslations.control_music }}</span>
     </button>
   </div>
 </template>
@@ -25,8 +54,10 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useMusicStore } from '@/shared/stores/musicStore'
+import { useI18nStore } from '@/shared/stores/i18nStore'
 
 const musicStore = useMusicStore()
+const i18n = useI18nStore()
 const hasUnread = ref(false)
 const showMusicFab = ref(false)
 const mobileOpen = ref(false)
@@ -92,238 +123,278 @@ onUnmounted(() => {
 })
 </script>
 
-<style>
+<style scoped>
 /* ==================================================
-   SECTION: 浮动控制按钮 - 使用独立类名避免冲突
+   快捷控制坞：纸面玻璃 + 黄绿细描边
+   色值统一走 --notice-* 变量
    ================================================== */
 
 .floating-controls-container {
-  position: fixed !important;
-  left: 22px !important;
-  bottom: 22px !important;
-  z-index: 9999 !important;
-  display: flex !important;
-  flex-direction: column-reverse !important;
-  align-items: center !important;
-  gap: 12px !important;
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 10px;
 }
 
-/* ===== 基础 FAB 样式 ===== */
+/* ===== 基础 FAB ===== */
 .floating-controls-container .fab-btn {
-  width: 52px !important;
-  height: 52px !important;
-  border: 2px solid transparent !important;
-  border-radius: 50% !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 1.25rem !important;
-  cursor: pointer !important;
-  transition: transform 0.14s ease, box-shadow 0.14s ease, opacity 0.18s ease, visibility 0.18s ease !important;
-  box-shadow: 0 10px 24px rgba(23, 34, 47, 0.12) !important;
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--notice-accent-veil);
   background:
-    linear-gradient(180deg, #fffdf9 0%, #fdf6ec 100%) padding-box,
-    linear-gradient(135deg, rgba(255, 182, 201, 0.95), rgba(199, 182, 255, 0.9) 52%, rgba(167, 243, 208, 0.95)) border-box !important;
-  color: #17324f !important;
-  outline: none !important;
-  user-select: none !important;
+    radial-gradient(120% 120% at 30% 18%, var(--notice-inset), transparent 58%),
+    var(--notice-paper);
+  color: var(--notice-ink-soft);
+  font-size: 1.1rem;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  box-shadow:
+    var(--notice-shadow-soft),
+    0 1px 0 var(--notice-inset) inset;
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 }
 
 .floating-controls-container .fab-btn:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 16px 32px rgba(23, 34, 47, 0.18) !important;
+  transform: translateY(-2px);
+  color: var(--notice-accent-deep);
+  border-color: var(--notice-accent);
+  box-shadow:
+    0 14px 28px var(--notice-glow),
+    0 1px 0 var(--notice-inset) inset;
 }
 
 .floating-controls-container .fab-btn:active {
-  transform: translateY(0) !important;
+  transform: translateY(0) scale(0.97);
+}
+
+.floating-controls-container .fab-btn:focus-visible {
+  outline: 2px solid var(--notice-accent-strong);
+  outline-offset: 3px;
 }
 
 .floating-controls-container .fab-toggle {
-  display: none !important;
+  display: none;
 }
 
-/* ===== 公告按钮 ===== */
+/* ===== 提示气泡（仅桌面端） ===== */
+.floating-controls-container .fab-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translate(-4px, -50%);
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid var(--notice-accent-veil);
+  background: var(--notice-paper-solid);
+  color: var(--notice-accent-deep);
+  font-family: var(--font-ui, -apple-system, 'Segoe UI', 'PingFang SC', sans-serif);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  box-shadow: var(--notice-shadow-soft);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+}
+
+.floating-controls-container .fab-btn:hover .fab-tooltip,
+.floating-controls-container .fab-btn:focus-visible .fab-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(0, -50%);
+}
+
+/* ===== 未读标记 ===== */
+.floating-controls-container .fab-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--notice-accent-strong);
+  box-shadow: 0 0 0 2px var(--notice-paper-solid);
+}
+
 .floating-controls-container .fab-announcement {
-  color: #c84070 !important;
+  color: var(--notice-accent-strong);
 }
 
 .floating-controls-container .fab-announcement.has-unread {
+  border-color: var(--notice-accent-strong);
   background:
-    linear-gradient(180deg, #fff5f8 0%, #ffe9ef 100%) padding-box,
-    linear-gradient(135deg, rgba(255, 166, 192, 0.98), rgba(255, 214, 166, 0.92)) border-box !important;
-  color: #b83760 !important;
-  box-shadow: 0 12px 30px rgba(200, 64, 112, 0.18) !important;
+    radial-gradient(120% 120% at 30% 18%, var(--notice-inset), transparent 58%),
+    linear-gradient(150deg, var(--notice-accent-200), var(--notice-gold-soft));
+  color: var(--notice-accent-deep);
+  box-shadow:
+    0 10px 24px var(--notice-glow),
+    0 1px 0 var(--notice-inset) inset;
 }
 
-.floating-controls-container .fab-announcement.has-unread i {
-  animation: fab-shake 4s ease-in-out infinite;
+.floating-controls-container .fab-announcement.has-unread::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid var(--notice-accent-veil);
+  animation: fab-ring 3.2s ease-out infinite;
+  pointer-events: none;
 }
 
-@keyframes fab-shake {
-  0%, 72%, 100% { transform: rotate(0deg) scale(1); }
-  75% { transform: rotate(-14deg) scale(1.04); }
-  78% { transform: rotate(13deg) scale(1.04); }
-  81% { transform: rotate(-11deg) scale(1.03); }
-  84% { transform: rotate(10deg) scale(1.03); }
-  87% { transform: rotate(-7deg) scale(1.02); }
-  90% { transform: rotate(0deg) scale(1); }
+@keyframes fab-ring {
+  0% { opacity: 0.55; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(1.18); }
 }
 
-/* ===== 设置按钮 ===== */
+/* ===== 设置 ===== */
 .floating-controls-container .fab-settings {
-  color: #7b6bd6 !important;
+  color: var(--notice-ink-soft);
 }
 
-/* ===== 音乐按钮 ===== */
+/* ===== 音乐 ===== */
 .floating-controls-container .fab-music {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transform: translateY(8px) !important;
-  color: #2f9e7f !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
+  color: var(--notice-accent-deep);
 }
 
 .floating-controls-container .fab-music.is-visible {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  transform: translateY(0) !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .floating-controls-container .fab-music.is-paused {
-  color: rgba(23, 34, 47, 0.55) !important;
+  color: var(--notice-ink-faint);
+  border-color: var(--notice-line);
 }
 
-/* ===== 响应式 ===== */
+/* ===== 平板 / 小屏桌面 ===== */
 @media (max-width: 900px) {
   .floating-controls-container {
-    left: 14px !important;
-    bottom: 14px !important;
-    gap: 10px !important;
+    left: 14px;
+    bottom: 14px;
+    gap: 8px;
   }
 
   .floating-controls-container .fab-btn {
-    width: 44px !important;
-    height: 44px !important;
-    font-size: 1.0625rem !important;
-    border-width: 4px !important;
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+
+  .floating-controls-container .fab-tooltip {
+    display: none;
   }
 }
 
+/* ===== 移动端：收成一枚玻璃胶囊，展开后横向排布 ===== */
 @media (max-width: 720px) {
   .floating-controls-container {
-    left: 14px !important;
-    bottom: 14px !important;
-    gap: 10px !important;
-  }
-  
-  .floating-controls-container .fab-btn {
-    width: 44px !important;
-    height: 44px !important;
-    font-size: 1.0625rem !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .floating-controls-container {
-    left: 10px !important;
-    bottom: 10px !important;
-    gap: 8px !important;
-  }
-  
-  .floating-controls-container .fab-btn {
-    width: 44px !important;
-    height: 44px !important;
-    font-size: 1.0625rem !important;
-    border-width: 4px !important;
-  }
-}
-
-@media (max-width: 720px) {
-  /* 移动端把三颗竖排圆按钮收成一枚横向玻璃胶囊，降低对正文的遮挡 */
-  .floating-controls-container {
-    right: auto !important;
-    left: 14px !important;
-    bottom: 12px !important;
-    flex-direction: row !important;
-    gap: 1px !important;
-    padding: 4px !important;
-    border: 1px solid rgba(255, 255, 255, 0.7) !important;
-    border-radius: 999px !important;
-    background: rgba(253, 249, 242, 0.78) !important;
+    right: auto;
+    left: 14px;
+    bottom: 12px;
+    flex-direction: row;
+    gap: 1px;
+    padding: 4px;
+    border: 1px solid var(--notice-accent-veil);
+    border-radius: 999px;
+    background: var(--notice-paper);
     box-shadow:
-      0 12px 30px rgba(23, 34, 47, 0.14),
-      0 1px 0 rgba(255, 255, 255, 0.65) inset !important;
-    backdrop-filter: blur(16px) saturate(1.12) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(1.12) !important;
+      var(--notice-shadow-soft),
+      0 1px 0 var(--notice-inset) inset;
+    backdrop-filter: blur(16px) saturate(1.12);
+    -webkit-backdrop-filter: blur(16px) saturate(1.12);
   }
 
   .floating-controls-container .fab-btn {
-    width: 38px !important;
-    height: 38px !important;
-    border: 0 !important;
-    border-radius: 50% !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    font-size: 0.875rem !important;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    font-size: 0.9rem;
   }
 
   .floating-controls-container .fab-btn:hover {
-    transform: none !important;
-    background: rgba(255, 255, 255, 0.62) !important;
-    box-shadow: none !important;
+    transform: none;
+    background: var(--notice-accent-wash);
+    box-shadow: none;
   }
 
   .floating-controls-container .fab-announcement.has-unread {
-    background: linear-gradient(135deg, rgba(255, 232, 239, 0.96), rgba(255, 241, 220, 0.96)) !important;
-    box-shadow: 0 4px 12px rgba(200, 64, 112, 0.16) !important;
+    background: var(--notice-accent-200);
+    box-shadow: none;
   }
 
-  /* 移动端默认只露出一枚玻璃圆钮，点开后再展开三项控制 */
-  .floating-controls-container .fab-toggle {
-    position: relative !important;
-    display: inline-flex !important;
+  .floating-controls-container .fab-announcement.has-unread::after {
+    display: none;
   }
 
-  .floating-controls-container .fab-toggle.has-unread::after {
-    content: '';
-    position: absolute;
-    top: 5px;
-    right: 5px;
+  .floating-controls-container .fab-dot {
+    top: 4px;
+    right: 4px;
     width: 6px;
     height: 6px;
-    border-radius: 50%;
-    background: #c84070;
-    box-shadow: 0 0 0 2px rgba(253, 249, 242, 0.9);
+    box-shadow: 0 0 0 2px var(--notice-paper-solid);
+  }
+
+  .floating-controls-container .fab-toggle {
+    display: inline-flex;
+    color: var(--notice-accent-strong);
   }
 
   .floating-controls-container .fab-announcement,
-  .floating-controls-container .fab-settings {
-    display: none !important;
-  }
-
+  .floating-controls-container .fab-settings,
   .floating-controls-container .fab-music {
-    display: none !important;
+    display: none;
   }
 
   .floating-controls-container.is-open .fab-announcement,
-  .floating-controls-container.is-open .fab-settings {
-    display: inline-flex !important;
-  }
-
+  .floating-controls-container.is-open .fab-settings,
   .floating-controls-container.is-open .fab-music.is-visible {
-    display: inline-flex !important;
+    display: inline-flex;
   }
 
   .floating-controls-container.is-open .fab-toggle {
-    background: rgba(255, 255, 255, 0.62) !important;
+    background: var(--notice-accent-100);
   }
 }
 
-/* 减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
-  .floating-controls-container .fab-announcement.has-unread i {
-    animation: none !important;
+  .floating-controls-container .fab-btn,
+  .floating-controls-container .fab-tooltip {
+    transition: none;
+  }
+
+  .floating-controls-container .fab-announcement.has-unread::after {
+    animation: none;
   }
 }
 </style>
