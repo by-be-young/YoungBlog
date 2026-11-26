@@ -186,7 +186,10 @@ const translations = {
         submit_done: '已提交',
         single_choice_label: '单选题',
         multi_choice_label: '多选题',
+        judge_label: '判断题',
+        solution_label: '解答题',
         answer_label: '答案',
+        analysis_label: '解析',
         view_answer: '查看答案',
         hide_answer: '收起答案',
         stats_correct_count: '答对：',
@@ -410,7 +413,10 @@ const translations = {
         submit_done: 'Submitted',
         single_choice_label: 'Single Choice',
         multi_choice_label: 'Multiple Choice',
+        judge_label: 'True / False',
+        solution_label: 'Solution',
         answer_label: 'Answer',
+        analysis_label: 'Analysis',
         view_answer: 'View answer',
         hide_answer: 'Hide answer',
         stats_correct_count: 'Correct: ',
@@ -634,7 +640,10 @@ const translations = {
         submit_done: '送信済み',
         single_choice_label: '単一選択',
         multi_choice_label: '複数選択',
+        judge_label: '正誤問題',
+        solution_label: '解答問題',
         answer_label: '回答',
+        analysis_label: '解説',
         view_answer: '回答を見る',
         hide_answer: '回答を閉じる',
         stats_correct_count: '正解：',
@@ -714,7 +723,8 @@ export const useI18nStore = defineStore('i18n', () => {
 
     // 直接获取翻译值（非响应式，用于 setup 中）
     const get = (key) => {
-        return translations[lang.value]?.[key] || key
+        // 当前语言缺词条时回退到中文，避免直接把 key 名显示出来
+        return translations[lang.value]?.[key] || translations.zh?.[key] || key
     }
 
     const setLang = (newLang) => {

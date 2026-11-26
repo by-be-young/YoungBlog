@@ -281,7 +281,9 @@ export function useMarkdown() {
                         const idx = inlineMathBlocks.length
                         inlineMathBlocks.push(inner)
                         out += `@@MATHI_${idx}@@`
-                        i = j + 1
+                        // 停到收尾的 $ 上，让 for 的 i++ 走到 j+1；
+                        // 写成 i = j + 1 会连同公式后紧跟的一个字符（多半是标点）一起跳过。
+                        i = j
                         continue
                     }
                 }
@@ -430,6 +432,19 @@ export function useMarkdown() {
             return { keys: letter ? [letter] : [], mode: 'single' }
         }
 
+        /**
+         * 答案是否「只有一个/组选项字母」。
+         * 只有这种情况才把答案压成题头里的字母；带正文的答案要走独立的正文块，
+         * 否则段子、表格、代码块会被塞进行内 span 里。
+         */
+        function isAnswerKeyOnly(rawText, keys) {
+            if (!keys || !keys.length) return false
+            const compact = String(rawText || '').trim().replace(/[\s,，、;；/|·\-.)）:：。]*/g, '').toUpperCase()
+            if (!compact || !/^[A-G]+$/.test(compact)) return false
+            const unique = Array.from(new Set(compact.split('')))
+            return unique.length === keys.length && unique.every(k => keys.includes(k))
+        }
+
         for (let i = 0; i < segments.length; i++) {
             const seg = segments[i]
             if (seg.type === 'text') {
@@ -479,6 +494,7 @@ export function useMarkdown() {
             const answerKeys = answerMeta.keys || []
             const isMultiChoice = answerMeta.mode === 'multi'
             const answerKeysAttr = answerKeys.join(',')
+            const isKeyOnly = isAnswerKeyOnly(obj.answerRaw || '', answerKeys)
 
             const actionHtml = isMultiChoice ? `
         <div class="answer-actions">
@@ -508,13 +524,29 @@ export function useMarkdown() {
         </div>
       `
 
+            // 题头只放「答案」标签；纯字母答案才把字母并列进来。
+            // 有正文时正文独立成块，段落 / 表格 / 代码块才有正常的块级排布。
+            const headerHtml = isKeyOnly
+                ? `<div class="answer-header"><strong data-i18n="answer_label">答案</strong><span class="answer-letter">${answerKeys.join(', ')}</span></div>`
+                : '<div class="answer-header"><strong data-i18n="answer_label">答案</strong></div>'
+            const bodyHtml = isKeyOnly || !obj.answerHtml
+                ? ''
+                : `<div class="answer-body">${obj.answerHtml}</div>`
+            const analysisSectionHtml = obj.analysisHtml
+                ? '<div class="answer-analysis">'
+                    + '<div class="answer-analysis-head"><span class="answer-analysis-label" data-i18n="analysis_label">解析</span></div>'
+                    + `<div class="answer-analysis-body">${obj.analysisHtml}</div>`
+                    + '</div>'
+                : ''
+
             return `
         <div class="answer-block${isMultiChoice ? ' is-multiple' : ''}" data-answer="${answerKeys[0] || ''}" data-answer-keys="${answerKeysAttr}" data-answer-mode="${answerMeta.mode}">
           ${actionHtml}
           <div id="${contentId}" class="answer-content" hidden>
             <div class="answer-inner">
-              <div class="answer-header"><strong data-i18n="answer_label">答案</strong>: <span class="answer-letter">${obj.answerHtml || ''}</span></div>
-              <div class="answer-analysis">${obj.analysisHtml || ''}</div>
+              ${headerHtml}
+              ${bodyHtml}
+              ${analysisSectionHtml}
             </div>
           </div>
         </div>

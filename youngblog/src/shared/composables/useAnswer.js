@@ -25,6 +25,22 @@ export function useAnswer(rootRef) {
     }
 
     /**
+     * 取消答案块上尚未结束的展开 / 收起过渡
+     * @param {HTMLElement} content - .answer-content 元素
+     */
+    function cancelPendingTransition(content) {
+        if (!content) return
+        if (content.__answerTimer) {
+            clearTimeout(content.__answerTimer)
+            content.__answerTimer = null
+        }
+        if (content.__answerEnd) {
+            content.removeEventListener('transitionend', content.__answerEnd)
+            content.__answerEnd = null
+        }
+    }
+
+    /**
      * 展开答案块
      * @param {HTMLElement} block - .answer-block 元素
      */
@@ -33,20 +49,36 @@ export function useAnswer(rootRef) {
         const content = block.querySelector('.answer-content')
         const toggle = block.querySelector('.answer-toggle')
         if (!content) return
+        cancelPendingTransition(content)
         toggle?.classList.add('is-open')
-        block.classList.add('is-open')
         toggle?.setAttribute('aria-expanded', 'true')
+        block.classList.add('is-open')
+
         content.hidden = false
-        content.style.cssText = 'overflow:hidden;transition:max-height 260ms ease,opacity 220ms ease'
+        content.style.overflow = 'hidden'
+        content.style.transition = 'max-height 260ms ease, opacity 220ms ease'
+        // 从 0 起步，避免直接跳到 CSS 里的展开高度
+        content.style.maxHeight = '0px'
+        content.style.opacity = '0'
+        void content.offsetHeight
         requestAnimationFrame(() => {
             content.style.maxHeight = content.scrollHeight + 'px'
             content.style.opacity = '1'
         })
-        const onEnd = () => {
+
+        // 动画结束后交还给 CSS（is-open 下 max-height 为 none），
+        // 长答案不会被某个固定上限截断
+        const finish = () => {
+            cancelPendingTransition(content)
             content.style.maxHeight = ''
-            content.removeEventListener('transitionend', onEnd)
         }
-        content.addEventListener('transitionend', onEnd)
+        const onMaxHeightEnd = e => {
+            if (e.propertyName !== 'max-height') return
+            finish()
+        }
+        content.__answerEnd = onMaxHeightEnd
+        content.addEventListener('transitionend', onMaxHeightEnd)
+        content.__answerTimer = setTimeout(finish, 360)
 
         // 锁定所属任务的所有选项
         const task = block.closest('.md-task')
@@ -64,20 +96,40 @@ export function useAnswer(rootRef) {
         const content = block.querySelector('.answer-content')
         const toggle = block.querySelector('.answer-toggle')
         if (!content) return
-        toggle?.classList.remove('is-open')
-        block.classList.remove('is-open')
-        toggle?.setAttribute('aria-expanded', 'false')
+        cancelPendingTransition(content)
         const cur = content.scrollHeight
+        // 先落定当前高度，再摘掉 is-open，避免中途直接塌回 0
+        content.style.overflow = 'hidden'
+        content.style.transition = 'max-height 260ms ease, opacity 220ms ease'
         content.style.maxHeight = cur + 'px'
+        content.style.opacity = '1'
+        void content.offsetHeight
+        toggle?.classList.remove('is-open')
+        toggle?.setAttribute('aria-expanded', 'false')
+        block.classList.remove('is-open')
         requestAnimationFrame(() => {
             content.style.maxHeight = '0px'
             content.style.opacity = '0'
         })
-        const onEndHide = () => {
+
+        let ended = false
+        const finish = () => {
+            if (ended) return
+            ended = true
+            cancelPendingTransition(content)
             content.hidden = true
-            content.removeEventListener('transitionend', onEndHide)
+            content.style.maxHeight = ''
+            content.style.opacity = ''
+            content.style.overflow = ''
+            content.style.transition = ''
         }
-        content.addEventListener('transitionend', onEndHide)
+        const onMaxHeightEnd = e => {
+            if (e.propertyName !== 'max-height') return
+            finish()
+        }
+        content.__answerEnd = onMaxHeightEnd
+        content.addEventListener('transitionend', onMaxHeightEnd)
+        content.__answerTimer = setTimeout(finish, 360)
 
         // 如果该任务没有已提交的选项，解锁
         const task = block.closest('.md-task')
@@ -126,9 +178,37 @@ export function useAnswer(rootRef) {
         })
     }
 
+    // 判断题的两种选项写法
+    const JUDGE_TRUE_WORDS = new Set(['对', '正确', '√', '是', '真', 'true', 't', 'yes'])
+    const JUDGE_FALSE_WORDS = new Set(['错', '错误', '×', '否', '假', 'false', 'f', 'no'])
+
+    function normalizeOptionWord(text) {
+        return String(text || '')
+            .trim()
+            .toLowerCase()
+            .replace(/[\s。.，,、；;：:!！?？]+/g, '')
+    }
+
+    /**
+     * 只有「对 / 错」两个选项的题按判断题处理
+     * @param {HTMLElement} task
+     */
+    function isJudgeOptionSet(task) {
+        const options = Array.from(task.querySelectorAll('.md-option'))
+        if (options.length !== 2) return false
+        const words = options.map(opt =>
+            normalizeOptionWord(opt.querySelector('.md-option-text')?.textContent),
+        )
+        return (
+            (JUDGE_TRUE_WORDS.has(words[0]) && JUDGE_FALSE_WORDS.has(words[1])) ||
+            (JUDGE_FALSE_WORDS.has(words[0]) && JUDGE_TRUE_WORDS.has(words[1]))
+        )
+    }
+
     /**
      * 同步题头信息：题型标签 + 选项组形态（单选用圆键、多选用方键）
-     * 在绑定事件时执行，保证读者在作答前就知道这题能选几项。
+     * 题型不再只看答案字母：无选项按解答题、对/错两项按判断题，
+     * 其余再按答案个数区分单选 / 多选。
      * @param {HTMLElement} task - .md-task 元素
      */
     function syncTaskMeta(task) {
@@ -136,18 +216,23 @@ export function useAnswer(rootRef) {
         mergeOptionGroups(task)
         const block = task.querySelector('.answer-block')
         const isMulti = block?.getAttribute('data-answer-mode') === 'multi'
-        task.classList.toggle('is-multiple-choice', isMulti)
+        const optionCount = task.querySelectorAll('.md-option').length
+        const isJudge = optionCount === 2 && isJudgeOptionSet(task)
+
+        task.classList.toggle('is-multiple-choice', isMulti && optionCount > 0 && !isJudge)
         task.querySelectorAll('.md-options').forEach(group => {
-            group.classList.toggle('is-multi-choice', isMulti)
+            group.classList.toggle('is-multi-choice', isMulti && !isJudge)
         })
 
         const typeEl = task.querySelector('.md-task-type')
-        if (typeEl) {
-            const labelKey = isMulti ? 'multi_choice_label' : 'single_choice_label'
-            typeEl.setAttribute('data-i18n', labelKey)
-            typeEl.textContent = i18n.get(labelKey)
-            typeEl.classList.toggle('is-multi', isMulti)
-        }
+        if (!typeEl) return
+        let labelKey = 'single_choice_label'
+        if (!optionCount) labelKey = 'solution_label'
+        else if (isJudge) labelKey = 'judge_label'
+        else if (isMulti) labelKey = 'multi_choice_label'
+        typeEl.setAttribute('data-i18n', labelKey)
+        typeEl.textContent = i18n.get(labelKey)
+        typeEl.classList.toggle('is-multi', labelKey === 'multi_choice_label')
     }
 
     /**
