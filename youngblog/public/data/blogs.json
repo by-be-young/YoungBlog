@@ -2,7 +2,7 @@
     {
         "id": 3304434947,
         "title": "编译实验-代码生成",
-        "excerpt": "2421编译实验作业——代码生成实验心得：四元式 IR、作用域重建、求值顺序、栈帧与调用约定、MIPS 指令选择",
+        "excerpt": "从 return 1 开始，一步步加变量、判断、数组、函数调用、char、printf、switch，每一步都给出真实的 ir.txt 与 mips.txt",
         "date": "2026-11-27",
         "image": "assets/images/blog_bg.webp",
         "tags": [
@@ -17,7 +17,7 @@
         "chapter": "2-实验",
         "contentFile": "blogs/三上/编译/代码生成与优化/编译实验-代码生成.md",
         "recommended": false,
-        "wordCount": 12700,
+        "wordCount": 8724,
         "lastEditedDate": "2026-11-27"
     },
     {
