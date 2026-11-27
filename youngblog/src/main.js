@@ -14,6 +14,8 @@ import './assets/styles/search.css'
 import 'highlight.js/styles/atom-one-dark.css'
 import 'katex/dist/katex.min.css'
 
+import { registerServiceWorker } from '@/shared/utils/registerServiceWorker.js'
+
 const app = createApp(App)
 
 // 入场加载屏：在挂载前给 <html> 打上标记，
@@ -25,3 +27,6 @@ if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)')
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
+
+// 挂载后再注册，避免和首屏字体、图片抢带宽
+registerServiceWorker()

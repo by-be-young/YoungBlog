@@ -5,6 +5,30 @@
   <meta charset="UTF-8" />
   <link rel="icon" href="/favicon.ico" />
   <!--
+      iOS 添加到主屏幕的桌面图标
+      ------------------------------------------------------------------
+      apple-touch-icon 必须是不带圆角、不带透明通道的正方形 PNG（180×180），
+      系统会自己裁圆角并加高光；图里自带圆角会变成「圆角套圆角」，
+      带透明通道则会被填成黑底。
+  -->
+  <link rel="apple-touch-icon" sizes="180x180" href="%BASE_URL%icons/apple-touch-icon.png" />
+  <!--
+      PWA：添加到主屏幕后以独立窗口运行
+      ------------------------------------------------------------------
+      iOS 16.4+ 由 manifest 的 display: standalone 接管；更老的 iOS 只认
+      apple-mobile-web-app-capable，所以两边都留。状态栏取 default（白底），
+      不让内容顶进刘海，页面自己的 safe-area 留白继续负责避让。
+      manifest 内部用相对路径，放在 public/ 里也能跟着 base 走子路径部署；
+      后缀用 .json 而不是 .webmanifest：GitHub Pages 这类静态托管只认识少数扩展名，
+      .webmanifest 会被当成 application/octet-stream，个别浏览器直接判为清单无效。
+  -->
+  <link rel="manifest" href="%BASE_URL%manifest.json" />
+  <meta name="theme-color" content="#fff7fb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="白恙" />
+  <meta name="application-name" content="白恙" />
+  <!--
       viewport-fit=cover
       ------------------------------------------------------------------
       不写 viewport-fit 时，页面在刘海屏上会被强制收进安全区内，

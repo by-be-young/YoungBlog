@@ -33,6 +33,17 @@ export default defineConfig([
     },
   },
 
+  // public/sw.js 运行在 ServiceWorkerGlobalScope，没有 window 与 document
+  {
+    name: 'public/sw/worker-globals',
+    files: ['public/sw.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+      },
+    },
+  },
+
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
 
