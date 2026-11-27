@@ -1,5 +1,26 @@
 [
     {
+        "id": 3304434947,
+        "title": "编译实验-代码生成",
+        "excerpt": "2421编译实验作业——代码生成实验心得：四元式 IR、作用域重建、求值顺序、栈帧与调用约定、MIPS 指令选择",
+        "date": "2026-11-27",
+        "image": "assets/images/blog_bg.webp",
+        "tags": [
+            "三上",
+            "编译",
+            "代码生成与优化"
+        ],
+        "category": "学习",
+        "type": "系统笔记",
+        "series": "编译原理",
+        "order": 5,
+        "chapter": "2-实验",
+        "contentFile": "blogs/三上/编译/代码生成与优化/编译实验-代码生成.md",
+        "recommended": false,
+        "wordCount": 12168,
+        "lastEditedDate": "2026-11-27"
+    },
+    {
         "id": 1311744054,
         "title": "编译理论总复习",
         "excerpt": "按编译流程串起概念、算法与题型，附 2018–2022 年期末真题的完整解析。",
@@ -17,7 +38,7 @@
         "chapter": "3-总复习",
         "contentFile": "blogs/三上/编译/工具与总结/编译理论总复习.md",
         "recommended": false,
-        "wordCount": 57186
+        "wordCount": 58127
     },
     {
         "id": 3091232049,

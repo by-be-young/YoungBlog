@@ -3,7 +3,7 @@
         "id": 3574538254,
         "title": "编译原理",
         "coverImage": "assets/images/background/bg2.webp",
-        "count": 25,
+        "count": 26,
         "posts": [
             {
                 "id": 2180658354,
@@ -52,6 +52,14 @@
                 "order": 3,
                 "chapter": "2-实验",
                 "contentFile": "blogs/三上/编译/语法分析/编译实验-语法分析.md"
+            },
+            {
+                "id": 3304434947,
+                "title": "编译实验-代码生成",
+                "date": "2026-11-27",
+                "order": 5,
+                "chapter": "2-实验",
+                "contentFile": "blogs/三上/编译/代码生成与优化/编译实验-代码生成.md"
             },
             {
                 "id": 1311744054,
